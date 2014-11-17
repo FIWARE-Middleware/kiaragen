@@ -1,0 +1,99 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Proxy.java"], description=["This file contains proxy call implementation."])$
+
+import com.kiara.marshaling.*;
+import com.kiara.transport.*;
+import java.nio.ByteBuffer;
+
+class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$ {
+	
+	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
+		m_ser = ser;
+		m_transport = transport;
+	}
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation(operation)$}; separator="\n"$
+	
+	private Serializer m_ser = null;
+    private Transport m_transport = null;
+	
+}
+
+>>
+
+proxy_operation(operation) ::= <<
+$if(operation.isOperation)$
+$if(operation.rettype)$
+public $operation.rettype.cppTypename$ $operation.name$($javaParams(params=operation.parameters)$) {
+$else$
+public void $operation.name$($javaParams(params=operation.parameters)$) {
+$endif$
+	
+	if (m_ser != null && m_transport != null) {
+		ByteBuffer buffer = ByteBuffer.allocate(100);
+		m_ser.serializeService(buffer, "$ctx.firstInterface.name$");
+		m_ser.serializeOperation(buffer, "$operation.name$");
+		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(buffer, $param.name$);}; separator="\n"$
+		
+		if (m_transport.send(buffer) == true) {
+			ByteBuffer reply = m_transport.recv();
+			
+			if (reply != null) {
+				$if(operation.rettype)$
+				$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(reply);
+				return ret;
+				$else$
+				return;
+				$endif$
+			}
+		}
+	}
+	
+	$if(operation.rettype)$
+	return $initJava.(operation.rettype.stType)$;
+	$else$
+	return;
+	$endif$
+}
+
+$endif$
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

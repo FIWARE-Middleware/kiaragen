@@ -103,6 +103,33 @@ parseJava ::= [
         default: // not basic type.
 ]
 
+envelopeJava ::= [
+		"type_1":"Short",
+		"type_2":"Integer",
+		"type_3":"Short",
+		"type_4":"Integer",
+		"type_5":"Float",
+		"type_6":"Double",
+		"type_7":"Boolean",
+		"type_8":"Character",
+		"type_9":"Byte",
+		"type_10":"undefined",
+		"type_11":"Long",
+		"type_12":"Long",
+		"type_13":"Long",
+		"type_14":"Character",
+		"type_15":"",
+		"type_a":"undefined",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"type_d":"",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
 deserializeJava ::= [
 		"type_1":"deserializeShort",
 		"type_2":"deserializeInteger",

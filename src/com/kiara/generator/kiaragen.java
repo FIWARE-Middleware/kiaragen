@@ -439,8 +439,11 @@ public class kiaragen {
 			// Load ServerExample template
 			tmanager.addGroup("KIARAServerExample");
 			
+			// Load Servant template
+			tmanager.addGroup("KIARAServerExampleGradle");
+			
 			// Load ServantExample template
-			tmanager.addGroup("KIARAServantImpl");
+			tmanager.addGroup("KIARAServantExample");
 			
 			// Load Servant template
 			tmanager.addGroup("KIARAServant");
@@ -449,10 +452,19 @@ public class kiaragen {
 			tmanager.addGroup("KIARAExample");
 			
 			// Load Servant template
-			tmanager.addGroup("KIARAClientExample");
+			tmanager.addGroup("KIARAExampleAsync");
+			
+			// Load Servant template
+			tmanager.addGroup("KIARAClient");
 			
 			// Load Servant template
 			tmanager.addGroup("KIARAProxy");
+			
+			// Load Servant template
+			tmanager.addGroup("KIARAClientExample");
+			
+			// Load Servant template
+			tmanager.addGroup("KIARAClientExampleGradle");
 			
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
@@ -512,33 +524,52 @@ public class kiaragen {
 						System.out.print("Generating application main entry files for interface " + ifz.getName() +"... ");
 						//System.out.println("Current ifz: " + ifz.getName() + " Length: " + ifz.getOperations().size());
 						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
-							System.out.println("OK");
+							if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
+								if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
+									System.out.println("OK");
+								}
+							}
 						}
 						
 						System.out.print("Generating specific server side files for interface " + ifz.getName() +"... ");
 						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "ServantImpl.java", maintemplates.getTemplate("KIARAServantImpl"), m_replace)) {
+							if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
 								System.out.println("OK");
 							}
 						}
 						
 						
 						System.out.print("Generating specific client side files for interface " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
+						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "ClientProxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
 							System.out.println("OK");
 						}
 						
 					}
 					
+					Interface ifz_handler = ctx.getFirstInterface();
+					ctx.setCurrentIfz(ifz_handler);
+					
+					/*System.out.print("Generating handler implementation example...");
+					if (returnedValue = Utils.writeFile(m_outputDir + ifz_handler.getName() + "_" + ifz_handler.getFirstOperation().getName() + "CallbackHandlerImpl.java", maintemplates.getTemplate("KIARACallbackHandlerImpl"), m_replace)) {
+						System.out.println("OK");
+						
+					}*/
+					
 					System.out.print("Generating common server side files... ");
 					if (returnedValue = Utils.writeFile(m_outputDir + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
-						System.out.println("OK");
+						if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
+							System.out.println("OK");
+							
+						}
 						
 					}
 					
 					System.out.print("Generating common client side files... ");
 					if (returnedValue = Utils.writeFile(m_outputDir + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
-						System.out.println("OK");
+						System.out.print("Generating common client side files... ");
+						if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
+							System.out.println("OK");
+						}
 					}
 					
 					/*if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "PubSubType.h", maintemplates.getTemplate("RTPSPubSubTypeHeader"), m_replace)) {

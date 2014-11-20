@@ -1,15 +1,24 @@
 group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main interface for the defined operations."])$
+apply plugin: 'java'
+apply plugin: 'application'
 
-package main.java;
+mainClassName = 'main.java.ServerExample'
 
-public interface $ctx.currentIfz.name$ {
-
-	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n"$
+dependencies { 
+	compile files('lib/Kiara.jar')
+	runtime files('lib/Kiara.jar') 
+	runtime fileTree(dir:'lib' ,include: '*.jar') 
 }
-
+jar {
+	manifest {
+        attributes 'Main-Class': 'main.java.ServerExample'
+		attributes 'Class-Path': 'Kiara.jar'
+    }
+	baseName = 'server_example'
+    version =  '0.1.0'
+}
 >>
 
 module(ctx, module, definition_list) ::= <<
@@ -31,7 +40,9 @@ $exports; separator="\n"$
 
 exception(ctx, exception) ::= <<>>
 
-operation(ctx, operation, param_list) ::= <<>>
+operation(ctx, operation, param_list) ::= <<
+public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$); 
+>>
 
 param_list(parameters) ::= <<>>
 
@@ -46,6 +57,4 @@ struct_type(ctx, struct) ::= <<>>
 union_type(ctx, union) ::= <<>>
 
 enum_type(ctx, enum) ::= <<>>
-
-
 

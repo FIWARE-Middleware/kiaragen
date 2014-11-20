@@ -1,7 +1,9 @@
 group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServerExample.java"], description=["This file contains the main server example entry point."])$
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Servant.java"], description=["This file contains the main server example entry point."])$
+
+package main.java;
 
 import com.kiara.marshaling.Serializer;
 import com.kiara.server.Servant;

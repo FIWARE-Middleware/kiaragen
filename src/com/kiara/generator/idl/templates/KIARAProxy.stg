@@ -3,18 +3,22 @@ group ProtocolHeader;
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Proxy.java"], description=["This file contains proxy call implementation."])$
 
+package main.java;
+
 import com.kiara.marshaling.*;
 import com.kiara.transport.*;
 import java.nio.ByteBuffer;
 
-class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$ {
+class $ctx.currentIfz.name$ClientProxy implements $ctx.currentIfz.name$Client {
 	
-	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
+	public $ctx.currentIfz.name$ClientProxy(Serializer ser, Transport transport) {
 		m_ser = ser;
 		m_transport = transport;
 	}
 	
 	$ctx.currentIfz.operations : {operation |$proxy_operation(operation)$}; separator="\n"$
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation_async(operation)$}; separator="\n"$
 	
 	private Serializer m_ser = null;
     private Transport m_transport = null;
@@ -60,6 +64,37 @@ $endif$
 
 $endif$
 
+>>
+
+proxy_operation_async(operation) ::= <<
+$if(!operation.oneway)$
+$if(operation.isOperation)$
+public void $operation.name$($javaParams(params=operation.parameters)$, $operation.name$_AsyncCallback callback) {
+	
+	if (m_ser != null && m_transport != null) {
+		ByteBuffer buffer = ByteBuffer.allocate(100);
+		m_ser.serializeService(buffer, "$ctx.firstInterface.name$");
+		m_ser.serializeOperation(buffer, "$operation.name$");
+		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(buffer, $param.name$);}; separator="\n"$
+		
+		if (m_transport.send(buffer) == true) {
+			/*ByteBuffer reply = m_transport.recv();
+			
+			if (reply != null) {
+				$if(operation.rettype)$
+				$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(reply);
+				handler.$operation.name$_handler.$operation.name$(ret);
+				$endif$
+				return;
+			}*/
+		}
+	}
+	
+	return;
+}
+
+$endif$
+$endif$
 >>
 
 module(ctx, module, definition_list) ::= <<

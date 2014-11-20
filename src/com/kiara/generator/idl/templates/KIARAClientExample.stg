@@ -3,6 +3,8 @@ group ProtocolHeader;
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[, "ClientExample.java"], description=["This file contains the main client code example."])$
 
+package main.java;
+
 import com.kiara.Connection;
 import com.kiara.Context;
 import com.kiara.Kiara;
@@ -30,7 +32,7 @@ public class ClientExample {
 		Serializer serializer = context.createSerializer("cdr");
 		
 		Connection connection = context.createConnection(transport, serializer);
-		$ctx.firstInterface.name$ client = connection.createClient($ctx.firstInterface.name$.class);
+		$ctx.firstInterface.name$ client = connection.createClient($ctx.firstInterface.name$Client.class);
 		
 		try {
 			$if(ctx.firstInterface.firstOperation.rettype)$

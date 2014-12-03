@@ -49,12 +49,12 @@ test {
   }
 }
 
-task copyFiles(type: Copy) {
-	into "build/classes/main/com/kiara/generator/idl/templates"
-	from("src/main/java/com/kiara/generator/idl/templates") {
-		include '*.stg'
-	}
-}
+//task copyFiles(type: Copy) {
+//	into "build/classes/main/com/kiara/generator/idl/templates"
+//	from("src/main/java/com/kiara/generator/idl/templates") {
+//		include '*.stg'
+//	}
+//}
 
 jar (){
 	manifest {

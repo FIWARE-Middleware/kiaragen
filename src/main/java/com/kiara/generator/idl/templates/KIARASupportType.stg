@@ -1,8 +1,7 @@
 group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main interface for the defined operations."])$
-
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the class representing a user defined structure."])$
 package main.java;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -12,10 +11,22 @@ import com.kiara.serialization.impl.Serializable;
 import com.kiara.serialization.impl.SerializerImpl;
 import com.kiara.transport.impl.TransportMessage;
 
+/**
+ * Class definition for the user defined type $ctx.currentSt.name$. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
 public class $ctx.currentSt.name$ implements Serializable {
 	
+	/*
+	 *	Attributes
+	 */
 	$private_attributes(ctx.currentSt)$
 	
+	/*
+	 *	Default constructor
+	 */
 	public $ctx.currentSt.name$() {
 	$ctx.currentSt.members : {member | 
 	$if(member.typecode.primitive)$
@@ -33,6 +44,11 @@ public class $ctx.currentSt.name$ implements Serializable {
 	$serialization_methods(ctx.currentSt)$
 	$comparison_function(ctx.currentSt)$
 	
+	/*
+	 *This method calculates the maximum size in CDR for this class.
+	 * 
+	 * @param current_alignment Integer containing the current position in the buffer.
+	 */
 	public static int getMaxCdrSerializedSize(int current_alignment)
 	{
 	    int current_align = current_alignment;
@@ -49,6 +65,9 @@ public class $ctx.currentSt.name$ implements Serializable {
 
 comparison_function(currentSt) ::= <<
 
+/*
+ * @param other An object instance of $ctx.currentSt.name$
+ */
 public boolean equals($currentSt.name$ other) {
 	boolean comparison = true;
 	
@@ -66,6 +85,11 @@ public boolean equals($currentSt.name$ other) {
 >>
 
 serialization_methods(currentSt) ::= <<
+/*
+ * This method serializes a $currentSt.name$.
+ *
+ * @see com.kiara.serialization.impl.Serializable#serialize(com.kiara.serialization.impl.SerializerImpl, com.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
 $if(member.typecode.isType_f)$
@@ -75,6 +99,11 @@ $endif$
 }; separator="\n"$
 }
 
+/*
+ * This method deserializes a $currentSt.name$.
+ *
+ * @see com.kiara.serialization.impl.Serializable#deserialize(com.kiara.serialization.impl.SerializerImpl, com.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
 $if(member.typecode.isType_f)$
@@ -109,18 +138,30 @@ $endif$
 accessor_methods(currentSt) ::= <<
 $currentSt.members : {member | 
 $if(member.typecode.isType_f)$
+/*
+ * Method to get the attribute $member.name$.
+ */
 public $arrayType(type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() { 
 	return this.$member.name$;
 }
 
+/*
+ * Method to set the attribute $member.name$.
+ */
 public void set$member.name$($arrayType(type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) {
 	this.$member.name$ = $member.name$;
 }
 $else$
+/*
+ * Method to get the attribute $member.name$.
+ */
 public $paramTypeJava(member.typecode)$ get$member.name$() { 
 	return this.$member.name$;
 }
 
+/*
+ * Method to set the attribute $member.name$.
+ */
 public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) {
 	this.$member.name$ = $member.name$;
 }

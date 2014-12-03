@@ -1,8 +1,7 @@
 group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Proxy.java"], description=["This file contains proxy call implementation."])$
-
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Proxy.java"], description=["This file contains the proxy implementation."])$
 package main.java;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -17,6 +16,12 @@ import com.kiara.transport.impl.TransportMessage;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Class containing the proxy implementation for all the services. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
 class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 	
 	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {

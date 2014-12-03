@@ -1,7 +1,7 @@
 group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ExampleAsync.java"], description=["This file contains the main server example entry point."])$
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ExampleAsync.java"], description=["This file contains the main asynchronous interface for the defined operations."])$
 
 package main.java;
 
@@ -9,6 +9,12 @@ import com.kiara.transport.impl.TransportMessage;
 import com.kiara.client.AsyncCallback;
 import com.kiara.serialization.impl.SerializerImpl;
 
+/**
+ * Interface containing the asynchronous method definition. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
 public interface $ctx.currentIfz.name$Async {
 
 	$ctx.currentIfz.operations : {operation |$construct_operation_async(operation)$}; separator="\n"$

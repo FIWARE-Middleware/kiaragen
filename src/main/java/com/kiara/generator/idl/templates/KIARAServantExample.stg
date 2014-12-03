@@ -2,15 +2,18 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServantExample.java"], description=["This file contains the servant implementation."])$
-
 package main.java;
 
+/**
+ * Class where the actual implementation of the procedures is located. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
 class $ctx.currentIfz.name$ServantExample extends $ctx.currentIfz.name$Servant {
 
-$ctx.currentIfz.operations : {operation |$operation_impl(operation)$}; separator="\n"$
-
+$ctx.currentIfz.operations : {operation |$operation_impl(operation)$}; separator="\n\n"$
 $definitions$	
-
 }
 
 
@@ -65,6 +68,5 @@ operation_impl(operation) ::= <<
 		
 		return $initJava.(operation.rettype.stType)$;
 		$endif$
-	
 	}
 >>

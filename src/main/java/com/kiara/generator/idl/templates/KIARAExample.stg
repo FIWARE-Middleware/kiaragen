@@ -1,10 +1,15 @@
 group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main interface for the defined operations."])$
-
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main synchronous interface for the defined operations."])$
 package main.java;
 
+/**
+ * Interface containing the synchronous method definition. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
 public interface $ctx.currentIfz.name$ {
 
 	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n\n"$

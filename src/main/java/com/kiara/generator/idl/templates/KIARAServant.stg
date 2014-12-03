@@ -60,11 +60,9 @@ $if(operation.isOperation)$
 private int $operation.name$_required_size() {
 	int op_size = 0;
 	
-	int current_align = 0;
-	
-	op_size += 4 + CDRSerializer.alignment(current_align, Integer.SIZE); // MessageID
-	$operation.outputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="current_align", name=param.name)$;}; separator="\n"$
-	$max_serialized_size(ctx=ctx, typecode=operation.rettype, var="current_align", name=operation.rettypeparam.name)$ // Return type
+	op_size += 4 + CDRSerializer.alignment(op_size, Integer.SIZE); // MessageID
+	$operation.outputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="op_size", name=param.name)$;}; separator="\n"$
+	$max_serialized_size(ctx=ctx, typecode=operation.rettype, var="op_size", name=operation.rettypeparam.name)$ // Return type
 	
 	return op_size;
 }

@@ -62,6 +62,24 @@ public class Utils
         return returnedValue;
     }
     
+    public static boolean createSrcDir(String outputDir) {
+    	File directory = new File(outputDir.concat("src"+File.separator+"main"+File.separator+"java"));
+        if (directory.exists() && directory.isFile())
+        {
+            System.out.print("The dir with name could not be  created as it is a normal file - ");
+            return false;
+        } else {
+            if (!directory.exists())
+			{
+			    if (!directory.mkdirs()); {
+			    	return false;
+			    } 
+			} 
+			return true;
+        }
+    	
+    }
+    
     public static boolean writeFile(String file, StringTemplate template, boolean replace)
     {
         boolean returnedValue = false;

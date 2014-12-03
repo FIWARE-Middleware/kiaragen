@@ -140,9 +140,6 @@ public class kiaragen {
 				} else {
 					throw new BadArgumentException("No URL specified after -d argument");
 				}
-			} else if (arg.equals("-version")) {
-				showVersion();
-				System.exit(0);
 			} else if (arg.equals("-help")) {
 				printHelp();
 				System.exit(0);
@@ -231,32 +228,6 @@ public class kiaragen {
 	 * 
 	 * Auxiliary methods
 	 */
-	
-	private String getVersion()
-    {
-        try
-        {
-            InputStream input = this.getClass().getClassLoader().getResourceAsStream("eprosimartps_version.h");
-            byte[] b = new byte[input.available()];
-            input.read(b);
-            String text = new String(b);
-            int beginindex = text.indexOf("\"");
-            int endindex = text.indexOf("\"", beginindex + 1);
-            return text.substring(beginindex + 1, endindex);
-        }
-        catch(Exception ex)
-        {
-            System.out.println(ColorMessage.error() + "Getting version. " + ex.getMessage());
-        }
-
-        return "";
-    }
-	
-	private void showVersion()
-    {
-        String version = getVersion();
-		System.out.println(m_appName + " version " + version);
-    }
 	
 	public static void printHelp()
     {
@@ -393,6 +364,14 @@ public class kiaragen {
 			}
 			
 			if (returnedValue) {
+				
+				System.out.print("Creating destination source directory... ");
+				if (Utils.createSrcDir(m_outputDir)) {
+					System.out.println("OK");
+				} else {
+					System.out.println("ERROR");
+					System.exit(0);
+				}
 				
 				System.out.println("Generating Type support classes... ");
 				

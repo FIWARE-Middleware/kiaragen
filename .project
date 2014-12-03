@@ -36,14 +36,14 @@
 			<location>C:/Rafa/Proyectos/idl/src/main/java</location>
 		</link>
 		<link>
+			<name>resources</name>
+			<type>2</type>
+			<location>C:/Rafa/Proyectos/kiaragen/src/main/resources</location>
+		</link>
+		<link>
 			<name>src.main.java</name>
 			<type>2</type>
 			<location>C:/Rafa/Proyectos/IDL-Parser/src/main/java</location>
-		</link>
-		<link>
-			<name>templates</name>
-			<type>2</type>
-			<location>C:/Rafa/Proyectos/kiaragen/src/main/java/com/kiara/generator/idl/templates</location>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -1,55 +1,58 @@
+/* KIARA - Middleware for efficient and QoS/Security-aware invocation of services and exchange of messages
+ *
+ * Copyright (C) 2014 Proyectos y Sistemas de Mantenimiento S.L. (eProsima)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.kiara.generator;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
-import javax.swing.plaf.basic.BasicFormattedTextFieldUI;
-
-import org.antlr.stringtemplate.CommonGroupLoader;
-import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateErrorListener;
-import org.antlr.stringtemplate.StringTemplateGroup;
-import org.antlr.stringtemplate.StringTemplateGroupLoader;
-import org.antlr.stringtemplate.language.DefaultTemplateLexer;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.stringtemplate.v4.StringRenderer;
 
 import com.eprosima.idl.generator.manager.TemplateGroup;
 import com.eprosima.idl.generator.manager.TemplateManager;
-import com.eprosima.idl.parser.grammar.IDLLexer;
-import com.eprosima.idl.parser.grammar.IDLParser;
 import com.eprosima.idl.parser.grammar.KIARAIDLLexer;
 import com.eprosima.idl.parser.grammar.KIARAIDLParser;
 import com.eprosima.idl.parser.tree.Definition;
 import com.eprosima.idl.parser.tree.Interface;
 import com.eprosima.idl.parser.tree.Specification;
 import com.eprosima.idl.parser.tree.TypeDeclaration;
-import com.eprosima.idl.parser.typecode.Member;
 import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
 import com.eprosima.idl.util.Util;
 import com.eprosima.log.ColorMessage;
 import com.kiara.generator.exceptions.*;
 import com.kiara.generator.idl.grammar.Context;
-import com.kiara.generator.solution.Project;
-import com.kiara.generator.solution.Solution;
 import com.kiara.generator.util.Utils;
-import com.kiara.generator.util.VSConfiguration;
 
+/**
+*
+* @author Rafael Lara <rafaellara@eprosima.com>
+*/
 public class kiaragen {
 	
 	/*
@@ -64,7 +67,7 @@ public class kiaragen {
 	protected static String m_appEnv = "EPROSIMARTPSHOME";
 	private String m_exampleOption = null;
 	private String m_languageOption = "Java";
-    private boolean m_ppDisable = false; //TODO
+    private boolean m_ppDisable = false; 
     private boolean m_replace = false;
     private String m_ppPath = null;
     private final String m_defaultOutputDir = "." + File.separator;
@@ -75,22 +78,10 @@ public class kiaragen {
     private boolean m_publishercode = true;
     private boolean m_subscribercode = true;
     protected static String m_localAppProduct = "Kiara";
-    private ArrayList m_includePaths = new ArrayList();
-    
-    private String m_command = null;
-    private String m_extra_command = null;
-    private ArrayList m_lineCommand = null;
-    private ArrayList m_lineCommandForWorkDirSet = null;	
-    private String m_spTemplate = "main";
-    
-    private static VSConfiguration m_vsconfigurations[]={new VSConfiguration("Debug DLL", "Win32", true, true),
-        new VSConfiguration("Release DLL", "Win32", false, true),
-        new VSConfiguration("Debug", "Win32", true, false),
-        new VSConfiguration("Release", "Win32", false, false)};
-	
-	private String m_os = null;
-	
-	//private 
+
+    private ArrayList<String> m_includePaths = new ArrayList<String>();
+
+    private String m_os = null;
 	
 	/*
 	 * ----------------------------------------------------------------------------------------
@@ -155,7 +146,7 @@ public class kiaragen {
 			} else if (arg.equals("-help")) {
 				printHelp();
 				System.exit(0);
-			} else { // TODO: More options: -local, -rpm, -debug -I
+			} else { 
 				throw new BadArgumentException("Unknown argument " + arg);
 			}
 			
@@ -209,8 +200,6 @@ public class kiaragen {
 		
 		if (returnedValue) {
 			
-			Solution solution = new Solution(m_exampleOption, getVersion(), m_publishercode, m_subscribercode);
-			
 			// Load string templates
 			System.out.println("Loading templates...");
 			TemplateManager.setGroupLoaderDirectories("com/kiara/generator/idl/templates");
@@ -219,10 +208,10 @@ public class kiaragen {
 			System.out.println(Context.class.getCanonicalName());
 			
 			for (int count = 0; returnedValue && (count < m_idlFiles.size()); ++count) {
-				Project project = process(m_idlFiles.get(count));
+				boolean result = process(m_idlFiles.get(count));
 				
-				if (project != null) {
-					solution.addProject(project);
+				if (result) {
+					returnedValue = result;
 				} else {
 					returnedValue = false;
 				}
@@ -247,9 +236,7 @@ public class kiaragen {
     {
         try
         {
-            //InputStream input = this.getClass().getResourceAsStream("/rtps_version.h");
-        	
-        	InputStream input = this.getClass().getClassLoader().getResourceAsStream("eprosimartps_version.h");
+            InputStream input = this.getClass().getClassLoader().getResourceAsStream("eprosimartps_version.h");
             byte[] b = new byte[input.available()];
             input.read(b);
             String text = new String(b);
@@ -293,8 +280,6 @@ public class kiaragen {
     }
 	
 	public boolean globalInit() {
-		String dds_root = null, tao_root = null, fastrtps_root = null;
-		
 		// Set the temporary folder
 		if (m_tempDir == null) {
 			if (m_os.contains("Windows")) {
@@ -314,19 +299,17 @@ public class kiaragen {
 			m_tempDir += File.separator;
 		}
 		
-		// Set the line command
-		m_lineCommand = new ArrayList();
-		
 		return true;
 	}
 	
-	private Project process(String idlFilename) {
-		Project project = null;
+	private boolean process(String idlFilename) {
+		
 		System.out.println("Processing the file " + idlFilename + "...");
 		
 		try {
 			// Protocol CDR
-			project = parseIDLtoCDR(idlFilename); // TODO: Quitar archivos copiados TypesHeader.stg, TypesSource.stg, PubSubTypeHeader.stg de la carpeta com.kiara.generator.idl.templates
+			parseIDLtoCDR(idlFilename); 
+			return true;
 		} catch (Exception ioe) {
 			System.out.println(ColorMessage.error() + "Cannot generate the files");
 			if (!ioe.getMessage().equals("")) {
@@ -334,14 +317,13 @@ public class kiaragen {
 			}
 		} 
 		
-		return project;
+		return false;
 		
 	}
 	
-	private Project parseIDLtoCDR(String idlFilename) {
+	private void parseIDLtoCDR(String idlFilename) {
 		boolean returnedValue = false;
 		String idlParseFileName = idlFilename;
-		Project project = null;
 		
 		String onlyFileName = Util.getIDLFileNameOnly(idlFilename);
 		
@@ -411,8 +393,6 @@ public class kiaragen {
 			}
 			
 			if (returnedValue) {
-				// Create information of project for solution
-				project = new Project(onlyFileName, idlFilename, ctx.getDependencies());
 				
 				System.out.println("Generating Type support classes... ");
 				
@@ -432,7 +412,6 @@ public class kiaragen {
 						
 					}
 				}
-				
 				
 				if (m_exampleOption != null) {
 					
@@ -487,14 +466,13 @@ public class kiaragen {
 			
 		}
 		
-		return returnedValue ? project : null;
 	}
 	
 	String callPreprocessor(String idlFilename) {
 		final String METHOD_NAME = "callPreprocessor";
 		
 		// Set line command.
-		ArrayList lineCommand = new ArrayList();
+		ArrayList<String> lineCommand = new ArrayList<String>();
 		String [] lineCommandArray = null;
 		String outputfile = Util.getIDLFileOnly(idlFilename) + ".cc";
 		int exitVal = -1;

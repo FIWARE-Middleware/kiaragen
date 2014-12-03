@@ -1,30 +1,32 @@
+/* KIARA - Middleware for efficient and QoS/Security-aware invocation of services and exchange of messages
+ *
+ * Copyright (C) 2014 Proyectos y Sistemas de Mantenimiento S.L. (eProsima)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library. If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.kiara.generator.util;
 
 import org.antlr.stringtemplate.StringTemplate;
 
 import java.io.*;
 
+/**
+*
+* @author Rafael Lara <rafaellara@eprosima.com>
+*/
 public class Utils
 {
-    
-    public static String getWADLFileNameOnly(String wadlFilename)
-    {
-        int index = -1;
-        String auxString = wadlFilename, returnedValue = null;
-        
-        index = wadlFilename.lastIndexOf(File.separator);
-        
-        if(index == -1)
-            index = wadlFilename.lastIndexOf('/');
-        
-        if(index != -1)
-            auxString = wadlFilename.substring(index + 1);
-        
-        // Remove '.wadl'
-        returnedValue = auxString.substring(0, auxString.length() - 5);
-        
-        return returnedValue;
-    }
     
     public static String getFileNameOnly(String fileName)
     {

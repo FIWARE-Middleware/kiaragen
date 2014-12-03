@@ -1,0 +1,91 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[, "ClientExample.java"], description=["This file contains the main client code example."])$
+
+package main.java;
+
+import com.kiara.client.Connection;
+import com.kiara.Context;
+import com.kiara.Kiara;
+import com.kiara.serialization.Serializer;
+import com.kiara.transport.Transport;
+
+public class ClientExample {
+	public static void main (String [] args) throws Exception {
+		System.out.println("$ctx.filename$ClientExample");
+		
+		if (args.length != $length(ctx.firstInterface.firstOperation.parameters)$) {
+			System.out.println("Usage: $ctx.filename$ClientExample ");
+			return;
+		}
+		
+		$ctx.firstInterface.firstOperation.inputparam : {param |$param.typecode.cppTypename$ $param.name$ = $parseJava.(param.typecode.stType)$(args[$i$-1]);}; separator="\n"$
+		
+		$if(ctx.firstInterface.firstOperation.rettype)$
+		$ctx.firstInterface.firstOperation.rettype.cppTypename$ ret = $initJava.(ctx.firstInterface.firstOperation.rettype.stType)$;
+		$endif$
+		
+		Context context = Kiara.createContext();
+		
+		Transport transport = context.createTransport("tcp://127.0.0.1:9090");
+		Serializer serializer = context.createSerializer("cdr");
+		
+		Connection connection = context.connect(transport, serializer);
+		$ctx.firstInterface.name$ client = connection.getServiceProxy($ctx.firstInterface.name$Client.class);
+		
+		try {
+			$if(ctx.firstInterface.firstOperation.rettype)$
+			ret = client.$ctx.firstInterface.firstOperation.name$($ctx.firstInterface.firstOperation.inputparam : {param |$param.name$}; separator=", "$);
+			System.out.println("Result of adding: " + ret);
+			$else$
+			client.$ctx.firstInterface.firstOperation.name$($ctx.firstInterface.firstOperation.inputparam : {param |$param.name$}; separator=", "$);
+			$endif$
+		} catch (Exception ex) {
+			System.out.println("Exception: " + ex.getMessage());
+			return;
+		}
+		
+		
+	}
+}
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<
+public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$); 
+>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

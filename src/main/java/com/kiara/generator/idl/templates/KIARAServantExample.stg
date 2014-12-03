@@ -1,0 +1,67 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServantExample.java"], description=["This file contains the main server example entry point."])$
+
+package main.java;
+
+class $ctx.currentIfz.name$ServantExample extends $ctx.currentIfz.name$Servant {
+
+$ctx.currentIfz.operations : {operation |$operation_impl(operation)$}; separator="\n"$
+
+$definitions$		
+
+}
+
+>>
+
+operation_impl(operation) ::= <<
+	
+	/*!
+	 * @brief This method implements the proxy part of the protocol for the operation $operation.name$.
+	 *        It has to be implemented by the child classes.
+	 */
+	public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$) {
+	
+		// Your implementation code goes here
+		$if(operation.rettype)$
+		
+		return $initJava.(operation.rettype.stType)$;
+		$endif$
+	}
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>

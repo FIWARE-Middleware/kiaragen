@@ -1,0 +1,60 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "build_server.gradle"], description=["This file contains the main server example entry point."])$
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'main.java.ServerExample'
+
+dependencies { 
+	compile files('lib/Kiara.jar')
+	runtime files('lib/Kiara.jar') 
+	runtime fileTree(dir:'lib' ,include: '*.jar') 
+}
+jar {
+	manifest {
+        attributes 'Main-Class': 'main.java.ServerExample'
+		attributes 'Class-Path': 'Kiara.jar'
+    }
+	baseName = 'server_example'
+    version =  '0.1.0'
+}
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>

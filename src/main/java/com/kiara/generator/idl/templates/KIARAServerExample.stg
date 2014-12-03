@@ -1,0 +1,77 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServerExample.java"], description=["This file contains the main server example entry point."])$
+
+package main.java;
+
+import com.kiara.Context;
+import com.kiara.Kiara;
+import com.kiara.server.Server;
+import com.kiara.server.Service;
+import com.kiara.serialization.Serializer;
+import com.kiara.transport.ServerTransport;
+
+public class ServerExample {
+	
+	public static void main (String [] args) throws Exception {
+		
+		System.out.println("$ctx.filename$ServerExample");
+		
+		Context context = Kiara.createContext();
+		Server server = context.createServer();
+		
+		$ctx.firstInterface.name$Servant $ctx.filename$_impl = new $ctx.firstInterface.name$ServantExample();
+		
+		ServerTransport transport = context.createServerTransport("tcp://0.0.0.0:8080");
+		Serializer serializer = context.createSerializer("cdr");
+		Service service = context.createService();
+		
+		service.register($ctx.filename$_impl);
+		
+		//Add service waiting on TCP with CDR serialization
+		server.addService(service, transport, serializer);
+		server.addService(service, "tcp://0.0.0.0:9090", "cdr");
+		
+		server.run();
+	
+	}
+	
+}
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>

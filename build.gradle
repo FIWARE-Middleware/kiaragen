@@ -1,0 +1,67 @@
+// internal plugins
+plugins {
+    id "me.champeau.gradle.antlr4" version "0.1" // antlr4 community plugin.
+}
+
+apply plugin: 'eclipse' // Eclipse integration
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'maven'
+
+
+
+mainClassName = 'com.kiara.generator.kiaragen'
+
+//general properties
+version = '0.1.0'
+
+description = """"""
+
+// java plugin properties (until antlr 4.4 we have to set this to 1.6)
+// (https://github.com/antlr/antlr4/issues/487)
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+// temporary fix until we can switch to sourceCompatibility=1.7+
+// (http://stackoverflow.com/a/20779740)
+tasks.withType(JavaCompile) {
+	options.bootClasspath = "$System.env.JAVA_HOME/jre/lib/rt.jar"
+}
+
+// maven-plugin properties
+group = 'com.kiara'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	compile group: 'org.antlr', name: 'antlr4', version:'4.2.2'
+	compile group: 'antlr', name: 'antlr', version:'2.7.7'
+    compile group: 'org.antlr', name: 'stringtemplate', version:'3.2'
+    testCompile group: 'junit', name: 'junit', version:'4.10'
+	compile files('lib/kiaraparser-0.1.0.jar')
+}
+
+test {
+  testLogging {
+	events 'started', 'passed'
+  }
+}
+
+task copyFiles(type: Copy) {
+	into "build/classes/main/com/kiara/generator/idl/templates"
+	from("src/main/java/com/kiara/generator/idl/templates") {
+		include '*.stg'
+	}
+}
+
+jar (){
+	manifest {
+        attributes 'Main-Class': 'com.kiara.generator.kiaragen'
+		attributes 'Class-Path': 'kiaraparser-0.1.0.jar antlr-4.4-complete.jar antlr-2.7.7.jar stringtemplate-3.2.1.jar'
+    }
+	baseName = 'kiaragen'
+    version =  '0.1.0'
+}
+

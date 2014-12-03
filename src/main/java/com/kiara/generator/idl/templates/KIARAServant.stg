@@ -1,0 +1,153 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Servant.java"], description=["This file contains the main server example entry point."])$
+
+package main.java;
+
+import com.kiara.serialization.Serializer;
+import com.kiara.serialization.impl.CDRSerializer;
+import com.kiara.serialization.impl.SerializerImpl;
+import com.kiara.server.Servant;
+import com.kiara.transport.Transport;
+import com.kiara.transport.impl.TransportImpl;
+import com.kiara.transport.impl.TransportMessage;
+
+import java.nio.ByteBuffer;
+
+public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.currentIfz.name$
+{
+
+	public String getServiceName() {
+		return "$ctx.currentIfz.name$";
+	}
+	
+	$ctx.currentIfz.operations : {operation |$servant_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
+	
+	public TransportMessage process(Serializer ser, Transport transport, TransportMessage message, Object messageId) {
+	
+		SerializerImpl serImpl;
+        TransportImpl transportImpl;
+        
+        if (ser instanceof SerializerImpl && transport instanceof TransportImpl) {
+            serImpl = (SerializerImpl) ser;
+            transportImpl = (TransportImpl) transport;
+        } else {
+            return null; // TODO Raise error
+        }
+        
+		String operation = serImpl.deserializeOperation(message);
+		
+		$ctx.currentIfz.operations : {operation |$process_operation(operation)$}; separator="\n"$
+		
+		return null;
+		
+	}
+	
+	$definitions$
+}
+
+>>
+
+servant_operation_required_size(ctx, operation) ::= <<
+
+$if(operation.isOperation)$
+private int $operation.name$_required_size() {
+	int op_size = 0;
+	
+	int current_align = 0;
+	
+	op_size += 4 + CDRSerializer.alignment(current_align, Integer.SIZE); // MessageID
+	$operation.outputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="current_align", name=param.name)$;}; separator="\n"$
+	$max_serialized_size(ctx=ctx, typecode=operation.rettype, var="current_align", name=operation.rettypeparam.name)$ // Return type
+	
+	return op_size;
+}
+$endif$
+
+>>
+
+process_operation(operation) ::= <<
+
+if (operation.equals("$operation.name$")) {
+$if(operation.isOperation)$
+$operation.inputparam : {param | $if(param.typecode.primitive)$
+	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "");
+	$else$$if(!param.typecode.isType_d)$
+	$if(!param.typecode.isType_e)$
+	$if(!param.typecode.isType_f)$
+	$param.typecode.cppTypename$ $param.name$ = null;
+	try {
+		$param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "", $param.typecode.name$.class);
+	} catch (InstantiationException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (IllegalAccessException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	$endif$
+	$endif$
+	$endif$
+	$endif$}; separator="\n"$
+	
+	$if(operation.rettype)$
+	$operation.rettype.cppTypename$ ret = $operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
+	$else$
+	$operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
+	$endif$
+	$endif$
+	
+	$if(operation.isOperation)$
+	$if(operation.rettype)$
+	ByteBuffer retBuffer = ByteBuffer.allocate($operation.name$_required_size());
+    TransportMessage retMsg = transportImpl.createTransportMessage(null);
+ 	retMsg.setPayload(retBuffer);
+ 	serImpl.serializeMessageId(retMsg, messageId);
+	serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret);
+	retMsg.getPayload().flip();
+	return retMsg;
+	$else$
+	//TODO Check this
+	return null;
+	$endif$
+	$endif$
+} 
+>>
+
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

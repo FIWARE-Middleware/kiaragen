@@ -27,7 +27,6 @@ class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
 		m_ser = (com.kiara.serialization.impl.SerializerImpl) ser;
 		m_transport = (com.kiara.transport.impl.TransportImpl) transport;
-		$ctx.currentIfz.operations : {operation |$if(!operation.oneway)$$operation.name$_callback = null;$endif$}; separator="\n"$
 	}
 	
 	$ctx.currentIfz.operations : {operation |$proxy_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
@@ -39,7 +38,6 @@ class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 	private com.kiara.serialization.impl.SerializerImpl m_ser = null;
     private com.kiara.transport.impl.TransportImpl m_transport = null;
     
-    $ctx.currentIfz.operations : {operation |$if(!operation.oneway)$private $operation.name$_AsyncCallback $operation.name$_callback;$endif$}; separator="\n"$
     
 }
 
@@ -129,7 +127,7 @@ $endif$
 proxy_operation_async(operation) ::= <<
 $if(!operation.oneway)$
 $if(operation.isOperation)$
-public void $operation.name$($javaParams(params=operation.parameters)$, $operation.name$_AsyncCallback callback) {
+public void $operation.name$($javaParams(params=operation.parameters)$, final $operation.name$_AsyncCallback callback) {
 	
 	if (m_ser != null && m_transport != null) {
 		ByteBuffer buffer = ByteBuffer.allocate(100);
@@ -146,9 +144,8 @@ public void $operation.name$($javaParams(params=operation.parameters)$, $operati
 		
 		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
 				
-		$operation.name$_callback = callback;
 		
-		Futures.addCallback((ListenableFuture) dispatcher, new FutureCallback<TransportMessage> () {
+		Futures.addCallback(dispatcher, new FutureCallback<TransportMessage> () {
 
 			public void onSuccess(TransportMessage result) {
 				final ByteBuffer buf = result.getPayload().duplicate();
@@ -156,11 +153,11 @@ public void $operation.name$($javaParams(params=operation.parameters)$, $operati
         		TransportMessage copy = m_transport.createTransportMessage(null);
         		copy.setPayload(buf);
         		
-				$operation.name$_callback.process(copy, m_ser);
+				callback.process(copy, m_ser);
 			}
 
 			public void onFailure(Throwable t) {
-				$operation.name$_callback.onFailure(t);
+				callback.onFailure(t);
 			}
 			
 		}); 

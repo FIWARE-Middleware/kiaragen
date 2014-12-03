@@ -12,6 +12,12 @@ import com.kiara.server.Service;
 import com.kiara.serialization.Serializer;
 import com.kiara.transport.ServerTransport;
 
+/**
+ * Class that acts as the main server entry point. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
 public class ServerExample {
 	
 	public static void main (String [] args) throws Exception {

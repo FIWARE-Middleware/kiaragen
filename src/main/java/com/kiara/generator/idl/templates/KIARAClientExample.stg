@@ -5,10 +5,10 @@ $fileHeader(ctx=ctx,  file=[, "ClientExample.java"], description=["This file con
 
 package main.java;
 
-import com.kiara.Connection;
+import com.kiara.client.Connection;
 import com.kiara.Context;
 import com.kiara.Kiara;
-import com.kiara.marshaling.Serializer;
+import com.kiara.serialization.Serializer;
 import com.kiara.transport.Transport;
 
 public class ClientExample {
@@ -31,8 +31,8 @@ public class ClientExample {
 		Transport transport = context.createTransport("tcp://127.0.0.1:9090");
 		Serializer serializer = context.createSerializer("cdr");
 		
-		Connection connection = context.createConnection(transport, serializer);
-		$ctx.firstInterface.name$ client = connection.createClient($ctx.firstInterface.name$Client.class);
+		Connection connection = context.connect(transport, serializer);
+		$ctx.firstInterface.name$ client = connection.getServiceProxy($ctx.firstInterface.name$Client.class);
 		
 		try {
 			$if(ctx.firstInterface.firstOperation.rettype)$

@@ -1,0 +1,167 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main interface for the defined operations."])$
+
+package main.java;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.kiara.serialization.impl.CDRSerializer;
+import com.kiara.serialization.impl.Serializable;
+import com.kiara.serialization.impl.SerializerImpl;
+import com.kiara.transport.impl.TransportMessage;
+
+public class $ctx.currentSt.name$ implements Serializable {
+	
+	$private_attributes(ctx.currentSt)$
+	
+	public $ctx.currentSt.name$() {
+	$ctx.currentSt.members : {member | 
+	$if(member.typecode.primitive)$
+	this.$member.name$ = $initJava.(member.typecode.stType)$;
+	$else$
+	$if(member.typecode.isType_f)$
+	this.$member.name$ = new $initArrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$;
+	$else$
+	this.$member.name$ = new $member.typecode.name$();
+	$endif$ 
+	$endif$}; separator="\n"$
+	}
+
+	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n"$
+	$serialization_methods(ctx.currentSt)$
+	$comparison_function(ctx.currentSt)$
+	
+	public static int getMaxCdrSerializedSize(int current_alignment)
+	{
+	    int current_align = current_alignment;
+	            
+	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n"$
+	 
+	    return current_align;
+	}
+	
+	$accessor_methods(ctx.currentSt)$
+}
+
+>>
+
+comparison_function(currentSt) ::= <<
+
+public boolean equals($currentSt.name$ other) {
+	boolean comparison = true;
+	
+	$currentSt.members : {member | $if(member.typecode.isType_d)$comparison = comparison && (this.$member.name$.compareTo(other.$member.name$) == 0);
+	$else$
+	$if(member.typecode.primitive)$comparison = comparison && (this.$member.name$ == other.$member.name$);
+	$else$
+	$if(member.typecode.isType_f)$comparison = comparison && ArrayUtils.isEquals(this.$member.name$, other.$member.name$);
+	$else$comparison = comparison && this.$member.name$.equals(other.$member.name$);$endif$
+	$endif$
+	$endif$
+}; separator="\n"$
+	return comparison;
+}
+>>
+
+serialization_methods(currentSt) ::= <<
+public void serialize(SerializerImpl impl, TransportMessage message, String name) {
+$currentSt.members : {member | 
+$if(member.typecode.isType_f)$
+$else$
+	impl.$serializeJava.(member.typecode.stType)$(message, name, this.$member.name$);
+$endif$
+}; separator="\n"$
+}
+
+public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
+$currentSt.members : {member | 
+$if(member.typecode.isType_f)$
+$else$
+$if(member.typecode.primitive)$
+	this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name);
+$else$
+	try {
+		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name, $member.typecode.name$.class);
+	} catch (InstantiationException e) {
+		e.printStackTrace();
+	} catch (IllegalAccessException e) {
+		e.printStackTrace();
+	}
+$endif$
+$endif$
+}; separator="\n"$
+}
+>>
+
+private_attributes(currentSt) ::= <<
+$currentSt.members : {member | 
+$if(!member.typecode.isType_f)$
+private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+$else$
+private $arrayAttribute(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$;
+$endif$
+}; separator="\n"$
+
+>>
+
+accessor_methods(currentSt) ::= <<
+$currentSt.members : {member | 
+$if(member.typecode.isType_f)$
+public $arrayType(type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() { 
+	return this.$member.name$;
+}
+
+public void set$member.name$($arrayType(type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) {
+	this.$member.name$ = $member.name$;
+}
+$else$
+public $paramTypeJava(member.typecode)$ get$member.name$() { 
+	return this.$member.name$;
+}
+
+public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) {
+	this.$member.name$ = $member.name$;
+}
+$endif$
+}; separator="\n"$
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

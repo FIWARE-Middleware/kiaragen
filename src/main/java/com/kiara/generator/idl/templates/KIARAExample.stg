@@ -7,7 +7,8 @@ package main.java;
 
 public interface $ctx.currentIfz.name$ {
 
-	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n"$
+	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n\n"$
+	
 }
 
 >>

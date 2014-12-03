@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.plaf.basic.BasicFormattedTextFieldUI;
@@ -23,23 +24,31 @@ import org.antlr.stringtemplate.StringTemplateErrorListener;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.StringTemplateGroupLoader;
 import org.antlr.stringtemplate.language.DefaultTemplateLexer;
+import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.stringtemplate.v4.StringRenderer;
 
 import com.eprosima.idl.generator.manager.TemplateGroup;
 import com.eprosima.idl.generator.manager.TemplateManager;
 import com.eprosima.idl.parser.grammar.IDLLexer;
 import com.eprosima.idl.parser.grammar.IDLParser;
+import com.eprosima.idl.parser.grammar.KIARAIDLLexer;
+import com.eprosima.idl.parser.grammar.KIARAIDLParser;
+import com.eprosima.idl.parser.tree.Definition;
 import com.eprosima.idl.parser.tree.Interface;
+import com.eprosima.idl.parser.tree.Specification;
+import com.eprosima.idl.parser.tree.TypeDeclaration;
+import com.eprosima.idl.parser.typecode.Member;
+import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
 import com.eprosima.idl.util.Util;
 import com.eprosima.log.ColorMessage;
-import com.kiara.generator.exceptions.BadArgumentException;
+import com.kiara.generator.exceptions.*;
 import com.kiara.generator.idl.grammar.Context;
 import com.kiara.generator.solution.Project;
 import com.kiara.generator.solution.Solution;
 import com.kiara.generator.util.Utils;
 import com.kiara.generator.util.VSConfiguration;
-
-// TODO: Implement Solution & Project in com.eprosima.rtps.solution
 
 public class kiaragen {
 	
@@ -80,6 +89,8 @@ public class kiaragen {
         new VSConfiguration("Release", "Win32", false, false)};
 	
 	private String m_os = null;
+	
+	//private 
 	
 	/*
 	 * ----------------------------------------------------------------------------------------
@@ -202,44 +213,10 @@ public class kiaragen {
 			
 			// Load string templates
 			System.out.println("Loading templates...");
-			StringTemplateGroupLoader loader = new CommonGroupLoader("com/kiara/generator/idl/templates", new TemplateErrorListener());
-			StringTemplateGroup.registerGroupLoader(loader);
+			TemplateManager.setGroupLoaderDirectories("com/kiara/generator/idl/templates");
 			
-			// Load IDL types for stringtemplates
-			TypeCode.idltypesgr = StringTemplateGroup.loadGroup("idlTypes", DefaultTemplateLexer.class, null);
-			
-			// In local for all products
-			//solution.addInclude("$(EPROSIMADIR)/code");
-			solution.addInclude("$(" + m_appEnv + ")/include");
-			if(m_exampleOption != null) {
-				solution.addLibraryPath("$(" + m_appEnv + ")/lib/" + m_exampleOption);
-			}
-			
-			// Protocol FASTCDR
-			TypeCode.cpptypesgr = StringTemplateGroup.loadGroup("JavaTypes", DefaultTemplateLexer.class, null); //TODOQuitar Types.stg de com.eprosima.rtps.idl.templates y copiarlo con el build
-			TemplateManager.middlgr = StringTemplateGroup.loadGroup("eprosima", DefaultTemplateLexer.class, null);
-			
-			if (m_exampleOption != null && m_exampleOption.contains("Linux")) {
-				solution.addLibrary("boost_system");
-				solution.addLibrary("boost_thread");
-			}
-			
-			if(m_exampleOption != null && m_exampleOption.contains("Win"))
-            {
-				solution.addInclude("$(LIB_BOOST_PATH)");
-            }
-			
-			// m_local = true
-			//solution.addInclude("$(FAST_BUFFERS)/include");
-			//solution.addLibraryPath("$(FAST_BUFFERS)/lib/" + m_exampleOption);
-			
-			
-			if (m_exampleOption != null && !m_exampleOption.contains("Win")) {
-				solution.addLibrary("fastcdr");
-			}
-			
-			// Add product library
-			solution.addLibrary("eprosimartps");
+			System.out.println(this.getClass().getCanonicalName());
+			System.out.println(Context.class.getCanonicalName());
 			
 			for (int count = 0; returnedValue && (count < m_idlFiles.size()); ++count) {
 				Project project = process(m_idlFiles.get(count));
@@ -249,13 +226,6 @@ public class kiaragen {
 				} else {
 					returnedValue = false;
 				}
-			}
-			
-			// Generate solution
-			if (returnedValue && m_exampleOption != null) {
-				//if ((returnedValue = genSolution(solution)) == false) {
-					//System.out.println(ColorMessage.error() + "While the solution was being generated");
-				//}
 			}
 			
 		}
@@ -272,33 +242,6 @@ public class kiaragen {
 	 * 
 	 * Auxiliary methods
 	 */
-	
-	public static boolean loadPlatforms() {
-		
-		boolean returnedValue = false;
-		
-		kiaragen.m_platforms = new ArrayList<String>();
-		
-		try {
-			
-			InputStream input = kiaragen.class.getClassLoader().getResourceAsStream("platforms"); // TODO Modificar esto antes de exportarlo
-			InputStreamReader ir = new InputStreamReader(input);
-			BufferedReader reader = new BufferedReader(ir);
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				kiaragen.m_platforms.add(line);
-			}
-			
-			returnedValue = true;
-			
-		} catch (Exception e) {
-			
-			System.out.println(ColorMessage.error() + "Getting platforms. " + e.getMessage());
-			
-		}
-		
-		return returnedValue;
-	}
 	
 	private String getVersion()
     {
@@ -334,12 +277,11 @@ public class kiaragen {
         System.out.println("\t" + m_appName + " [options] <file> [<file> ...]");
         System.out.println("\twhere the options are:");
         System.out.println("\t\t-help: shows this help");
-        System.out.println("\t\t-version: shows the current version of eProsima RTPS.");
-		System.out.println("\t\t-example <platform>: Generates a solution for a specific platform (example: x64Win64VS2010)");
+        System.out.println("\t\t-version: shows the current version of KIARAGEN");
+		System.out.println("\t\t-example <platform>: Generates a solution for a specific platform.");
         System.out.println("\t\t\tSupported platforms:");
         for(int count = 0; count < m_platforms.size(); ++count)
             System.out.println("\t\t\t * " + m_platforms.get(count));
-        System.out.println("\t\t-language <C++>: Programming language (default: C++).");
         System.out.println("\t\t-replace: replaces existing generated files.");
         System.out.println("\t\t-ppDisable: disables the preprocessor.");
         System.out.println("\t\t-ppPath: specifies the preprocessor path.");
@@ -411,30 +353,9 @@ public class kiaragen {
 			Context ctx = new Context(onlyFileName, idlFilename, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct);
 			
 			// Create template manager
-			TemplateManager tmanager = new TemplateManager();
+			TemplateManager tmanager = new TemplateManager("eprosima:Common");
 			
-			//tmanager.registerRenderer(String.class, new A());
-
-			// Load common types template
-			//tmanager.addGroup("TypesHeader");
-			//tmanager.addGroup("TypesSource");
-			
-			// TODO: Uncomment following lines and create templates
-			
-			// Load Types common templates
-			//tmanager.addGroup("RTPSPubSubTypeHeader");
-			//tmanager.addGroup("RTPSPubSubTypeSource");
-			
-			// Load Publisher templates
-			//tmanager.addGroup("RTPSPublisherHeader");
-			//tmanager.addGroup("RTPSPublisherSource");
-			
-			// Load Subscriber templates
-			//tmanager.addGroup("RTPSSubscriberHeader");
-			//tmanager.addGroup("RTPSSubscriberSource");
-			
-			// Load PubSubMain template
-			//tmanager.addGroup("RTPSPubSubMain");
+			tmanager.changeCppTypesTemplateGroup("JavaTypes");
 			
 			// Load ServerExample template
 			tmanager.addGroup("KIARAServerExample");
@@ -466,23 +387,26 @@ public class kiaragen {
 			// Load Servant template
 			tmanager.addGroup("KIARAClientExampleGradle");
 			
+			// Load Support class template
+			tmanager.addGroup("KIARASupportType");
+			
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
 			maintemplates.setAttribute("ctx", ctx);
 			
 			try {
-				InputStream input = new FileInputStream(idlParseFileName);
-				IDLLexer lexer = new IDLLexer(input);
+				ANTLRFileStream input = new ANTLRFileStream(idlParseFileName);
+				KIARAIDLLexer lexer = new KIARAIDLLexer(input);
 				lexer.setContext(ctx);
-				IDLParser parser = new IDLParser(lexer);
+				CommonTokenStream tokens = new CommonTokenStream(lexer);
+				KIARAIDLParser parser = new KIARAIDLParser(tokens);
 				// Pass the finelame without the extension
-				returnedValue = parser.specification(ctx, tmanager, maintemplates);
+				Specification specification = parser.specification(ctx, tmanager, maintemplates).spec;
+				returnedValue = specification != null;
 				
 			} catch (FileNotFoundException ex) {
 				System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " was not found.");
-			}/* catch (ParseException ex) {
-				System.out.println(ColorMessage.error("ParseException") + ex.getMessage());
-			}*/ catch (Exception ex) {
+			} catch (Exception ex) {
 				System.out.println(ColorMessage.error("Exception") + ex.getMessage());
 			}
 			
@@ -490,57 +414,50 @@ public class kiaragen {
 				// Create information of project for solution
 				project = new Project(onlyFileName, idlFilename, ctx.getDependencies());
 				
-				/*System.out.println("Generating Type definition files...");
-				if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + ".h", maintemplates.getTemplate("TypesHeader"), m_replace)) {
-					if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + ".cxx", maintemplates.getTemplate("TypesSource"), m_replace)) {
-						project.addCommonIncludeFile(onlyFileName + ".h");
-						project.addCommonSrcFile(onlyFileName + ".cxx");
-					}
-				}*/
+				System.out.println("Generating Type support classes... ");
 				
-				// TODO: Uncomment following lines and create templates
-				
-				if (m_exampleOption != null) {
-					
-					/*System.out.print("Generating specific server side files... ");
-					if (returnedValue = Utils.writeFile(m_outputDir + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "ServantImpl.java", maintemplates.getTemplate("KIARAServantImpl"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
+				for (Definition d: ctx.getDefinitions()) {
+					// Check if it is a structure
+					if (d.isIsTypeDeclaration()) {
+						TypeDeclaration type = (TypeDeclaration) d;
+						TypeCode tc = type.getTypeCode();
+						if (tc.getKind() == 0x0000000a) { // Struct
+							StructTypeCode st = (StructTypeCode) tc;
+							ctx.setCurrentSt(st);
+							System.out.print("Generating Type support class for structure " + st.getName() +"... ");
+							if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + st.getName() + ".java", maintemplates.getTemplate("KIARASupportType"), m_replace)) {
 								System.out.println("OK");
 							}
 						}
+						
 					}
-					
-					System.out.print("Generating specific client side files... ");
-					if (returnedValue = Utils.writeFile(m_outputDir + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
-							System.out.println("OK");
-						}
-					}*/
+				}
+				
+				
+				if (m_exampleOption != null) {
 					
 					for (Interface ifz: ctx.getInterfaces()) {
 						ctx.setCurrentIfz(ifz);
 						
 						System.out.print("Generating application main entry files for interface " + ifz.getName() +"... ");
-						//System.out.println("Current ifz: " + ifz.getName() + " Length: " + ifz.getOperations().size());
-						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
-								if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
+						if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
+							if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
+								if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
 									System.out.println("OK");
 								}
 							}
 						}
 						
 						System.out.print("Generating specific server side files for interface " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
+						if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
+							if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
 								System.out.println("OK");
 							}
 						}
 						
 						
 						System.out.print("Generating specific client side files for interface " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + ifz.getName() + "ClientProxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
+						if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
 							System.out.println("OK");
 						}
 						
@@ -549,14 +466,8 @@ public class kiaragen {
 					Interface ifz_handler = ctx.getFirstInterface();
 					ctx.setCurrentIfz(ifz_handler);
 					
-					/*System.out.print("Generating handler implementation example...");
-					if (returnedValue = Utils.writeFile(m_outputDir + ifz_handler.getName() + "_" + ifz_handler.getFirstOperation().getName() + "CallbackHandlerImpl.java", maintemplates.getTemplate("KIARACallbackHandlerImpl"), m_replace)) {
-						System.out.println("OK");
-						
-					}*/
-					
 					System.out.print("Generating common server side files... ");
-					if (returnedValue = Utils.writeFile(m_outputDir + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
+					if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
 						if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
 							System.out.println("OK");
 							
@@ -565,177 +476,18 @@ public class kiaragen {
 					}
 					
 					System.out.print("Generating common client side files... ");
-					if (returnedValue = Utils.writeFile(m_outputDir + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
-						System.out.print("Generating common client side files... ");
+					if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
 						if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
 							System.out.println("OK");
 						}
 					}
 					
-					/*if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "PubSubType.h", maintemplates.getTemplate("RTPSPubSubTypeHeader"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "PubSubType.cxx", maintemplates.getTemplate("RTPSPubSubTypeSource"), m_replace)) {
-							project.addProjectIncludeFile(onlyFileName + "PubSubType.h");
-							project.addProjectSrcFile(onlyFileName + "PubSubType.cxx");
-						}
-					}*/
-					
-					/*System.out.println("Generating Publisher files...");
-					if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "Publisher.h", maintemplates.getTemplate("RTPSPublisherHeader"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "Publisher.cxx", maintemplates.getTemplate("RTPSPublisherSource"), m_replace)) {
-							project.addProjectIncludeFile(onlyFileName + "Publisher.h");
-							project.addProjectSrcFile(onlyFileName + "Publisher.cxx");
-						}
-					}*/
-					
-					/*System.out.println("Generating Subscriber files...");
-					if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "Subscriber.h", maintemplates.getTemplate("RTPSSubscriberHeader"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "Subscriber.cxx", maintemplates.getTemplate("RTPSSubscriberSource"), m_replace)) {
-							project.addProjectIncludeFile(onlyFileName + "Subscriber.h");
-							project.addProjectSrcFile(onlyFileName + "Subscriber.cxx");
-						}
-					}*/
-					
-					/*System.out.println("Generating main file...");
-					if (returnedValue = Utils.writeFile(m_outputDir + onlyFileName + "PubSubMain.cxx", maintemplates.getTemplate("RTPSPubSubMain"), m_replace)) {
-						project.addProjectSrcFile(onlyFileName + "PubSubMain.cxx");
-					}*/
 				}
 			}
 			
 		}
 		
 		return returnedValue ? project : null;
-	}
-	
-	private boolean genSolution(Solution solution) {
-		
-		final String METHOD_NAME = "genSolution";
-		boolean returnedValue = true;
-		
-		if (m_exampleOption != null) {
-			System.out.println("Generating solution for arch " + m_exampleOption + "...");
-			
-			if (m_exampleOption.substring(3, 6).equals("Win")) {
-				System.out.println("Generating VS2010 solution");
-				
-				if (m_exampleOption.startsWith("i86")) {
-					returnedValue = genVS2010(solution, null);
-				} else if (m_exampleOption.startsWith("x64")) {
-					for (int index = 0; index < m_vsconfigurations.length; index++) {
-						m_vsconfigurations[index].setPlatform("x64");
-					}
-					
-					returnedValue = genVS2010(solution, "x64");
-				} else {
-					returnedValue = false;
-				}
-			} else if (m_exampleOption.substring(3, 8).equals("Linux")) {
-				System.out.println("Generating makefile solution");
-				
-				if (m_exampleOption.startsWith("i86")) {
-					returnedValue = genMakefile(solution, "32");
-				} else if (m_exampleOption.startsWith("x64")) {
-					returnedValue = genMakefile(solution, "64");
-				} else {
-					returnedValue = false;
-				}
-			}
-		}
-		
-		return returnedValue;
-	}
-	
-	private boolean genVS2010(Solution solution, String arch) {
-		
-		final String METHOD_NAME = "genVS2010";
-		boolean returnedValue = false;
-		
-		StringTemplateGroup vsTemplates = StringTemplateGroup.loadGroup("VS2010", DefaultTemplateLexer.class, null);
-		
-		if (vsTemplates != null) {
-			StringTemplate tsolution = vsTemplates.getInstanceOf("solution");
-			StringTemplate tproject = vsTemplates.getInstanceOf("project");
-			StringTemplate tprojectFiles = vsTemplates.getInstanceOf("projectFiles");
-			StringTemplate tprojectPubSub = vsTemplates.getInstanceOf("projectPubSub");
-			StringTemplate tprojectFilesPubSub = vsTemplates.getInstanceOf("projectFilesPubSub");
-			
-			returnedValue = true;
-			
-			System.out.println("Proyectos: "+solution.getProjects().size());
-			for (int count = 0; returnedValue && (count < solution.getProjects().size()); ++count) {
-				Project project = (Project) solution.getProjects().get(count);
-				
-				tproject.setAttribute("solution", solution);
-				tproject.setAttribute("project", project);
-				tproject.setAttribute("example", m_exampleOption);
-				//tproject.setAttribute("local",  m_local);
-				
-				tprojectFiles.setAttribute("project", project);
-				
-				tprojectPubSub.setAttribute("solution", solution);
-				tprojectPubSub.setAttribute("project", project);
-				tprojectPubSub.setAttribute("example", m_exampleOption);
-				
-				tprojectFilesPubSub.setAttribute("project", project);
-				
-				for (int index = 0; index < m_vsconfigurations.length; index++) {
-					tproject.setAttribute("configurations", m_vsconfigurations[index]);
-					tprojectPubSub.setAttribute("configurations", m_vsconfigurations[index]);
-				}
-				
-				if (returnedValue = Utils.writeFile(m_outputDir + project.getName() + "Types-" + m_exampleOption + ".vcxproj", tproject, m_replace)) {
-					if (returnedValue = Utils.writeFile(m_outputDir + project.getName() + "Types-" + m_exampleOption + ".vcxproj.filters", tprojectFiles, m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + project.getName() + "PublisherSubscriber-" + m_exampleOption + ".vcxproj", tprojectPubSub, m_replace)) {
-							returnedValue = Utils.writeFile(m_outputDir + project.getName() + "PublisherSubscriber-" + m_exampleOption + ".vcxproj.filters", tprojectFilesPubSub, m_replace);
-						}
-					}
-				}
-				
-				tproject.reset();
-				tprojectFiles.reset();
-				tprojectPubSub.reset();
-				tprojectFilesPubSub.reset();
-				
-			}
-			
-			if (returnedValue) {
-				tsolution.setAttribute("solution", solution);
-				tsolution.setAttribute("example", m_exampleOption);
-				
-				// Project configurations
-				for (int index = 0; index < m_vsconfigurations.length; index++) {
-					tsolution.setAttribute("configurations", m_vsconfigurations[index]);
-				}
-				
-				returnedValue = Utils.writeFile(m_outputDir + "solution-" + m_exampleOption + ".sln", tsolution, m_replace);
-			}
-			
-		} else {
-			System.out.println("ERROR<" + METHOD_NAME + ">: Cannot load the template group VS2010");
-		}
-		
-		return returnedValue;
-	}
-	
-	private boolean genMakefile(Solution solution, String arch) {
-		
-		boolean returnedValue = false;
-		StringTemplate makecxx = null;
-		
-		StringTemplateGroup makeTemplates = StringTemplateGroup.loadGroup("makefile", DefaultTemplateLexer.class, null);
-		
-		if (makeTemplates != null) {
-			makecxx = makeTemplates.getInstanceOf("makecxx");
-			
-			makecxx.setAttribute("solution", solution);
-			makecxx.setAttribute("example", m_exampleOption);
-			makecxx.setAttribute("arch", arch);
-			
-			returnedValue = Utils.writeFile(m_outputDir + "makefile_" + m_exampleOption, makecxx, m_replace);
-			
-		}
-		
-		return returnedValue;
 	}
 	
 	String callPreprocessor(String idlFilename) {
@@ -840,24 +592,23 @@ public class kiaragen {
 	public static void main(String[] args) {
 		ColorMessage.load();
 		
-		if(loadPlatforms()) {
+		m_platforms = new ArrayList<String>();
+		m_platforms.add("gradle");
+		
+		try {
 			
-			try {
-				
-				kiaragen main = new kiaragen(args);
-				if (main.execute()) {
-					System.exit(0);
-				}
-				
-			} catch (BadArgumentException e) {
-				
-				System.out.println(ColorMessage.error("BadArgumentException") + e.getMessage());
-                printHelp();
-				
+			kiaragen main = new kiaragen(args);
+			if (main.execute()) {
+				System.exit(0);
 			}
 			
+		} catch (BadArgumentException e) {
+			
+			System.out.println(ColorMessage.error("BadArgumentException") + e.getMessage());
+            printHelp();
+			
 		}
-		
+			
 		System.exit(-1);
 	}
 	

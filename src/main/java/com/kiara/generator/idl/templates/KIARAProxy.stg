@@ -1,0 +1,209 @@
+group ProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Proxy.java"], description=["This file contains proxy call implementation."])$
+
+package main.java;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import com.kiara.netty.TransportMessageDispatcher;
+import com.kiara.serialization.Serializer;
+import com.kiara.serialization.impl.CDRSerializer;
+import com.kiara.transport.Transport;
+import com.kiara.transport.impl.TransportMessage;
+
+import java.nio.ByteBuffer;
+
+class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
+	
+	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
+		m_ser = (com.kiara.serialization.impl.SerializerImpl) ser;
+		m_transport = (com.kiara.transport.impl.TransportImpl) transport;
+		$ctx.currentIfz.operations : {operation |$if(!operation.oneway)$$operation.name$_callback = null;$endif$}; separator="\n"$
+	}
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation(operation)$}; separator="\n"$
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation_async(operation)$}; separator="\n"$
+	
+	private com.kiara.serialization.impl.SerializerImpl m_ser = null;
+    private com.kiara.transport.impl.TransportImpl m_transport = null;
+    
+    $ctx.currentIfz.operations : {operation |$if(!operation.oneway)$private $operation.name$_AsyncCallback $operation.name$_callback;$endif$}; separator="\n"$
+    
+}
+
+>>
+
+proxy_operation_required_size(ctx, operation) ::= <<
+
+$if(operation.isOperation)$
+private int $operation.name$_required_size() {
+	int op_size = 0;
+	
+	int current_align = 0;
+	op_size += 4 + CDRSerializer.alignment(current_align, Integer.SIZE); // MessageID
+	op_size += 4 + CDRSerializer.alignment(current_align, 4) + "$ctx.currentIfz.name$".length() + 1; // Interface name
+	op_size += 4 + CDRSerializer.alignment(current_align, 4) + "$operation.name$".length() + 1; // Operation name
+	$operation.inputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="current_align", name=param.name)$;}; separator="\n"$
+	
+	return op_size;
+}
+$endif$
+
+>>
+
+proxy_operation(operation) ::= <<
+$if(operation.isOperation)$
+$if(operation.rettype)$
+public $operation.rettype.cppTypename$ $operation.name$($javaParams(params=operation.parameters)$) {
+$else$
+public void $operation.name$($javaParams(params=operation.parameters)$) {
+$endif$
+	
+	if (m_ser != null && m_transport != null) {
+		ByteBuffer buffer = ByteBuffer.allocate($operation.name$_required_size());
+		final TransportMessage trequest = m_transport.createTransportMessage(null);
+        trequest.setPayload(buffer);
+        
+        final Object messageId = m_ser.getNewMessageId(); 
+        m_ser.serializeMessageId(trequest, messageId);   
+		m_ser.serializeService(trequest, "$ctx.firstInterface.name$");
+		m_ser.serializeOperation(trequest, "$operation.name$");
+		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
+		trequest.getPayload().flip();
+		
+		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
+        m_transport.send(trequest);
+        
+        try {
+        	TransportMessage tresponse = dispatcher.get();
+        	if (tresponse != null && tresponse.getPayload() != null) {
+                final ByteBuffer buf = tresponse.getPayload().duplicate();
+        		buf.rewind();
+        		TransportMessage copy = m_transport.createTransportMessage(null);
+        		copy.setPayload(buf);
+        		final Object responseMessageId = m_ser.deserializeMessageId(copy);
+				
+				$if(operation.rettype)$
+				$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(copy, ""$if(!operation.rettype.primitive)$
+				$if(!operation.rettype.isType_d)$
+					$if(!operation.rettype.isType_e)$
+						$if(!operation.rettype.isType_f)$
+, $operation.rettype.cppTypename$.class
+						$endif$
+					$endif$
+				$endif$
+			$endif$);
+				return ret;
+				$else$
+				return;
+				$endif$
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+		
+	}
+	
+	$if(operation.rettype)$
+	return $initJava.(operation.rettype.stType)$;
+	$else$
+	return;
+	$endif$
+}
+
+$endif$
+
+>>
+
+proxy_operation_async(operation) ::= <<
+$if(!operation.oneway)$
+$if(operation.isOperation)$
+public void $operation.name$($javaParams(params=operation.parameters)$, $operation.name$_AsyncCallback callback) {
+	
+	if (m_ser != null && m_transport != null) {
+		ByteBuffer buffer = ByteBuffer.allocate(100);
+		final TransportMessage trequest = m_transport.createTransportMessage(null);
+        trequest.setPayload(buffer);
+        
+        final Object messageId = m_ser.getNewMessageId(); 
+        m_ser.serializeMessageId(trequest, messageId);   
+		m_ser.serializeService(trequest, "$ctx.firstInterface.name$");
+		m_ser.serializeOperation(trequest, "$operation.name$");
+		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
+		
+		trequest.getPayload().flip();
+		
+		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
+				
+		$operation.name$_callback = callback;
+		
+		Futures.addCallback((ListenableFuture) dispatcher, new FutureCallback<TransportMessage> () {
+
+			public void onSuccess(TransportMessage result) {
+				final ByteBuffer buf = result.getPayload().duplicate();
+        		buf.rewind();
+        		TransportMessage copy = m_transport.createTransportMessage(null);
+        		copy.setPayload(buf);
+        		
+				$operation.name$_callback.process(copy, m_ser);
+			}
+
+			public void onFailure(Throwable t) {
+				$operation.name$_callback.onFailure(t);
+			}
+			
+		}); 
+			
+		m_transport.send(trequest);
+        
+	}
+	
+	return;
+}
+
+$endif$
+$endif$
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

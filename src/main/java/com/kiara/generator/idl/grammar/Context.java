@@ -3,7 +3,9 @@ package com.kiara.generator.idl.grammar;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import com.eprosima.idl.parser.tree.Definition;
 import com.eprosima.idl.parser.tree.Interface;
+import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
 
 public class Context extends com.eprosima.idl.context.Context
@@ -68,7 +70,13 @@ public class Context extends com.eprosima.idl.context.Context
     { 
         for(int count = 0; m_firstinterface == null && count < getDefinitions().size(); ++count)
         {
-            m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
+            //m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
+            if (getDefinitions().get(count) instanceof Interface) {
+            	m_firstinterface = (Interface) getDefinitions().get(count);
+            } else {
+            	m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
+            }
+            
         }
         
         return m_firstinterface;
@@ -159,7 +167,7 @@ public class Context extends com.eprosima.idl.context.Context
     //! Cache the first exception.
     private com.eprosima.idl.parser.tree.Exception m_firstexception = null;
 
-    // TODO Lleva la cuenta de generaciÃ³n de nuevos nombres.
+    // TODO Lleva la cuenta de generación de nuevos nombres.
     private int m_randomGenName = 0;
     private Stack<String> m_randomGenNames = null;
     // TODO Lleva la cuenta del nombre de variables para bucles anidados.
@@ -176,6 +184,8 @@ public class Context extends com.eprosima.idl.context.Context
     private String m_firstStructure = null;
     
     private Interface m_current_ifz = null;
+    
+    private StructTypeCode m_current_st = null;
 
 	public String getM_firstStructure() {
 		return m_firstStructure;
@@ -191,6 +201,14 @@ public class Context extends com.eprosima.idl.context.Context
 
 	public void setCurrentIfz(Interface m_current_ifz) {
 		this.m_current_ifz = m_current_ifz;
+	}
+
+	public StructTypeCode getCurrentSt() {
+		return m_current_st;
+	}
+
+	public void setCurrentSt(StructTypeCode m_current_st) {
+		this.m_current_st = m_current_st;
 	}
     
 }

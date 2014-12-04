@@ -2,7 +2,7 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main synchronous interface for the defined operations."])$
-package main.java;
+package $ctx.javaPackage$;
 
 /**
  * Interface containing the synchronous method definition. 

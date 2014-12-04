@@ -2,7 +2,7 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[, "ClientExample.java"], description=["This file contains the main client code example."])$
-package main.java;
+package $ctx.javaPackage$;
 
 import com.kiara.client.Connection;
 import com.kiara.Context;

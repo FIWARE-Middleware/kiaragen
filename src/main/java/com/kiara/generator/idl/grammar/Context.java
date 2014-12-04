@@ -33,7 +33,7 @@ public class Context extends com.eprosima.idl.context.Context
 {
     // TODO Remove middleware parameter. It is temporal while cdr and rest don't have async functions.
     public Context(String filename, String file, ArrayList includePaths, boolean subscribercode, boolean publishercode,
-            String appProduct)
+            String appProduct, String pck)
     {
         super(filename, file, includePaths);
         
@@ -44,8 +44,7 @@ public class Context extends com.eprosima.idl.context.Context
 
         // TODO Remove
         m_appProduct = appProduct;
-        //m_protocol = protocol;
-        //m_ddstypes = ddstypes;
+        m_package = pck;
     }
     
     public void setTypelimitation(String lt)
@@ -199,7 +198,6 @@ public class Context extends com.eprosima.idl.context.Context
     // Stores if the user will generate the server source.
     private boolean m_publishercode = true;
 
-    // TODO Remove
     private String m_appProduct = null;
     
     private String m_firstStructure = null;
@@ -207,6 +205,8 @@ public class Context extends com.eprosima.idl.context.Context
     private Interface m_current_ifz = null;
     
     private StructTypeCode m_current_st = null;
+    
+    private String m_package;
 
 	public String getM_firstStructure() {
 		return m_firstStructure;
@@ -230,6 +230,10 @@ public class Context extends com.eprosima.idl.context.Context
 
 	public void setCurrentSt(StructTypeCode m_current_st) {
 		this.m_current_st = m_current_st;
+	}
+	
+	public String getJavaPackage() {
+		return this.m_package;
 	}
     
 }

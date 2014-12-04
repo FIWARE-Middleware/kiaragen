@@ -2,7 +2,7 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Servant.java"], description=["This file contains the servant processing implementation code. It parses the service executed and calls the corresponding method."])$
-package main.java;
+package $ctx.javaPackage$;
 
 import com.kiara.serialization.Serializer;
 import com.kiara.serialization.impl.CDRSerializer;

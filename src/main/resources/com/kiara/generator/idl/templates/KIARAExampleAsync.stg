@@ -2,8 +2,7 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ExampleAsync.java"], description=["This file contains the main asynchronous interface for the defined operations."])$
-
-package main.java;
+package $ctx.javaPackage$;
 
 import com.kiara.transport.impl.TransportMessage;
 import com.kiara.client.AsyncCallback;

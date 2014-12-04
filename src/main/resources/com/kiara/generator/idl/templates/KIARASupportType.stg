@@ -2,7 +2,7 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the class representing a user defined structure."])$
-package main.java;
+package $ctx.javaPackage$;
 
 import java.util.ArrayList;
 import java.util.Objects;

@@ -2,7 +2,7 @@ group ProtocolHeader;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServantExample.java"], description=["This file contains the servant implementation."])$
-package main.java;
+package $ctx.javaPackage$;
 
 /**
  * Class where the actual implementation of the procedures is located. 

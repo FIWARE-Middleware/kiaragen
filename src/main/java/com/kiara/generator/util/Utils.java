@@ -20,6 +20,8 @@ package com.kiara.generator.util;
 import org.antlr.stringtemplate.StringTemplate;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
 
 /**
 *
@@ -63,7 +65,7 @@ public class Utils
     }
     
     public static boolean createSrcDir(String outputDir) {
-    	File directory = new File(outputDir.concat("src"+File.separator+"main"+File.separator+"java"));
+    	File directory = new File(outputDir);
         if (directory.exists() && directory.isFile())
         {
             System.out.print("The dir with name could not be  created as it is a normal file - ");
@@ -72,9 +74,12 @@ public class Utils
             if (!directory.exists())
 			{
 			    if (!directory.mkdirs()); {
+			    	if (directory.exists()) {
+			    		return true;
+			    	}
 			    	return false;
-			    } 
-			} 
+			    }
+            } 
 			return true;
         }
     	

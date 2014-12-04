@@ -5,7 +5,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'maven'
 
-mainClassName = 'main.java.ClientExample'
+mainClassName = '$ctx.javaPackage$.ClientExample'
 
 repositories {
     mavenCentral()
@@ -23,7 +23,7 @@ dependencies {
 }
 jar {
 	manifest {
-        attributes 'Main-Class': 'main.java.ClientExample'
+        attributes 'Main-Class': '$ctx.javaPackage$.ClientExample'
 		attributes 'Class-Path': 'kiara-0.1.1.jar commons-lang-2.6.jar slf4j-jdk14-1.7.7.jar slf4j-api-1.7.7.jar netty-all-4.0.21.Final.jar guava-17.0.jar'
     }
 	baseName = 'client_example'

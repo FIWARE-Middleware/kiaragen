@@ -82,6 +82,8 @@ public class kiaragen {
     private ArrayList<String> m_includePaths = new ArrayList<String>();
 
     private String m_os = null;
+    private String m_package = "main.java";
+    private String m_javaPackage = "";
 	
 	/*
 	 * ----------------------------------------------------------------------------------------
@@ -134,6 +136,8 @@ public class kiaragen {
 				m_ppDisable = true;
 			} else if (arg.equals("-replace")) {
 				m_replace = true;
+			} else if (arg.equals("-package")) {
+				m_package = args[count++];
 			} else if (arg.equals("-d")) {
 				if (count < args.length) {
 					m_outputDir = Utils.addFileSeparator(args[count++]);
@@ -220,14 +224,34 @@ public class kiaragen {
 		
 	}
 	
-	
-	
-	
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Auxiliary methods
 	 */
+	
+	private void parsePackage() {
+		
+		StringBuffer sbjava = new StringBuffer("");
+		String path[] = this.m_package.split("\\.");
+		StringBuffer sb = new StringBuffer(m_outputDir + "src/main/java");
+		boolean firstTime = true;
+		for(String s: path) {
+			//Set Java package
+			sb.append(File.separator);
+			sb.append(s);
+			//Set folder package
+			if (!firstTime) {
+				sbjava.append(".");
+			}
+			firstTime = false;
+			sbjava.append(s);
+		}
+		sb.append(File.separator);
+		
+		this.m_package = sb.toString();
+		this.m_javaPackage = sbjava.toString();
+	}
 	
 	public static void printHelp()
     {
@@ -241,6 +265,7 @@ public class kiaragen {
         for(int count = 0; count < m_platforms.size(); ++count)
             System.out.println("\t\t\t * " + m_platforms.get(count));
         System.out.println("\t\t-replace: replaces existing generated files.");
+        System.out.println("\t\t-package: modifies the output Java files package (by default is set to main.java).");
         System.out.println("\t\t-ppDisable: disables the preprocessor.");
         System.out.println("\t\t-ppPath: specifies the preprocessor path.");
         System.out.println("\t\t-d <path>: sets an output directory for generated files.");
@@ -303,7 +328,10 @@ public class kiaragen {
 		}
 		
 		if (idlParseFileName != null) {
-			Context ctx = new Context(onlyFileName, idlFilename, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct);
+			
+			this.parsePackage();
+			
+			Context ctx = new Context(onlyFileName, idlFilename, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct, m_javaPackage);
 			
 			// Create template manager
 			TemplateManager tmanager = new TemplateManager("eprosima:Common");
@@ -366,7 +394,7 @@ public class kiaragen {
 			if (returnedValue) {
 				
 				System.out.print("Creating destination source directory... ");
-				if (Utils.createSrcDir(m_outputDir)) {
+				if (Utils.createSrcDir(m_package)) {
 					System.out.println("OK");
 				} else {
 					System.out.println("ERROR");
@@ -384,7 +412,7 @@ public class kiaragen {
 							StructTypeCode st = (StructTypeCode) tc;
 							ctx.setCurrentSt(st);
 							System.out.print("Generating Type support class for structure " + st.getName() +"... ");
-							if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + st.getName() + ".java", maintemplates.getTemplate("KIARASupportType"), m_replace)) {
+							if (returnedValue = Utils.writeFile(this.m_package + st.getName() + ".java", maintemplates.getTemplate("KIARASupportType"), m_replace)) {
 								System.out.println("OK");
 							}
 						}
@@ -398,24 +426,24 @@ public class kiaragen {
 						ctx.setCurrentIfz(ifz);
 						
 						System.out.print("Generating application main entry files for interface " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
-								if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
+						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
+							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
+								if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
 									System.out.println("OK");
 								}
 							}
 						}
 						
 						System.out.print("Generating specific server side files for interface " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
+						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
+							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
 								System.out.println("OK");
 							}
 						}
 						
 						
 						System.out.print("Generating specific client side files for interface " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
+						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
 							System.out.println("OK");
 						}
 						
@@ -425,7 +453,7 @@ public class kiaragen {
 					ctx.setCurrentIfz(ifz_handler);
 					
 					System.out.print("Generating common server side files... ");
-					if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
+					if (returnedValue = Utils.writeFile(this.m_package + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
 						if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
 							System.out.println("OK");
 							
@@ -434,7 +462,7 @@ public class kiaragen {
 					}
 					
 					System.out.print("Generating common client side files... ");
-					if (returnedValue = Utils.writeFile(m_outputDir + "/src/main/java/" + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
+					if (returnedValue = Utils.writeFile(this.m_package + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
 						if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
 							System.out.println("OK");
 						}

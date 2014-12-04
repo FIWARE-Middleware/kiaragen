@@ -68,15 +68,19 @@ $if(params)$$separatorInicial$$endif$$params : {param |/*$param.comment$*/ $para
 >>
 
 arrayType(type, dims) ::= <<
-$paramTypeJava(type)$$dims : {dim |[]}; separator=""$
+$dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
 >>
 
 initArrayAttribute(type, dims) ::= <<
-$paramTypeJava(type)$$dims : {dim |[$dim$]}; separator=""$
+$dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$()
 >>
 
 arrayAttribute(name, type, dims) ::= <<
-$paramTypeJava(type)$$dims : {dim |[]}; separator=""$ $name$; /*= new $paramTypeJava(type)$$dims : {dim |[$dim$]}; separator=""$*/
+$if(type.contentTypeCode.primitive)$
+$dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
+$else$
+$dims : {dim |ArrayList<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
+$endif$
 >>
 
 max_serialized_size(ctx, typecode, var, name) ::= <<
@@ -117,7 +121,8 @@ $if(typecodeArr.contentTypeCode.isType_e)$
 $elseif(typecodeArr.contentTypeCode.isType_f)$
 $array_max_serialized_size(ctx=ctx, typecodeArr=typecodeArr.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
 $else$
-    $var$ = $typecodeArr.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
+	$var$ = $typecodeArr.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
+
 $endif$
 }
 $endif$
@@ -192,11 +197,11 @@ envelopeJava ::= [
 		"type_12":"Long",
 		"type_13":"Long",
 		"type_14":"Character",
-		"type_15":"",
+		"type_15":"java.lang.String",
 		"type_a":"undefined",
 		"type_b":"undefined",
 		"type_c":"undefined",
-		"type_d":"",
+		"type_d":"java.lang.String",
         "type_e":"undefined",
         "type_f_first":"undefined",
         "type_f_second":"undefined",
@@ -251,6 +256,33 @@ serializeJava ::= [
 		"type_b":"undefined",
 		"type_c":"undefined",
 		"type_d":"serializeString",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
+serializeArrayJava ::= [
+		"type_1":"serializeArrayI16",
+		"type_2":"serializeArrayI32",
+		"type_3":"serializeArrayUI16",
+		"type_4":"serializeArrayUI32",
+		"type_5":"serializeArrayFloat32",
+		"type_6":"serializeArrayFloat64",
+		"type_7":"serializeArrayBoolean",
+		"type_8":"serializeArrayChar",
+		"type_9":"serializeArrayByte",
+		"type_10":"undefined",
+		"type_11":"serializeArrayI64",
+		"type_12":"serializeArrayUI64",
+		"type_13":"unsupported",
+		"type_14":"serializeArrayChar",
+		"type_15":"serializeArrayString",
+		"type_a":"serializeArray",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"type_d":"serializeArrayString",
         "type_e":"undefined",
         "type_f_first":"undefined",
         "type_f_second":"undefined",

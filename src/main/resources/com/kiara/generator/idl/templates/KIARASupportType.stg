@@ -4,11 +4,12 @@ main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the class representing a user defined structure."])$
 package main.java;
 
-import org.apache.commons.lang.ArrayUtils;
+import java.util.ArrayList;
+import java.util.Objects;
 
-import com.kiara.serialization.impl.CDRSerializer;
 import com.kiara.serialization.impl.Serializable;
 import com.kiara.serialization.impl.SerializerImpl;
+import com.kiara.serialization.impl.CDRSerializer;
 import com.kiara.transport.impl.TransportMessage;
 
 /**
@@ -33,7 +34,7 @@ public class $ctx.currentSt.name$ implements Serializable {
 	this.$member.name$ = $initJava.(member.typecode.stType)$;
 	$else$
 	$if(member.typecode.isType_f)$
-	this.$member.name$ = new $initArrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$;
+	this.$member.name$ = new $arrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$();
 	$else$
 	this.$member.name$ = new $member.typecode.name$();
 	$endif$ 
@@ -63,23 +64,43 @@ public class $ctx.currentSt.name$ implements Serializable {
 
 >>
 
+private_attributes(currentSt) ::= <<
+$currentSt.members : {member | 
+$if(member.typecode.primitive)$
+private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+$else$
+$if(member.typecode.isType_f)$
+private $arrayAttribute(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
+$else$
+private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+$endif$
+$endif$
+}; separator="\n"$
+
+>>
+
 comparison_function(currentSt) ::= <<
 
 /*
- * @param other An object instance of $ctx.currentSt.name$
+ * @param other An object instance of Object
  */
-public boolean equals($currentSt.name$ other) {
+ @Override
+public boolean equals(Object other) {
 	boolean comparison = true;
 	
-	$currentSt.members : {member | $if(member.typecode.isType_d)$comparison = comparison && (this.$member.name$.compareTo(other.$member.name$) == 0);
-	$else$
-	$if(member.typecode.primitive)$comparison = comparison && (this.$member.name$ == other.$member.name$);
-	$else$
-	$if(member.typecode.isType_f)$comparison = comparison && ArrayUtils.isEquals(this.$member.name$, other.$member.name$);
-	$else$comparison = comparison && this.$member.name$.equals(other.$member.name$);$endif$
-	$endif$
-	$endif$
+	if (other instanceof $currentSt.name$) {
+	
+		$currentSt.members : {member | $if(member.typecode.isType_d)$comparison = comparison && (this.$member.name$.compareTo((($currentSt.name$) other).$member.name$) == 0);
+		$else$
+		$if(member.typecode.primitive)$comparison = comparison && (this.$member.name$ == (($currentSt.name$) other).$member.name$);
+		$else$
+		$if(member.typecode.isType_f)$comparison = comparison && Objects.deepEquals(this.$member.name$, (($currentSt.name$) other).$member.name$);
+		$else$comparison = comparison && this.$member.name$.equals((($currentSt.name$) other).$member.name$);$endif$
+		$endif$
+		$endif$
 }; separator="\n"$
+	}
+	
 	return comparison;
 }
 >>
@@ -93,6 +114,7 @@ serialization_methods(currentSt) ::= <<
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
 $if(member.typecode.isType_f)$
+	impl.$serializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
 $else$
 	impl.$serializeJava.(member.typecode.stType)$(message, name, this.$member.name$);
 $endif$
@@ -107,6 +129,7 @@ $endif$
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
 $if(member.typecode.isType_f)$
+	impl.$serializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
 $else$
 $if(member.typecode.primitive)$
 	this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name);
@@ -124,31 +147,20 @@ $endif$
 }
 >>
 
-private_attributes(currentSt) ::= <<
-$currentSt.members : {member | 
-$if(!member.typecode.isType_f)$
-private $paramTypeJava(typecode=member.typecode)$ $member.name$;
-$else$
-private $arrayAttribute(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$;
-$endif$
-}; separator="\n"$
-
->>
-
 accessor_methods(currentSt) ::= <<
 $currentSt.members : {member | 
 $if(member.typecode.isType_f)$
 /*
  * Method to get the attribute $member.name$.
  */
-public $arrayType(type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() { 
+public $arrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() { 
 	return this.$member.name$;
 }
 
 /*
  * Method to set the attribute $member.name$.
  */
-public void set$member.name$($arrayType(type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) {
+public void set$member.name$($arrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) {
 	this.$member.name$ = $member.name$;
 }
 $else$

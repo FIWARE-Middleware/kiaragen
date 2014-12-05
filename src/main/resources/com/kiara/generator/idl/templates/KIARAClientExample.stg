@@ -18,15 +18,14 @@ import com.kiara.transport.Transport;
  */
 public class ClientExample {
 	public static void main (String [] args) throws Exception {
-		System.out.println("$ctx.filename$ClientExample");
+		System.out.println("$ctx.currentIfz.name$ClientExample");
 		
-		if (args.length != $length(ctx.firstInterface.firstOperation.parameters)$) {
-			System.out.println("Usage: $ctx.filename$ClientExample ");
-			return;
-		}
+		$ctx.firstInterface.firstOperation.inputparam : {param |$if(param.typecode.isType_a)$$param.typecode.cppTypename$ $param.name$ = new $param.typecode.cppTypename$();
 		
-		$ctx.firstInterface.firstOperation.inputparam : {param |$param.typecode.cppTypename$ $param.name$ = $parseJava.(param.typecode.stType)$(args[$i$-1]);}; separator="\n"$
-		
+		// Initialize your data here
+		$else$$param.typecode.cppTypename$ $param.name$ = $initJava.(param.typecode.stType)$;
+		$endif$
+		}; separator="\n"$
 		$if(ctx.firstInterface.firstOperation.rettype)$
 		$ctx.firstInterface.firstOperation.rettype.cppTypename$ ret = $initJava.(ctx.firstInterface.firstOperation.rettype.stType)$;
 		$endif$
@@ -42,7 +41,9 @@ public class ClientExample {
 		try {
 			$if(ctx.firstInterface.firstOperation.rettype)$
 			ret = client.$ctx.firstInterface.firstOperation.name$($ctx.firstInterface.firstOperation.inputparam : {param |$param.name$}; separator=", "$);
-			System.out.println("Result of adding: " + ret);
+				
+				// Print or check the operation result here
+				
 			$else$
 			client.$ctx.firstInterface.firstOperation.name$($ctx.firstInterface.firstOperation.inputparam : {param |$param.name$}; separator=", "$);
 			$endif$

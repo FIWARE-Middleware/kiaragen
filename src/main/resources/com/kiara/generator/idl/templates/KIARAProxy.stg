@@ -127,7 +127,7 @@ $endif$
 proxy_operation_async(operation) ::= <<
 $if(!operation.oneway)$
 $if(operation.isOperation)$
-public void $operation.name$($javaParams(params=operation.parameters)$, final $operation.name$_AsyncCallback callback) {
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final $operation.name$_AsyncCallback callback) {
 	
 	if (m_ser != null && m_transport != null) {
 		ByteBuffer buffer = ByteBuffer.allocate(100);

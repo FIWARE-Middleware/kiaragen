@@ -75,6 +75,14 @@ initArrayAttribute(type, dims) ::= <<
 $dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$()
 >>
 
+arrayAttributeFirst(name, type, dims) ::= <<
+$if(type.contentTypeCode.primitive)$
+$first(dims) : {dim |List<}; separator=""$$rest(dims) : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
+$else$
+$first(dims) : {dim |List<}; separator=""$$rest(dims) : {dim |ArrayList<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
+$endif$
+>>
+
 arrayAttribute(name, type, dims) ::= <<
 $if(type.contentTypeCode.primitive)$
 $dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
@@ -84,6 +92,7 @@ $endif$
 >>
 
 max_serialized_size(ctx, typecode, var, name) ::= <<
+$if(typecode.stType)$
 $if(typecode.primitive)$
 $if(typecode.isType_d)$
 $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$ + $typecode.maxsize$ + 1;
@@ -99,6 +108,9 @@ $array_max_serialized_size(ctx=ctx, typecodeArr=typecode, var=var, loopvar=ctx.n
 $else$
 $var$ = $typecode.name$.getMaxCdrSerializedSize($var$);
 $endif$
+$endif$
+$else$
+// Return type Void is not serialized
 $endif$
 >>
 
@@ -206,7 +218,7 @@ envelopeJava ::= [
         "type_f_first":"undefined",
         "type_f_second":"undefined",
         "type_f":"undefined",
-        default: // not basic type.
+        default: "Void"
 ]
 
 deserializeJava ::= [
@@ -283,6 +295,33 @@ serializeArrayJava ::= [
 		"type_b":"undefined",
 		"type_c":"undefined",
 		"type_d":"serializeArrayString",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
+deserializeArrayJava ::= [
+		"type_1":"deserializeArrayI16",
+		"type_2":"deserializeArrayI32",
+		"type_3":"deserializeArrayUI16",
+		"type_4":"deserializeArrayUI32",
+		"type_5":"deserializeArrayFloat32",
+		"type_6":"deserializeArrayFloat64",
+		"type_7":"deserializeArrayBoolean",
+		"type_8":"deserializeArrayChar",
+		"type_9":"deserializeArrayByte",
+		"type_10":"undefined",
+		"type_11":"deserializeArrayI64",
+		"type_12":"deserializeArrayUI64",
+		"type_13":"unsupported",
+		"type_14":"deserializeArrayChar",
+		"type_15":"deserializeArrayString",
+		"type_a":"deserializeArray",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"type_d":"deserializeArrayString",
         "type_e":"undefined",
         "type_f_first":"undefined",
         "type_f_second":"undefined",

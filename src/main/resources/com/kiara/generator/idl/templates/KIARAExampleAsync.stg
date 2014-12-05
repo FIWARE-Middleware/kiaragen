@@ -26,14 +26,19 @@ construct_operation_async(operation) ::= <<
 $if(operation.isOperation)$
 $if(!operation.oneway)$
 $if(operation.rettype)$
-public void $operation.name$($javaParams(params=operation.parameters)$, $operation.name$_AsyncCallback callback);
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$$operation.name$_AsyncCallback callback);
 
 $else$
-public void $operation.name$($javaParams(params=operation.parameters)$, $operation.name$_AsyncCallback callback);
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$$operation.name$_AsyncCallback callback);
 
 $endif$
 
-public static abstract class $operation.name$_AsyncCallback implements AsyncCallback<$if(operation.rettype.primitive)$$envelopeJava.(operation.rettype.stType)$> {
+public static abstract class $operation.name$_AsyncCallback implements AsyncCallback<$if(operation.rettype)$
+$if(operation.rettype.primitive)$$envelopeJava.(operation.rettype.stType)$
+$else$
+$if(!operation.rettype.isType_f)$
+$operation.rettype.cppTypename$
+$endif$$endif$$else$Void$endif$> {
 				$else$
 				$if(!operation.rettype.isType_d)$
 					$if(!operation.rettype.isType_e)$
@@ -46,6 +51,7 @@ $operation.rettype.cppTypename$> {
 	public void process(TransportMessage message, SerializerImpl ser) {
 		try {
 			final Object messageId = ser.deserializeMessageId(message);
+			$if(operation.rettype)$
 			$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(message, ""$if(!operation.rettype.primitive)$
 				$if(!operation.rettype.isType_d)$
 					$if(!operation.rettype.isType_e)$
@@ -56,6 +62,9 @@ $operation.rettype.cppTypename$> {
 				$endif$
 			$endif$);
 			onSuccess(result);
+			$else$
+			onSuccess(null);
+			$endif$
 		} catch (Exception ex) {
 			onFailure(ex);
 		}

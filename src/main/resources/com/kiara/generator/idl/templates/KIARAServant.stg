@@ -111,8 +111,12 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 	retMsg.getPayload().flip();
 	return retMsg;
 	$else$
-	//TODO Check this
-	return null;
+	ByteBuffer retBuffer = ByteBuffer.allocate(test_required_size());
+	TransportMessage retMsg = transportImpl.createTransportMessage(null);
+ 	retMsg.setPayload(retBuffer);
+ 	serImpl.serializeMessageId(retMsg, messageId);
+	retMsg.getPayload().flip();
+	return retMsg;
 	$endif$
 	$endif$
 } 

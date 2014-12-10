@@ -75,19 +75,27 @@ initArrayAttribute(type, dims) ::= <<
 $dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$()
 >>
 
+sequenceAttributeFirst(name, type) ::= <<
+$type.depth : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$type.depth : {dim |>}; separator=""$
+>>
+
 arrayAttributeFirst(name, type, dims) ::= <<
-$if(type.contentTypeCode.primitive)$
-$first(dims) : {dim |List<}; separator=""$$rest(dims) : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
-$else$
-$first(dims) : {dim |List<}; separator=""$$rest(dims) : {dim |ArrayList<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
-$endif$
+$dims : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
 >>
 
 arrayAttribute(name, type, dims) ::= <<
 $if(type.contentTypeCode.primitive)$
-$dims : {dim |ArrayList<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
+$first(dims) : {dim |ArrayList<}; separator=""$$rest(dims) : {dim |List<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
 $else$
-$dims : {dim |ArrayList<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
+$first(dims) : {dim |ArrayList<}; separator=""$$rest(dims) : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
+$endif$
+>>
+
+sequenceAttribute(name, type) ::= <<
+$if(type.contentTypeCode.primitive)$
+ArrayList<$envelopeJava.(type.contentTypeCode.stType)$>
+$else$
+ArrayList<$type.contentTypeCode.cppTypename$>
 $endif$
 >>
 
@@ -134,6 +142,32 @@ $elseif(typecodeArr.contentTypeCode.isType_f)$
 $array_max_serialized_size(ctx=ctx, typecodeArr=typecodeArr.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
 $else$
 	$var$ = $typecodeArr.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
+
+$endif$
+}
+$endif$
+>>
+
+sequence_max_serialized_size(ctx, typecodeSeq, var, loopvar) ::= <<
+$if(typecodeSeq.contentTypeCode.primitive)$
+$if(typecodeSeq.contentTypeCode.isType_d)$
+for(int $loopvar$ = 0; $loopvar$ < $typecodeSeq.maxsize$; ++$loopvar$)
+{
+    $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$ + $typecodeSeq.contentTypeCode.maxsize$ + 1;
+}
+$else$
+$var$ += ($typecodeSeq.maxsize$ * $typecodeSeq.contentTypeCode.size$)$if(ctx.cdr)$ + CDRSerializer.alignment($var$, $typecodeSeq.contentTypeCode.size$)$endif$;
+$endif$
+$else$
+for(int $loopvar$ = 0; $loopvar$ < $typecodeSeq.maxsize$; ++$loopvar$)
+{
+$if(typecodeSeq.contentTypeCode.isType_e)$
+    $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$;
+    $sequence_max_serialized_size(ctx=ctx, typecodeSeq=typecodeSeq.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
+$elseif(typecodeSeq.contentTypeCode.isType_f)$
+$array_max_serialized_size(ctx=ctx, typecodeArr=typecodeSeq.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
+$else$
+    $var$ = $typecodeSeq.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
 
 $endif$
 }
@@ -322,6 +356,60 @@ deserializeArrayJava ::= [
 		"type_b":"undefined",
 		"type_c":"undefined",
 		"type_d":"deserializeArrayString",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
+serializeSequenceJava ::= [
+		"type_1":"serializeSequenceI16",
+		"type_2":"serializeSequenceI32",
+		"type_3":"serializeSequenceUI16",
+		"type_4":"serializeSequenceUI32",
+		"type_5":"serializeSequenceFloat32",
+		"type_6":"serializeSequenceFloat64",
+		"type_7":"serializeSequenceBoolean",
+		"type_8":"serializeSequenceChar",
+		"type_9":"serializeSequenceByte",
+		"type_10":"undefined",
+		"type_11":"serializeSequenceI64",
+		"type_12":"serializeSequenceUI64",
+		"type_13":"unsupported",
+		"type_14":"serializeSequenceChar",
+		"type_15":"serializeSequenceString",
+		"type_a":"serializeSequence",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"type_d":"serializeSequenceString",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
+deserializeSequenceJava ::= [
+		"type_1":"deserializeSequenceI16",
+		"type_2":"deserializeSequenceI32",
+		"type_3":"deserializeSequenceUI16",
+		"type_4":"deserializeSequenceUI32",
+		"type_5":"deserializeSequenceFloat32",
+		"type_6":"deserializeSequenceFloat64",
+		"type_7":"deserializeSequenceBoolean",
+		"type_8":"deserializeSequenceChar",
+		"type_9":"deserializeSequenceByte",
+		"type_10":"undefined",
+		"type_11":"deserializeSequenceI64",
+		"type_12":"deserializeSequenceUI64",
+		"type_13":"unsupported",
+		"type_14":"deserializeSequenceChar",
+		"type_15":"deserializeSequenceString",
+		"type_a":"deserializeSequence",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"type_d":"deserializeSequenceString",
         "type_e":"undefined",
         "type_f_first":"undefined",
         "type_f_second":"undefined",

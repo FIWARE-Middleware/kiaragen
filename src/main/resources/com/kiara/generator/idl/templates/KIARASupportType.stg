@@ -37,7 +37,15 @@ public class $ctx.currentSt.name$ implements Serializable {
 	$if(member.typecode.isType_f)$
 	this.$member.name$ = new $arrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$();
 	$else$
+	$if(member.typecode.isType_e)$
+	$if(member.typecode.contentTypeCode.primitive)$
+	this.$member.name$ = new $sequenceAttribute(type=member.typecode)$();
+	$else$
+	this.$member.name$ = new $sequenceAttribute(type=member.typecode)$();
+	$endif$
+	$else$
 	this.$member.name$ = new $member.typecode.name$();
+	$endif$
 	$endif$ 
 	$endif$}; separator="\n"$
 	}
@@ -71,9 +79,21 @@ $if(member.typecode.primitive)$
 private $paramTypeJava(typecode=member.typecode)$ $member.name$;
 $else$
 $if(member.typecode.isType_f)$
+$if(member.typecode.contentTypeCode.primitive)$
+private $member.typecode.cppTypename$ $member.name$;
+$else$
 private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
+$endif$
+$else$
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+private $member.typecode.cppTypename$ $member.name$;
+$else$
+private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
+$endif$
 $else$
 private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+$endif$
 $endif$
 $endif$
 }; separator="\n"$
@@ -114,10 +134,14 @@ serialization_methods(currentSt) ::= <<
  */
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
+$if(member.typecode.isType_e)$
+	impl.$serializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$);
+$else$
 $if(member.typecode.isType_f)$
 	impl.$serializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
 $else$
 	impl.$serializeJava.(member.typecode.stType)$(message, name, this.$member.name$);
+$endif$
 $endif$
 }; separator="\n"$
 }
@@ -144,6 +168,22 @@ $if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeC
 	}
 $endif$$endif$
 $else$
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.depth$);
+$else$
+$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
+	try { 
+$endif$$endif$
+	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.depth$);
+$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
+	} catch (InstantiationException | IllegalAccessException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+$endif$$endif$
+$endif$
+$else$
 $if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
 	try { 
 $endif$$endif$
@@ -154,6 +194,8 @@ $if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
 		e.printStackTrace();
 	}
 $endif$$endif$
+$endif$
+
 $endif$
 $endif$
 }; separator="\n"$
@@ -166,28 +208,58 @@ $if(member.typecode.isType_f)$
 /*
  * Method to get the attribute $member.name$.
  */
-public $arrayAttributeFirst(type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() { 
+$if(member.typecode.contentTypeCode.primitive)$
+public $member.typecode.cppTypename$ get$member.name$() {
+$else$
+public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() \{
+$endif$ 
 	return this.$member.name$;
 }
 
 /*
  * Method to set the attribute $member.name$.
  */
-public void set$member.name$($arrayAttributeFirst(type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) {
+$if(member.typecode.contentTypeCode.primitive)$
+public void set$member.name$($member.typecode.cppTypename$ $member.name$) {
+
+$else$
+public void set$member.name$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
+
+$endif$
 	this.$member.name$ = $member.name$;
 }
 $else$
 /*
  * Method to get the attribute $member.name$.
  */
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+public $paramTypeJava(member.typecode)$ get$member.name$() \{
+
+$else$
+public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.name$() \{
+
+$endif$
+$else$
 public $paramTypeJava(member.typecode)$ get$member.name$() { 
+$endif$
 	return this.$member.name$;
 }
 
 /*
  * Method to set the attribute $member.name$.
  */
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) \{
+
+$else$
+public void set$member.name$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
+
+$endif$
+$else$
 public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) {
+$endif$
 	this.$member.name$ = $member.name$;
 }
 $endif$

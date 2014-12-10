@@ -111,7 +111,7 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 	retMsg.getPayload().flip();
 	return retMsg;
 	$else$
-	ByteBuffer retBuffer = ByteBuffer.allocate(test_required_size());
+	ByteBuffer retBuffer = ByteBuffer.allocate($operation.name$_required_size());
 	TransportMessage retMsg = transportImpl.createTransportMessage(null);
  	retMsg.setPayload(retBuffer);
  	serImpl.serializeMessageId(retMsg, messageId);

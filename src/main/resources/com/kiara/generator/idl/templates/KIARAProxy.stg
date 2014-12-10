@@ -86,14 +86,12 @@ $endif$
         try {
         	TransportMessage tresponse = dispatcher.get();
         	if (tresponse != null && tresponse.getPayload() != null) {
-                final ByteBuffer buf = tresponse.getPayload().duplicate();
+                final ByteBuffer buf = tresponse.getPayload();
         		buf.rewind();
-        		TransportMessage copy = m_transport.createTransportMessage(null);
-        		copy.setPayload(buf);
-        		final Object responseMessageId = m_ser.deserializeMessageId(copy);
+        		final Object responseMessageId = m_ser.deserializeMessageId(buf);
 				
 				$if(operation.rettype)$
-				$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(copy, ""$if(!operation.rettype.primitive)$
+				$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(tresponse, ""$if(!operation.rettype.primitive)$
 				$if(!operation.rettype.isType_d)$
 					$if(!operation.rettype.isType_e)$
 						$if(!operation.rettype.isType_f)$
@@ -148,12 +146,10 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
 		Futures.addCallback(dispatcher, new FutureCallback<TransportMessage> () {
 
 			public void onSuccess(TransportMessage result) {
-				final ByteBuffer buf = result.getPayload().duplicate();
+				final ByteBuffer buf = result.getPayload();
         		buf.rewind();
-        		TransportMessage copy = m_transport.createTransportMessage(null);
-        		copy.setPayload(buf);
         		
-				callback.process(copy, m_ser);
+				callback.process(result, m_ser);
 			}
 
 			public void onFailure(Throwable t) {

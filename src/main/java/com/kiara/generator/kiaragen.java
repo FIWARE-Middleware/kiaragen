@@ -452,19 +452,21 @@ public class kiaragen {
 					Interface ifz_handler = ctx.getFirstInterface();
 					ctx.setCurrentIfz(ifz_handler);
 					
-					System.out.print("Generating common server side files... ");
-					if (returnedValue = Utils.writeFile(this.m_package + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
-							System.out.println("OK");
+					if (ctx.getInterfaces().size() != 0) {
+						System.out.print("Generating common server side files... ");
+						if (returnedValue = Utils.writeFile(this.m_package + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
+							if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
+								System.out.println("OK");
+								
+							}
 							
 						}
 						
-					}
-					
-					System.out.print("Generating common client side files... ");
-					if (returnedValue = Utils.writeFile(this.m_package + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
-						if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
-							System.out.println("OK");
+						System.out.print("Generating common client side files... ");
+						if (returnedValue = Utils.writeFile(this.m_package + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
+							if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
+								System.out.println("OK");
+							}
 						}
 					}
 					

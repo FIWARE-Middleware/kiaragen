@@ -242,6 +242,7 @@ public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$memb
 $endif$
 $else$
 public $paramTypeJava(member.typecode)$ get$member.name$() { 
+
 $endif$
 	return this.$member.name$;
 }
@@ -259,6 +260,7 @@ public void set$member.name$($sequenceAttributeFirst(name=member.name, type=memb
 $endif$
 $else$
 public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) {
+
 $endif$
 	this.$member.name$ = $member.name$;
 }

@@ -32,6 +32,7 @@ import java.util.Vector;
 import org.antlr.stringtemplate.StringTemplateErrorListener;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
 
 import com.eprosima.idl.generator.manager.TemplateGroup;
 import com.eprosima.idl.generator.manager.TemplateManager;
@@ -387,6 +388,8 @@ public class kiaragen {
 				
 			} catch (FileNotFoundException ex) {
 				System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " was not found.");
+			} catch(RecognitionException recex) {
+				System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " cannot be parsed.");
 			} catch (Exception ex) {
 				System.out.println(ColorMessage.error("Exception") + ex.getMessage());
 			}

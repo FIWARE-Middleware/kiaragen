@@ -1,4 +1,4 @@
-package com.kiara.generator.exceptions;
+package org.fiware.kiara.generator.exceptions;
 
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.InputMismatchException;

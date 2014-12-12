@@ -10,7 +10,7 @@ apply plugin: 'maven'
 
 
 
-mainClassName = 'com.kiara.generator.kiaragen'
+mainClassName = 'org.fiware.kiara.generator.kiaragen'
 
 //general properties
 version = '0.1.0'
@@ -29,7 +29,7 @@ tasks.withType(JavaCompile) {
 }
 
 // maven-plugin properties
-group = 'com.kiara'
+group = 'org.fiware.kiara'
 
 repositories {
     mavenCentral()
@@ -50,15 +50,15 @@ test {
 }
 
 //task copyFiles(type: Copy) {
-//	into "build/classes/main/com/kiara/generator/idl/templates"
-//	from("src/main/java/com/kiara/generator/idl/templates") {
+//	into "build/classes/main/org/fiware/kiara/generator/idl/templates"
+//	from("src/main/java/org/fiware/kiara/generator/idl/templates") {
 //		include '*.stg'
 //	}
 //}
 
 jar (){
 	manifest {
-        attributes 'Main-Class': 'com.kiara.generator.kiaragen'
+        attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
 		attributes 'Class-Path': 'kiaraparser-0.1.0.jar antlr-4.4-complete.jar antlr-2.7.7.jar stringtemplate-3.2.1.jar'
     }
 	baseName = 'kiaragen'

@@ -5,12 +5,12 @@ $fileHeader(ctx=ctx,  file=[, "ServerExample.java"], description=["This file con
 
 package $ctx.javaPackage$;
 
-import com.kiara.Context;
-import com.kiara.Kiara;
-import com.kiara.server.Server;
-import com.kiara.server.Service;
-import com.kiara.serialization.Serializer;
-import com.kiara.transport.ServerTransport;
+import org.fiware.kiara.Context;
+import org.fiware.kiara.Kiara;
+import org.fiware.kiara.server.Server;
+import org.fiware.kiara.server.Service;
+import org.fiware.kiara.serialization.Serializer;
+import org.fiware.kiara.transport.ServerTransport;
 
 /**
  * Class that acts as the main server entry point. 

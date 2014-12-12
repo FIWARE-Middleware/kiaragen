@@ -8,11 +8,11 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import com.kiara.netty.TransportMessageDispatcher;
-import com.kiara.serialization.Serializer;
-import com.kiara.serialization.impl.CDRSerializer;
-import com.kiara.transport.Transport;
-import com.kiara.transport.impl.TransportMessage;
+import org.fiware.kiara.netty.TransportMessageDispatcher;
+import org.fiware.kiara.serialization.Serializer;
+import org.fiware.kiara.serialization.impl.CDRSerializer;
+import org.fiware.kiara.transport.Transport;
+import org.fiware.kiara.transport.impl.TransportMessage;
 
 import java.nio.ByteBuffer;
 
@@ -25,8 +25,8 @@ import java.nio.ByteBuffer;
 class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 	
 	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
-		m_ser = (com.kiara.serialization.impl.SerializerImpl) ser;
-		m_transport = (com.kiara.transport.impl.TransportImpl) transport;
+		m_ser = (org.fiware.kiara.serialization.impl.SerializerImpl) ser;
+		m_transport = (org.fiware.kiara.transport.impl.TransportImpl) transport;
 	}
 	
 	$ctx.currentIfz.operations : {operation |$proxy_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
@@ -35,8 +35,8 @@ class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 	
 	$ctx.currentIfz.operations : {operation |$proxy_operation_async(operation)$}; separator="\n"$
 	
-	private com.kiara.serialization.impl.SerializerImpl m_ser = null;
-    private com.kiara.transport.impl.TransportImpl m_transport = null;
+	private org.fiware.kiara.serialization.impl.SerializerImpl m_ser = null;
+    private org.fiware.kiara.transport.impl.TransportImpl m_transport = null;
     
     
 }

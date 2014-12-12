@@ -16,8 +16,10 @@
  * License along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.kiara.generator;
+package org.fiware.kiara.generator;
 
+import org.fiware.kiara.generator.exceptions.BadArgumentException;
+import org.fiware.kiara.generator.exceptions.ExceptionErrorStrategy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,9 +53,8 @@ import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
 import com.eprosima.idl.util.Util;
 import com.eprosima.log.ColorMessage;
-import com.kiara.generator.exceptions.*;
-import com.kiara.generator.idl.grammar.Context;
-import com.kiara.generator.util.Utils;
+import org.fiware.kiara.generator.idl.grammar.Context;
+import org.fiware.kiara.generator.util.Utils;
 
 /**
 *
@@ -209,7 +210,7 @@ public class kiaragen {
 			
 			// Load string templates
 			System.out.println("Loading templates...");
-			TemplateManager.setGroupLoaderDirectories("com/kiara/generator/idl/templates");
+			TemplateManager.setGroupLoaderDirectories("org/fiware/kiara/generator/idl/templates");
 			
 			System.out.println(this.getClass().getCanonicalName());
 			System.out.println(Context.class.getCanonicalName());

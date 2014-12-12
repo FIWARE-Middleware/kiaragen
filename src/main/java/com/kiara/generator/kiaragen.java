@@ -31,11 +31,16 @@ import java.util.Vector;
 
 import org.antlr.stringtemplate.StringTemplateErrorListener;
 import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.DiagnosticErrorListener;
+import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import com.eprosima.idl.generator.manager.TemplateGroup;
 import com.eprosima.idl.generator.manager.TemplateManager;
+import com.eprosima.idl.parser.exception.ParseException;
 import com.eprosima.idl.parser.grammar.KIARAIDLLexer;
 import com.eprosima.idl.parser.grammar.KIARAIDLParser;
 import com.eprosima.idl.parser.tree.Definition;
@@ -382,15 +387,24 @@ public class kiaragen {
 				lexer.setContext(ctx);
 				CommonTokenStream tokens = new CommonTokenStream(lexer);
 				KIARAIDLParser parser = new KIARAIDLParser(tokens);
+				// Select handling strategy for errors
+				parser.setErrorHandler(new ExceptionErrorStrategy());
 				// Pass the finelame without the extension
 				Specification specification = parser.specification(ctx, tmanager, maintemplates).spec;
 				returnedValue = specification != null;
 				
 			} catch (FileNotFoundException ex) {
 				System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " was not found.");
-			} catch(RecognitionException recex) {
-				System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " cannot be parsed.");
-			} catch (Exception ex) {
+			} catch(ParseCancellationException ex) {
+				System.out.println(ColorMessage.error("ParseCancellationException") + "The File " + idlParseFileName + " cannot be parsed.");
+				Throwable arrayt[] = ex.getSuppressed();
+				Throwable cause = ex.getCause();
+				System.out.println("");
+			} catch (ParseException ex) { 
+				System.out.println(ColorMessage.error("ParseException") + ex.getMessage());
+		    } catch (RecognitionException ex) { 
+				System.out.println(ColorMessage.error("RecognitionException") + ex.getMessage());
+		    } catch (Exception ex) {
 				System.out.println(ColorMessage.error("Exception") + ex.getMessage());
 			}
 			

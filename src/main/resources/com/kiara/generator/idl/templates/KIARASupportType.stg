@@ -209,21 +209,21 @@ $if(member.typecode.isType_f)$
  * Method to get the attribute $member.name$.
  */
 $if(member.typecode.contentTypeCode.primitive)$
-public $member.typecode.cppTypename$ get$member.name$() {
+public $member.typecode.cppTypename$ get$member.javaName$() {
 $else$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.name$() \{
+public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
 $endif$ 
 	return this.$member.name$;
 }
 
 /*
- * Method to set the attribute $member.name$.
+ * Method to set the attribute $member.javaName$.
  */
 $if(member.typecode.contentTypeCode.primitive)$
-public void set$member.name$($member.typecode.cppTypename$ $member.name$) {
+public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
 
 $else$
-public void set$member.name$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
+public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
 
 $endif$
 	this.$member.name$ = $member.name$;
@@ -234,14 +234,14 @@ $else$
  */
 $if(member.typecode.isType_e)$
 $if(member.typecode.contentTypeCode.primitive)$
-public $paramTypeJava(member.typecode)$ get$member.name$() \{
+public $paramTypeJava(member.typecode)$ get$member.javaName$() \{
 
 $else$
-public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.name$() \{
+public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
 
 $endif$
 $else$
-public $paramTypeJava(member.typecode)$ get$member.name$() { 
+public $paramTypeJava(member.typecode)$ get$member.javaName$() { 
 
 $endif$
 	return this.$member.name$;
@@ -252,14 +252,14 @@ $endif$
  */
 $if(member.typecode.isType_e)$
 $if(member.typecode.contentTypeCode.primitive)$
-public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) \{
+public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) \{
 
 $else$
-public void set$member.name$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
+public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
 
 $endif$
 $else$
-public void set$member.name$($paramTypeJava(member.typecode)$ $member.name$) {
+public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) {
 
 $endif$
 	this.$member.name$ = $member.name$;

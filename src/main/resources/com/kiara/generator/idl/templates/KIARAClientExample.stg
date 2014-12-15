@@ -32,10 +32,7 @@ public class ClientExample {
 		
 		Context context = Kiara.createContext();
 		
-		Transport transport = context.createTransport("tcp://127.0.0.1:9090");
-		Serializer serializer = context.createSerializer("cdr");
-		
-		Connection connection = context.connect(transport, serializer);
+		Connection connection = context.connect("tcp://127.0.0.1:9090?serialization=cdr");
 		$ctx.firstInterface.name$ client = connection.getServiceProxy($ctx.firstInterface.name$Client.class);
 		
 		try {

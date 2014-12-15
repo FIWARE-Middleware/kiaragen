@@ -27,16 +27,13 @@ public class ServerExample {
 		Context context = Kiara.createContext();
 		Server server = context.createServer();
 		
-		$ctx.firstInterface.name$Servant $ctx.filename$_impl = new $ctx.firstInterface.name$ServantExample();
+		$ctx.firstInterface.name$Servant $ctx.firstInterface.name$_impl = new $ctx.firstInterface.name$ServantExample();
 		
-		ServerTransport transport = context.createServerTransport("tcp://0.0.0.0:8080");
-		Serializer serializer = context.createSerializer("cdr");
 		Service service = context.createService();
 		
-		service.register($ctx.filename$_impl);
+		service.register($ctx.firstInterface.name$_impl);
 		
 		//Add service waiting on TCP with CDR serialization
-		server.addService(service, transport, serializer);
 		server.addService(service, "tcp://0.0.0.0:9090", "cdr");
 		
 		server.run();

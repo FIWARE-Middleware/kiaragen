@@ -75,7 +75,7 @@ $endif$
         
         final Object messageId = m_ser.getNewMessageId(); 
         m_ser.serializeMessageId(trequest, messageId);   
-		m_ser.serializeService(trequest, "$ctx.firstInterface.name$");
+		m_ser.serializeService(trequest, "$first(ctx.scopedInterfaces).name$");
 		m_ser.serializeOperation(trequest, "$operation.name$");
 		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
 		trequest.getPayload().flip();
@@ -134,7 +134,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
         
         final Object messageId = m_ser.getNewMessageId(); 
         m_ser.serializeMessageId(trequest, messageId);   
-		m_ser.serializeService(trequest, "$ctx.firstInterface.name$");
+		m_ser.serializeService(trequest, "$first(ctx.scopedInterfaces).name$");
 		m_ser.serializeOperation(trequest, "$operation.name$");
 		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
 		

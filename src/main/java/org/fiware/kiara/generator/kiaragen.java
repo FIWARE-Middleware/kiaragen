@@ -467,7 +467,11 @@ public class kiaragen {
 						
 					}
 					
-					Interface ifz_handler = ctx.getFirstInterface();
+					Interface ifz_handler = null;
+
+                    if(ctx.getScopedInterfaces().size() > 0)
+                        ifz_handler = ctx.getScopedInterfaces().get(0);
+
 					ctx.setCurrentIfz(ifz_handler);
 					
 					if (ctx.getInterfaces().size() != 0) {

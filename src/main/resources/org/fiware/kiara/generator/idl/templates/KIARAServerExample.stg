@@ -27,7 +27,7 @@ public class ServerExample {
 		Context context = Kiara.createContext();
 		Server server = context.createServer();
 		
-		$ctx.firstInterface.name$Servant $ctx.filename$_impl = new $ctx.firstInterface.name$ServantExample();
+		$first(ctx.scopedInterfaces).name$Servant $ctx.filename$_impl = new $first(ctx.scopedInterfaces).name$ServantExample();
 		
 		ServerTransport transport = context.createServerTransport("tcp://0.0.0.0:8080");
 		Serializer serializer = context.createSerializer("cdr");

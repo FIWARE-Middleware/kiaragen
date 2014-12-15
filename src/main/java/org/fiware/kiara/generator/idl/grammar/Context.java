@@ -70,52 +70,6 @@ public class Context extends com.eprosima.idl.context.Context
         }
     }
 
-    /*!
-     * @brief This function is used to know if a project has to generate the Types.
-     */
-    public boolean isProjectNeedTypes()
-    {
-    	com.eprosima.idl.parser.tree.Exception ex = null;;
-    	
-    	if((ex = getFirstException()) != null)
-    		return true;
-    	
-    	return false;
-    }
-    
-    /*!
-     * @brief This function is used in this project to get the first discovered interface.
-     */
-    public Interface getFirstInterface()
-    { 
-        for(int count = 0; m_firstinterface == null && count < getDefinitions().size(); ++count)
-        {
-            //m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
-            if (getDefinitions().get(count) instanceof Interface) {
-            	m_firstinterface = (Interface) getDefinitions().get(count);
-            } else {
-            	m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
-            }
-            
-        }
-        
-        return m_firstinterface;
-    }
-    
-    // TODO Ver si es necesario.
-    /*!
-     * @brief This function is used in this project to get the first discovered exception.
-     */
-    public com.eprosima.idl.parser.tree.Exception getFirstException()
-    {
-    	for(int count = 0; m_firstexception == null && count < getDefinitions().size(); ++count)
-        {
-    		m_firstexception = getDefinitions().get(count).getFirstException(getScopeFile());
-        }
-        
-        return m_firstexception;
-    }
-    
     public boolean isClient()
     {
         return m_subscribercode;

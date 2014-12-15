@@ -20,14 +20,14 @@ public class ClientExample {
 	public static void main (String [] args) throws Exception {
 		System.out.println("$ctx.currentIfz.name$ClientExample");
 		
-		$ctx.firstInterface.firstOperation.inputparam : {param |$if(param.typecode.isType_a)$$param.typecode.cppTypename$ $param.name$ = new $param.typecode.cppTypename$();
+		$first(first(ctx.scopedInterfaces).operations).inputparam : {param |$if(param.typecode.isType_a)$$param.typecode.cppTypename$ $param.name$ = new $param.typecode.cppTypename$();
 		
 		// Initialize your data here
 		$else$$param.typecode.cppTypename$ $param.name$ = $initJava.(param.typecode.stType)$;
 		$endif$
 		}; separator="\n"$
-		$if(ctx.firstInterface.firstOperation.rettype)$
-		$ctx.firstInterface.firstOperation.rettype.cppTypename$ ret = $initJava.(ctx.firstInterface.firstOperation.rettype.stType)$;
+		$if(first(first(ctx.scopedInterfaces).operations).rettype)$
+		$first(first(ctx.scopedInterfaces).operations).rettype.cppTypename$ ret = $initJava.(first(first(ctx.scopedInterfaces).operations).rettype.stType)$;
 		$endif$
 		
 		Context context = Kiara.createContext();
@@ -36,16 +36,16 @@ public class ClientExample {
 		Serializer serializer = context.createSerializer("cdr");
 		
 		Connection connection = context.connect(transport, serializer);
-		$ctx.firstInterface.name$ client = connection.getServiceProxy($ctx.firstInterface.name$Client.class);
+		$first(ctx.scopedInterfaces).name$ client = connection.getServiceProxy($first(ctx.scopedInterfaces).name$Client.class);
 		
 		try {
-			$if(ctx.firstInterface.firstOperation.rettype)$
-			ret = client.$ctx.firstInterface.firstOperation.name$($ctx.firstInterface.firstOperation.inputparam : {param |$param.name$}; separator=", "$);
+			$if(first(first(ctx.scopedInterfaces).operations).rettype)$
+			ret = client.$first(first(ctx.scopedInterfaces).operations).name$($first(first(ctx.scopedInterfaces).operations).inputparam : {param |$param.name$}; separator=", "$);
 				
 				// Print or check the operation result here
 				
 			$else$
-			client.$ctx.firstInterface.firstOperation.name$($ctx.firstInterface.firstOperation.inputparam : {param |$param.name$}; separator=", "$);
+			client.$first(first(ctx.scopedInterfaces).operations).name$($first(first(ctx.scopedInterfaces).operations).inputparam : {param |$param.name$}; separator=", "$);
 			$endif$
 		} catch (Exception ex) {
 			System.out.println("Exception: " + ex.getMessage());

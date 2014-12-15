@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import com.kiara.serialization.impl.Serializable;
-import com.kiara.serialization.impl.SerializerImpl;
-import com.kiara.serialization.impl.CDRSerializer;
-import com.kiara.transport.impl.TransportMessage;
+import org.fiware.kiara.serialization.impl.Serializable;
+import org.fiware.kiara.serialization.impl.SerializerImpl;
+import org.fiware.kiara.serialization.impl.CDRSerializer;
+import org.fiware.kiara.transport.impl.TransportMessage;
 
 /**
  * Class definition for the user defined type $ctx.currentSt.name$. 
@@ -130,7 +130,7 @@ serialization_methods(currentSt) ::= <<
 /*
  * This method serializes a $currentSt.name$.
  *
- * @see com.kiara.serialization.impl.Serializable#serialize(com.kiara.serialization.impl.SerializerImpl, com.kiara.transport.impl.TransportMessage, java.lang.String)
+ * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
@@ -149,7 +149,7 @@ $endif$
 /*
  * This method deserializes a $currentSt.name$.
  *
- * @see com.kiara.serialization.impl.Serializable#deserialize(com.kiara.serialization.impl.SerializerImpl, com.kiara.transport.impl.TransportMessage, java.lang.String)
+ * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 

@@ -5,12 +5,12 @@ $fileHeader(ctx=ctx,  file=[, "ServerExample.java"], description=["This file con
 
 package $ctx.javaPackage$;
 
-import com.kiara.Context;
-import com.kiara.Kiara;
-import com.kiara.server.Server;
-import com.kiara.server.Service;
-import com.kiara.serialization.Serializer;
-import com.kiara.transport.ServerTransport;
+import org.fiware.kiara.Context;
+import org.fiware.kiara.Kiara;
+import org.fiware.kiara.server.Server;
+import org.fiware.kiara.server.Service;
+import org.fiware.kiara.serialization.Serializer;
+import org.fiware.kiara.transport.ServerTransport;
 
 /**
  * Class that acts as the main server entry point. 
@@ -27,7 +27,11 @@ public class ServerExample {
 		Context context = Kiara.createContext();
 		Server server = context.createServer();
 		
+<<<<<<< HEAD:src/main/resources/com/kiara/generator/idl/templates/KIARAServerExample.stg
 		$ctx.firstInterface.name$Servant $ctx.firstInterface.name$_impl = new $ctx.firstInterface.name$ServantExample();
+=======
+		$first(ctx.scopedInterfaces).name$Servant $ctx.filename$_impl = new $first(ctx.scopedInterfaces).name$ServantExample();
+>>>>>>> 6f9aa9a3a2a35c9311af49f33bbb7340465eb681:src/main/resources/org/fiware/kiara/generator/idl/templates/KIARAServerExample.stg
 		
 		Service service = context.createService();
 		

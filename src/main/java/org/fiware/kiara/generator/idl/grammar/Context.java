@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.kiara.generator.idl.grammar;
+package org.fiware.kiara.generator.idl.grammar;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -70,52 +70,6 @@ public class Context extends com.eprosima.idl.context.Context
         }
     }
 
-    /*!
-     * @brief This function is used to know if a project has to generate the Types.
-     */
-    public boolean isProjectNeedTypes()
-    {
-    	com.eprosima.idl.parser.tree.Exception ex = null;;
-    	
-    	if((ex = getFirstException()) != null)
-    		return true;
-    	
-    	return false;
-    }
-    
-    /*!
-     * @brief This function is used in this project to get the first discovered interface.
-     */
-    public Interface getFirstInterface()
-    { 
-        for(int count = 0; m_firstinterface == null && count < getDefinitions().size(); ++count)
-        {
-            //m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
-            if (getDefinitions().get(count) instanceof Interface) {
-            	m_firstinterface = (Interface) getDefinitions().get(count);
-            } else {
-            	m_firstinterface = getDefinitions().get(count).getFirstInterface(getScopeFile());
-            }
-            
-        }
-        
-        return m_firstinterface;
-    }
-    
-    // TODO Ver si es necesario.
-    /*!
-     * @brief This function is used in this project to get the first discovered exception.
-     */
-    public com.eprosima.idl.parser.tree.Exception getFirstException()
-    {
-    	for(int count = 0; m_firstexception == null && count < getDefinitions().size(); ++count)
-        {
-    		m_firstexception = getDefinitions().get(count).getFirstException(getScopeFile());
-        }
-        
-        return m_firstexception;
-    }
-    
     public boolean isClient()
     {
         return m_subscribercode;
@@ -187,7 +141,7 @@ public class Context extends com.eprosima.idl.context.Context
     //! Cache the first exception.
     private com.eprosima.idl.parser.tree.Exception m_firstexception = null;
 
-    // TODO Lleva la cuenta de generación de nuevos nombres.
+    // TODO Lleva la cuenta de generaciï¿½n de nuevos nombres.
     private int m_randomGenName = 0;
     private Stack<String> m_randomGenNames = null;
     // TODO Lleva la cuenta del nombre de variables para bucles anidados.

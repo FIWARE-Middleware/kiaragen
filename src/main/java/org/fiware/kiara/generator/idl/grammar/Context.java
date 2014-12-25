@@ -27,7 +27,7 @@ import com.eprosima.idl.parser.typecode.TypeCode;
 
 /**
 *
-* @author Rafael Lara <rafaellara@eprosima.com>
+* @author Rafael Lara {@literal <rafaellara@eprosima.com>}
 */
 public class Context extends com.eprosima.idl.context.Context
 {

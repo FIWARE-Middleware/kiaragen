@@ -25,7 +25,7 @@ import java.nio.file.attribute.PosixFilePermission;
 
 /**
 *
-* @author Rafael Lara <rafaellara@eprosima.com>
+* @author Rafael Lara {@literal <rafaellara@eprosima.com>}
 */
 public class Utils
 {

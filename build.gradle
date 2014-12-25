@@ -1,46 +1,33 @@
-// internal plugins
 plugins {
-    id "me.champeau.gradle.antlr4" version "0.1" // antlr4 community plugin.
+    id 'java'
+    id 'maven'
+    id 'eclipse'
+    id 'com.bmuschko.nexus' version '2.1.1'
+    id 'us.kirchmeier.capsule' version '0.10.0'
 }
 
-apply plugin: 'eclipse' // Eclipse integration
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'maven'
-
-
-
-mainClassName = 'org.fiware.kiara.generator.kiaragen'
-
-//general properties
+//general & artefact properties
+group = 'org.fiware.kiara'
 version = '0.1.0'
+description = "KIARA Advanced Middleware kiaragen tool"
 
-description = """"""
-
-// java plugin properties (until antlr 4.4 we have to set this to 1.6)
-// (https://github.com/antlr/antlr4/issues/487)
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-// temporary fix until we can switch to sourceCompatibility=1.7+
-// (http://stackoverflow.com/a/20779740)
+// fix bootstrap class path not set, when compile to different java version
 tasks.withType(JavaCompile) {
-	options.bootClasspath = "$System.env.JAVA_HOME/jre/lib/rt.jar"
+    options.bootClasspath = "$System.env.JAVA_HOME/jre/lib/rt.jar"
 }
 
-// maven-plugin properties
-group = 'org.fiware.kiara'
-
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-	compile group: 'org.antlr', name: 'antlr4', version:'4.2.2'
-	compile group: 'antlr', name: 'antlr', version:'2.7.7'
-    compile group: 'org.antlr', name: 'stringtemplate', version:'3.2'
+    compile group: 'org.fiware.kiara', name: 'kiaraparser', version: '0.1.0'
+    compile group: 'org.antlr', name: 'antlr4', version:'4.2.2'
     testCompile group: 'junit', name: 'junit', version:'4.10'
-	compile files('lib/kiaraparser-0.1.0.jar')
 }
 
 test {
@@ -49,19 +36,82 @@ test {
   }
 }
 
-//task copyFiles(type: Copy) {
-//	into "build/classes/main/org/fiware/kiara/generator/idl/templates"
-//	from("src/main/java/org/fiware/kiara/generator/idl/templates") {
-//		include '*.stg'
-//	}
-//}
-
-jar (){
-	manifest {
-        attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
-		attributes 'Class-Path': 'kiaraparser-0.1.0.jar antlr-4.4-complete.jar antlr-2.7.7.jar stringtemplate-3.2.1.jar'
-    }
-	baseName = 'kiaragen'
-    version =  '0.1.0'
+task capsule (type:FatCapsule,
+              group: 'build',
+              description: "Build executable JAR using capsule") {
+    applicationClass 'org.fiware.kiara.generator.kiaragen'
+    capsuleManifest.applicationName = project.group+"."+project.name
+    capsuleManifest.applicationVersion = project.version
+    capsuleManifest.minJavaVersion = '1.7.0'
+    //capsuleManifest.extractCapsule = false  // false in case of ThinCapsule
+    capsuleManifest.repositories << 'local'  // remove for production
+    capsuleManifest.repositories << 'central'
+    reallyExecutable // makes jar executable on unix systems
 }
 
+artifacts {
+    archives capsule
+}
+
+install.dependsOn capsule
+
+
+modifyPom {
+    project {
+        name project.description
+        artifactId project.name
+        description project.description
+        url 'https://github.com/FIWARE-Middleware'
+        inceptionYear '2014'
+        
+        scm {
+          connection 'scm:git:https://github.com/FIWARE-Middleware/IDL-Parser.git'
+          developerConnection 'scm:git:https://github.com/FIWARE-Middleware/IDL-Parser.git'
+          url 'https://github.com/FIWARE-Middleware/IDL-Parser.git'
+        }
+
+        licenses {
+          license {
+            name 'GNU Lesser General Public License, Version 3.0'
+            url 'https://www.gnu.org/licenses/lgpl.html'
+          }
+        }
+
+        developers {
+          developer {
+            id 'richiprosima'
+            name 'Riccardo Gonzalez'
+            email 'RicardoGonzalez@eprosima.com'
+          }
+          developer {
+            id 'RafaelLaraAlvarez'
+            name 'Rafael Lara Alvarez'
+            email 'RafaelLara@eprosima.com'
+          }
+          developer {
+            id 'dmrub'
+            name 'Dmitri Rubinstein'
+            email 'mach@zhaw.ch'
+          }
+          developer {
+            id 'mach'
+            name 'Christof Marti'
+            email 'mach@zhaw.ch'
+          }
+        }
+    }
+}
+
+extraArchive {
+    sources = true
+    javadoc = true
+    tests = false
+}
+
+
+nexus {
+    sign = true
+    // To upload to OSSRH comment/remove the following urls
+    repositoryUrl = "file:$buildDir/repos/"
+    snapshotRepositoryUrl = "file:$buildDir/repos/"
+}

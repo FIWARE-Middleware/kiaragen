@@ -18,9 +18,9 @@
 package org.fiware.kiara.generator.idl.grammar;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
-import com.eprosima.idl.parser.tree.Definition;
 import com.eprosima.idl.parser.tree.Interface;
 import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
@@ -32,12 +32,10 @@ import com.eprosima.idl.parser.typecode.TypeCode;
 public class Context extends com.eprosima.idl.context.Context
 {
     // TODO Remove middleware parameter. It is temporal while cdr and rest don't have async functions.
-    public Context(String filename, String file, ArrayList includePaths, boolean subscribercode, boolean publishercode,
+    public Context(String filename, String file, List<String> includePaths, boolean subscribercode, boolean publishercode,
             String appProduct, String pck)
     {
         super(filename, file, includePaths);
-        
-        
         m_subscribercode = subscribercode;
         m_publishercode = publishercode;
         m_randomGenNames = new Stack<String>();

@@ -17,11 +17,11 @@
  */
 package org.fiware.kiara.generator.util;
 
-import org.antlr.stringtemplate.StringTemplate;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.attribute.PosixFilePermission;
+import org.antlr.stringtemplate.StringTemplate;
 
 /**
 *
@@ -30,95 +30,77 @@ import java.nio.file.attribute.PosixFilePermission;
 public class Utils
 {
     
-    public static String getFileNameOnly(String fileName)
+    public static String baseFilename(String fileName)
     {
-        int index = -1;
-        String auxString = fileName, returnedValue = null;
+        return baseFilename(new File(fileName));
+    }
+
+    public static String baseFilename(File file) {
+        if (file==null) throw new IllegalArgumentException("Null value not allowed");
         
-        index = fileName.lastIndexOf(File.separator);
-        
-        if(index == -1)
-            index = fileName.lastIndexOf('/');
-        
-        if(index != -1)
-            auxString = fileName.substring(index + 1);
-        
-        // Remove extension
-        index = auxString.lastIndexOf('.');
-        if(index != -1)
-        	auxString = auxString.substring(0, index);
-        	
-       	returnedValue = auxString;
-        
-        return returnedValue;
+        String filename = file.getName();
+        int index;
+        if ((index = filename.lastIndexOf('.')) != -1) {
+            filename = filename.substring(0,index);
+        }
+        return filename;
+    }
+    
+    public static String fileExtension(String filename) {
+        if (filename==null) throw new IllegalArgumentException("Null value not allowed");
+        int index;
+        return ((index = filename.lastIndexOf('.')) != -1)? 
+                filename.substring(index +1) : ""; 
+    }
+    
+    public static String fileExtension(File file) {
+        if (file==null) throw new IllegalArgumentException("Null value not allowed");
+        return fileExtension(file.getName());
     }
     
     public static String addFileSeparator(String directory)
     {
-        String returnedValue = directory;
-        
-        if(directory.charAt(directory.length() - 1) != File.separatorChar ||
-                directory.charAt(directory.length() - 1) != '/')
-            returnedValue = directory + File.separator;
-        
-        return returnedValue;
+        return (directory.endsWith(File.separator) || directory.endsWith("/")) ?
+                directory : directory + File.separator;
     }
     
-    public static boolean createSrcDir(String outputDir) {
-    	File directory = new File(outputDir);
-        if (directory.exists() && directory.isFile())
-        {
-            System.out.print("The dir with name could not be  created as it is a normal file - ");
+    public static boolean createDir(String outputDir) {
+        return createDir(new File(outputDir));
+    }
+   
+    public static boolean createDir(File directory) {
+        if (directory == null) throw new IllegalArgumentException("Null value not allowed");
+        if (directory.isFile()) {
+            System.out.print("The directory could not be created because it is a normal file - ");
             return false;
         } else {
-            if (!directory.exists())
-			{
-			    if (!directory.mkdirs()); {
-			    	if (directory.exists()) {
-			    		return true;
-			    	}
-			    	return false;
-			    }
-            } 
-			return true;
+            if (!directory.exists() && !directory.mkdirs()) {
+                return directory.exists();
+            }
+            return true;
         }
-    	
     }
     
-    public static boolean writeFile(String file, StringTemplate template, boolean replace)
+    public static boolean writeFile(String filename, StringTemplate template, boolean replace)
     {
-        boolean returnedValue = false;
-        
-        try
-        {
-            File handle = new File(file);
-            
-            if(!handle.exists() || replace)
-            {
-                FileWriter fw = new FileWriter(file);
-                String data = template.toString();
-                fw.write(data, 0, data.length());
-                fw.close();
-            }
-            else
-            {
-                System.out.println("INFO: " + file + " exists. Skipping.");
-            }
-
-            returnedValue = true;
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }   
-
-        return returnedValue;
+        return writeFile(new File(filename), template, replace);
     }
     
-	public static String getFileExtension(String fileName)
-	{
-		int lastDot = fileName.lastIndexOf(".");
-		
-		return fileName.substring(lastDot+1);
-	}
+    public static boolean writeFile(File file, StringTemplate template, boolean replace) {
+        boolean success=true;
+        
+        if(!file.exists() || replace) {
+            try (FileWriter fw = new FileWriter(file)) {
+                fw.write(template.toString());
+                System.out.println("INFO:  Writing file "+ file +" successfull");
+            } catch(IOException e) {
+                System.out.println("ERROR: Writing file "+ file + "failed : " + e.getMessage());
+                success = false;
+            }
+        } else {
+            System.out.println("INFO: " + file + " exists. Skipping.");
+        }
+        return success;
+    }
+    
 }

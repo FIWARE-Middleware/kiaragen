@@ -6,7 +6,7 @@ plugins {
     id 'us.kirchmeier.capsule' version '0.10.0'
 }
 
-//general & artefact properties
+//general & artifact properties
 group = 'org.fiware.kiara'
 version = '0.1.0'
 description = "KIARA Advanced Middleware kiaragen tool"
@@ -66,9 +66,9 @@ modifyPom {
         inceptionYear '2014'
         
         scm {
-          connection 'scm:git:https://github.com/FIWARE-Middleware/IDL-Parser.git'
-          developerConnection 'scm:git:https://github.com/FIWARE-Middleware/IDL-Parser.git'
-          url 'https://github.com/FIWARE-Middleware/IDL-Parser.git'
+          connection 'scm:git:https://github.com/FIWARE-Middleware/kiaragen.git'
+          developerConnection 'scm:git:https://github.com/FIWARE-Middleware/kiaragen.git'
+          url 'https://github.com/FIWARE-Middleware/kiaragen.git'
         }
 
         licenses {

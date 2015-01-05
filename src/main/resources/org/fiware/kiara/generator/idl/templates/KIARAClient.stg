@@ -3,7 +3,9 @@ group ProtocolHeader;
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Client.java"], description=["This file contains the interface implementing both synchronous and asynchronous operations."])$
 
+$if(ctx.javaPackage)$
 package $ctx.javaPackage$;
+$endif$
 
 /**
  * Interface implementing the synchronous and asynchronous method definition. 

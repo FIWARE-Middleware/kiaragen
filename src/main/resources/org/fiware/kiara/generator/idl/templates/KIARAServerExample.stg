@@ -3,7 +3,9 @@ group ProtocolHeader;
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[, "ServerExample.java"], description=["This file contains the main server example entry point."])$
 
+$if(ctx.javaPackage)$
 package $ctx.javaPackage$;
+$endif$
 
 import org.fiware.kiara.Context;
 import org.fiware.kiara.Kiara;

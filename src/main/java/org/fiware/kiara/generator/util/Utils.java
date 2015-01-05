@@ -92,13 +92,13 @@ public class Utils
         if(!file.exists() || replace) {
             try (FileWriter fw = new FileWriter(file)) {
                 fw.write(template.toString());
-                System.out.println("INFO:  Writing file "+ file +" successfull");
+                System.out.println("- "+ file +" OK");
             } catch(IOException e) {
                 System.out.println("ERROR: Writing file "+ file + "failed : " + e.getMessage());
                 success = false;
             }
         } else {
-            System.out.println("INFO: " + file + " exists. Skipping.");
+            System.out.println("- " + file + " exists. Skipping.");
         }
         return success;
     }

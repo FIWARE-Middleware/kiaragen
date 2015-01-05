@@ -33,7 +33,6 @@ import java.util.List;
 import org.antlr.stringtemplate.StringTemplateErrorListener;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -47,7 +46,6 @@ import org.fiware.kiara.generator.util.Utils;
 
 import com.eprosima.idl.generator.manager.TemplateGroup;
 import com.eprosima.idl.generator.manager.TemplateManager;
-import com.eprosima.idl.parser.exception.ParseException;
 import com.eprosima.idl.parser.grammar.KIARAIDLLexer;
 import com.eprosima.idl.parser.grammar.KIARAIDLParser;
 import com.eprosima.idl.parser.tree.Definition;
@@ -89,7 +87,7 @@ public class Kiaragen {
     private File m_srcDir = m_defaultOutputDir;
     private File m_srcPackageDir = m_srcDir;
     private File m_tempDir = null;
-    private String m_javaPackage = "";
+    private String m_javaPackage = null;
 
     private List<String> m_includePaths = new ArrayList<String>();
 
@@ -103,8 +101,17 @@ public class Kiaragen {
     /*
      * Constructor
      */
+    public Kiaragen() {
+    }
+    
     public Kiaragen(String[] idlFiles) {
         for (String idlFile : idlFiles) {
+            this.addIdlFile(idlFile);
+        }
+    }
+    
+    public Kiaragen(File[] idlFiles) {
+        for (File idlFile : idlFiles) {
             this.addIdlFile(idlFile);
         }
     }
@@ -123,11 +130,11 @@ public class Kiaragen {
         this.m_idlFiles.add(idlFile);
     }
 
-    public void addIdlFile(String idlFile) {
-        if (idlFile == null || idlFile.isEmpty()) {
-            throw new IllegalArgumentException("IDL file may not be null or empty");
+    public void addIdlFile(String idlFilePath) {
+        if (idlFilePath == null || idlFilePath.isEmpty()) {
+            throw new IllegalArgumentException("IDL filepath may not be null or empty");
         }
-        this.addIdlFile(new File(idlFile));
+        this.addIdlFile(new File(idlFilePath));
     }
 
     public String getPlatform() {
@@ -135,6 +142,7 @@ public class Kiaragen {
     }
 
     public void setPlatform(String platform) {
+        platform = (platform != null)? platform.trim().toLowerCase() : "";
         if (!m_platforms.contains(platform)) {
             throw new IllegalArgumentException("Unknown target platform: " + platform);
         }
@@ -170,7 +178,7 @@ public class Kiaragen {
     }
 
     public void setPpPath(String ppPath) {
-        this.m_ppPath = ppPath;
+        this.m_ppPath = (ppPath != null)? ppPath.trim() : null;
     }
 
     public File getOutputDir() {
@@ -186,7 +194,7 @@ public class Kiaragen {
     }
 
     public void setSrcPath(String srcPath) {
-        this.m_srcPath = srcPath;
+        this.m_srcPath = (srcPath != null)? srcPath.trim() : "";
     }
 
     public File getTempDir() {
@@ -202,7 +210,8 @@ public class Kiaragen {
     }
 
     public void setJavaPackage(String javaPackage) {
-        this.m_javaPackage = javaPackage;
+        this.m_javaPackage = (javaPackage != null && !javaPackage.trim().isEmpty())? 
+                javaPackage.trim() : null;
     }
 
     public List<String> getIncludePaths() {
@@ -255,8 +264,9 @@ public class Kiaragen {
         } else {
             m_srcDir = new File(m_outputDir, m_srcPath);
         }
-        String packagePath = m_javaPackage.replace(".", File.separator);
-        m_srcPackageDir = new File(m_srcDir, packagePath);
+        
+        m_srcPackageDir = (m_javaPackage == null) ? m_srcDir : 
+                new File(m_srcDir, m_javaPackage.replace(".", File.separator));
         System.out.print("Creating output source directory... " + m_srcPackageDir + "... ");
         if (Utils.createDir(m_srcPackageDir)) {
             System.out.println("OK");
@@ -266,17 +276,16 @@ public class Kiaragen {
         }
         
         // Load string templates
-        System.out.println("Loading templates...");
         String templatesDir = 
                 Kiaragen.class.getPackage().getName().replace('.', '/')+"/idl/templates";
+        System.out.println("Loading templates from... " + templatesDir);
         TemplateManager.setGroupLoaderDirectories(templatesDir);
 
         System.out.println(this.getClass().getCanonicalName());
         System.out.println(Context.class.getCanonicalName());
 
         boolean success = true;
-        for (Iterator<File> it = m_idlFiles.iterator(); success && it.hasNext();)
-        for (int count = 0; success && (count < m_idlFiles.size()); ++count) {
+        for (Iterator<File> it = m_idlFiles.iterator(); success && it.hasNext();) {
             success = process(it.next());
         }
         return success;
@@ -284,22 +293,26 @@ public class Kiaragen {
 
     private boolean process(File idlFile) {
         System.out.println("Processing the file " + idlFile + "...");
+        boolean success = true;
         try {
             // Protocol CDR
-            parseIDLtoCDR(idlFile);
-        } catch (Exception ioe) {
-            System.out.println(ColorMessage.error()
-                    + "Cannot generate the files");
-            if (!ioe.getMessage().equals("")) {
-                System.out.println(ioe.getMessage());
+            success = parseIDLtoCDR(idlFile);
+            if (!success) {
+                System.out.println(ColorMessage.error() + 
+                    "Failed to generate the files. See error messages for details.");
             }
-            return false;
+        } catch (Exception ex) {
+            System.out.println(ColorMessage.error() + "Failed to generate the files");
+            System.out.println(ColorMessage.error(ex.getClass().getSimpleName())
+                    + ex.getMessage());
+            ex.printStackTrace();
+            success = false;
         }
-        return true;
+        return success;
     }
 
-    private void parseIDLtoCDR(File idlFile) {
-        boolean success = true;
+    private boolean parseIDLtoCDR(File idlFile) throws IOException {
+        boolean success = false;
         File idlParseFile = idlFile;
 
         String baseFileName = Utils.baseFilename(idlFile);
@@ -369,18 +382,10 @@ public class Kiaragen {
                 success = specification != null;
 
             } catch (FileNotFoundException ex) {
-                System.out.println(ColorMessage.error("FileNotFounException")
-                        + "The File " + idlParseFile + " was not found.");
+                throw new FileNotFoundException("The File " + idlParseFile + " was not found.");
+
             } catch (ParseCancellationException ex) {
-                System.out.println(ColorMessage
-                        .error("ParseCancellationException")
-                        + "The File " + idlParseFile + " cannot be parsed.");
-                Throwable arrayt[] = ex.getSuppressed();
-                Throwable cause = ex.getCause();
-                System.out.println();
-            } catch (ParseException | RecognitionException | IOException ex) {
-                System.out.println(ColorMessage.error(ex.getClass().getSimpleName())
-                        + ex.getMessage());
+                throw new ParseCancellationException("The File " + idlParseFile + " cannot be parsed.", ex);
             }
 
             if (success) {
@@ -474,6 +479,7 @@ public class Kiaragen {
                 }
             }
         }
+        return success;
     }
 
     File callPreprocessor(File idlFile) {
@@ -526,12 +532,11 @@ public class Kiaragen {
         }
 
         // Add the include paths given as parameters.
-        for (int i = 0; i < m_includePaths.size(); ++i) {
+        for (String includePath : m_includePaths) {
             if (ppPath.endsWith("cl.exe")) {
-                lineCommand.add(((String) m_includePaths.get(i)).replaceFirst(
-                        "^-I", "/I"));
+                lineCommand.add(includePath.replaceFirst("^-I", "/I"));
             } else if (ppPath.endsWith("cpp") || ppPath.endsWith("clang") || ppPath.endsWith("gcc") ) {
-                lineCommand.add(m_includePaths.get(i));
+                lineCommand.add(includePath);
             }
         }
 

@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAExample;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main synchronous interface for the defined operations."])$

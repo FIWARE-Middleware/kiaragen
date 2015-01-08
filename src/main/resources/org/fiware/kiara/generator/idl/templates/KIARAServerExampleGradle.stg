@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAServerExampleGradle;
 
 main(ctx, definitions) ::= <<
 apply plugin: 'java'

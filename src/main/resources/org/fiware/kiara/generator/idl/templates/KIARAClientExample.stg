@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAClientExample;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[, "ClientExample.java"], description=["This file contains the main client code example."])$
@@ -32,16 +32,8 @@ public class ClientExample {
 		
 		Context context = Kiara.createContext();
 		
-<<<<<<< HEAD:src/main/resources/com/kiara/generator/idl/templates/KIARAClientExample.stg
 		Connection connection = context.connect("tcp://127.0.0.1:9090?serialization=cdr");
-		$ctx.firstInterface.name$ client = connection.getServiceProxy($ctx.firstInterface.name$Client.class);
-=======
-		Transport transport = context.createTransport("tcp://127.0.0.1:9090");
-		Serializer serializer = context.createSerializer("cdr");
-		
-		Connection connection = context.connect(transport, serializer);
 		$first(ctx.scopedInterfaces).name$ client = connection.getServiceProxy($first(ctx.scopedInterfaces).name$Client.class);
->>>>>>> 6f9aa9a3a2a35c9311af49f33bbb7340465eb681:src/main/resources/org/fiware/kiara/generator/idl/templates/KIARAClientExample.stg
 		
 		try {
 			$if(first(first(ctx.scopedInterfaces).operations).rettype)$

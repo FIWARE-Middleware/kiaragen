@@ -114,6 +114,6 @@ extraArchive {
 nexus {
     sign = true
     // To upload to OSSRH comment/remove the following urls
-    repositoryUrl = "file:$buildDir/repos/"
-    snapshotRepositoryUrl = "file:$buildDir/repos/"
+    //repositoryUrl = "file:$buildDir/repos/"
+    //snapshotRepositoryUrl = "file:$buildDir/repos/"
 }

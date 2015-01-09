@@ -529,6 +529,8 @@ public class Kiaragen {
             lineCommand.add("/C");
         } else if (ppPath.endsWith("clang") || ppPath.endsWith("gcc")) {
             lineCommand.add("-E");
+            lineCommand.add("-x");
+            lineCommand.add("c");
         }
 
         // Add the include paths given as parameters.

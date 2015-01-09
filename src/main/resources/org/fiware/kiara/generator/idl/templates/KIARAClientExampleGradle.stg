@@ -27,7 +27,6 @@ jar {
 		attributes 'Class-Path': 'kiara-0.1.1.jar commons-lang-2.6.jar slf4j-jdk14-1.7.7.jar slf4j-api-1.7.7.jar netty-all-4.0.21.Final.jar guava-17.0.jar'
     }
 	baseName = 'client_example'
-    version =  '0.1.0'
 }
 >>
 

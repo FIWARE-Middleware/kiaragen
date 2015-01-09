@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAExampleAsync;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ExampleAsync.java"], description=["This file contains the main asynchronous interface for the defined operations."])$

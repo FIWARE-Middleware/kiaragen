@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAServant;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Servant.java"], description=["This file contains the servant processing implementation code. It parses the service executed and calls the corresponding method."])$

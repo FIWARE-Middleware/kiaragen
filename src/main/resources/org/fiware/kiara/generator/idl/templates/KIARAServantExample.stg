@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAServantExample;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServantExample.java"], description=["This file contains the servant implementation."])$
@@ -59,8 +59,8 @@ enum_type(ctx, enum) ::= <<>>
 
 operation_impl(operation) ::= <<
 	/*!
-	 * @brief This method implements the proxy part of the protocol for the operation $operation.name$.
-	 *        It has to be implemented by the child classes.
+	 * @brief This method implements the behavious of the $operation.name$ remote procedure.
+	 *        It has to be implemented by the user.
 	 */
 
 	public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$) {

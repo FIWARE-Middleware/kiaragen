@@ -1,4 +1,4 @@
-group ProtocolHeader;
+group KIARAServerExample;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[, "ServerExample.java"], description=["This file contains the main server example entry point."])$
@@ -29,16 +29,13 @@ public class ServerExample {
 		Context context = Kiara.createContext();
 		Server server = context.createServer();
 		
-		$first(ctx.scopedInterfaces).name$Servant $ctx.filename$_impl = new $first(ctx.scopedInterfaces).name$ServantExample();
+		$first(ctx.scopedInterfaces).name$Servant $first(ctx.scopedInterfaces).name$_impl = new $first(ctx.scopedInterfaces).name$ServantExample();
 		
-		ServerTransport transport = context.createServerTransport("tcp://0.0.0.0:8080");
-		Serializer serializer = context.createSerializer("cdr");
 		Service service = context.createService();
 		
-		service.register($ctx.filename$_impl);
+		service.register($first(ctx.scopedInterfaces).name$_impl);
 		
 		//Add service waiting on TCP with CDR serialization
-		server.addService(service, transport, serializer);
 		server.addService(service, "tcp://0.0.0.0:9090", "cdr");
 		
 		server.run();

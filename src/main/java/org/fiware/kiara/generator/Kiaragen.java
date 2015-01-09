@@ -127,7 +127,6 @@ public class Kiaragen {
         } catch (IOException e) {
             throw new IllegalArgumentException("IDL file " + idlFile + " not found.");
         }
-        this.m_idlFiles.add(idlFile);
     }
 
     public void addIdlFile(String idlFilePath) {

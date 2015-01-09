@@ -139,7 +139,6 @@ public class Context extends com.eprosima.idl.context.Context
     //! Cache the first exception.
     private com.eprosima.idl.parser.tree.Exception m_firstexception = null;
 
-    // TODO Lleva la cuenta de generaci�n de nuevos nombres.
     private int m_randomGenName = 0;
     private Stack<String> m_randomGenNames = null;
     // TODO Lleva la cuenta del nombre de variables para bucles anidados.

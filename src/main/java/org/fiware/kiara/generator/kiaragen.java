@@ -20,6 +20,7 @@ package org.fiware.kiara.generator;
 
 import org.fiware.kiara.generator.exceptions.BadArgumentException;
 import org.fiware.kiara.generator.exceptions.ExceptionErrorStrategy;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,10 +50,15 @@ import com.eprosima.idl.parser.tree.Definition;
 import com.eprosima.idl.parser.tree.Interface;
 import com.eprosima.idl.parser.tree.Specification;
 import com.eprosima.idl.parser.tree.TypeDeclaration;
+import com.eprosima.idl.parser.typecode.EnumTypeCode;
+import com.eprosima.idl.parser.typecode.Member;
 import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
+import com.eprosima.idl.parser.typecode.UnionMember;
+import com.eprosima.idl.parser.typecode.UnionTypeCode;
 import com.eprosima.idl.util.Util;
 import com.eprosima.log.ColorMessage;
+
 import org.fiware.kiara.generator.idl.grammar.Context;
 import org.fiware.kiara.generator.util.Utils;
 
@@ -378,6 +384,12 @@ public class kiaragen {
 			// Load Support class template
 			tmanager.addGroup("KIARASupportType");
 			
+			// Load Support class template
+			tmanager.addGroup("KIARAUnionSupportType");
+			
+			// Load Support class template
+			tmanager.addGroup("KIARAEnumSupportType");
+			
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
 			maintemplates.setAttribute("ctx", ctx);
@@ -426,13 +438,30 @@ public class kiaragen {
 					if (d.isIsTypeDeclaration()) {
 						TypeDeclaration type = (TypeDeclaration) d;
 						TypeCode tc = type.getTypeCode();
-						if (tc.getKind() == 0x0000000a) { // Struct
+						if (tc.getKind() == 0x0000000a) { // Struct typecode
 							StructTypeCode st = (StructTypeCode) tc;
 							ctx.setCurrentSt(st);
 							System.out.print("Generating Type support class for structure " + st.getName() +"... ");
 							if (returnedValue = Utils.writeFile(this.m_package + st.getName() + ".java", maintemplates.getTemplate("KIARASupportType"), m_replace)) {
 								System.out.println("OK");
 							}
+						} else if (tc.getKind() == 0x0000000b) { // Union typecode
+							UnionTypeCode ut = (UnionTypeCode) tc;
+							ctx.setCurrentUnion(ut);
+							System.out.print("Generating Type support class for union " + ut.getName() +" and union cases... ");
+							if (returnedValue = Utils.writeFile(this.m_package + ut.getName() + ".java", maintemplates.getTemplate("KIARAUnionSupportType"), m_replace)) {
+								System.out.println("OK");
+							}
+							System.out.println("");
+						} else if (tc.getKind() == 0x0000000c) { // Enum typecode
+							EnumTypeCode et = (EnumTypeCode) tc;
+							ctx.setCurrentEnum(et);
+							System.out.print("Generating Type support class for enum " + et.getName() +" and union cases... ");
+							System.out.println(et.getName());
+							if (returnedValue = Utils.writeFile(this.m_package + et.getName() + ".java", maintemplates.getTemplate("KIARAEnumSupportType"), m_replace)) {
+								System.out.println("OK");
+							}
+							System.out.println("");
 						}
 						
 					}
@@ -443,7 +472,7 @@ public class kiaragen {
 					for (Interface ifz: ctx.getInterfaces()) {
 						ctx.setCurrentIfz(ifz);
 						
-						System.out.print("Generating application main entry files for interface " + ifz.getName() +"... ");
+						System.out.print("Generating application main entry files for service " + ifz.getName() +"... ");
 						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
 							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
 								if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
@@ -452,7 +481,7 @@ public class kiaragen {
 							}
 						}
 						
-						System.out.print("Generating specific server side files for interface " + ifz.getName() +"... ");
+						System.out.print("Generating specific server side files for service " + ifz.getName() +"... ");
 						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
 							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
 								System.out.println("OK");
@@ -460,7 +489,7 @@ public class kiaragen {
 						}
 						
 						
-						System.out.print("Generating specific client side files for interface " + ifz.getName() +"... ");
+						System.out.print("Generating specific client side files for service " + ifz.getName() +"... ");
 						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
 							System.out.println("OK");
 						}

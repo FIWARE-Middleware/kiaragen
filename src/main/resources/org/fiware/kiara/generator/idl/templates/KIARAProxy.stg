@@ -99,6 +99,10 @@ $endif$
 						$endif$
 					$endif$
 				$endif$
+			$else$
+			$if(operation.rettype.isType_c)$
+, $operation.rettype.name$.class
+			$endif$
 			$endif$);
 				return ret;
 				$else$
@@ -112,7 +116,11 @@ $endif$
 	}
 	
 	$if(operation.rettype)$
+	$if(operation.rettype.isType_b)$
+	return null;
+	$else$
 	return $initJava.(operation.rettype.stType)$;
+	$endif$
 	$else$
 	return;
 	$endif$

@@ -65,8 +65,13 @@ operation_impl(operation) ::= <<
 	
 		// Your implementation code goes here
 		$if(operation.rettype)$
+		$if(operation.rettype.isType_b)$
+		
+		return $operation.rettype.cppTypename$.create_default($initJava.(operation.rettype.defaultMember.typecode.stType)$);
+		$else$
 		
 		return $initJava.(operation.rettype.stType)$;
+		$endif$
 		$endif$
 	}
 >>

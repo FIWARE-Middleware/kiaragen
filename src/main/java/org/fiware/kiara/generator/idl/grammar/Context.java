@@ -22,8 +22,11 @@ import java.util.Stack;
 
 import com.eprosima.idl.parser.tree.Definition;
 import com.eprosima.idl.parser.tree.Interface;
+import com.eprosima.idl.parser.typecode.EnumTypeCode;
 import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
+import com.eprosima.idl.parser.typecode.UnionMember;
+import com.eprosima.idl.parser.typecode.UnionTypeCode;
 
 /**
 *
@@ -160,6 +163,12 @@ public class Context extends com.eprosima.idl.context.Context
     
     private StructTypeCode m_current_st = null;
     
+    private UnionTypeCode m_current_union = null;
+    private UnionMember m_current_union_member = null;
+    private int m_current_union_member_index = 0;
+    private EnumTypeCode m_current_enum = null;
+    
+    
     private String m_package;
 
 	public String getM_firstStructure() {
@@ -186,8 +195,36 @@ public class Context extends com.eprosima.idl.context.Context
 		this.m_current_st = m_current_st;
 	}
 	
+	public void setCurrentUnion(UnionTypeCode m_current_union) {
+		this.m_current_union = m_current_union;
+	}
+	
+	public UnionTypeCode getCurrentUnion() {
+		return this.m_current_union;
+	}
+	
+	public void setCurrentUnionMember(UnionMember m_current_union_member) {
+		this.m_current_union_member = m_current_union_member;
+	}
+	
+	public UnionMember getCurrentUnionMember() {
+		return this.m_current_union_member;
+	}
+	
+	public int getCurrentUnionMemberIndex() {
+		return this.m_current_union_member_index;
+	}
+	
+	public EnumTypeCode getCurrentEnum() {
+		return this.m_current_enum;
+	}
+	
+	public void setCurrentEnum(EnumTypeCode enumTc) {
+		this.m_current_enum = enumTc;
+	}
+	
 	public String getJavaPackage() {
 		return this.m_package;
 	}
-    
+	
 }

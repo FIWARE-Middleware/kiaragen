@@ -28,11 +28,15 @@ $if(!operation.oneway)$
 public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$$operation.name$_AsyncCallback callback);
 
 public static abstract class $operation.name$_AsyncCallback implements AsyncCallback<$if(operation.rettype)$
+	$if(operation.rettype.isType_c)$
+$operation.rettype.name$
+	$else$
 	$if(operation.rettype.primitive)$$envelopeJava.(operation.rettype.stType)$
 	$else$
 		$if(!operation.rettype.isType_f)$
 $operation.rettype.cppTypename$
 		$endif$
+	$endif$
 	$endif$
 $else$
 Void
@@ -50,6 +54,10 @@ $endif$
 						$endif$
 					$endif$
 				$endif$
+			$else$
+			$if(operation.rettype.isType_c)$
+, $operation.rettype.name$.class
+			$endif$
 			$endif$);
 			onSuccess(result);
 			$else$

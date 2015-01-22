@@ -1,0 +1,83 @@
+group KIARAEnumSupportType;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentEnum.name, ".java"], description=["This file contains the class representing a user defined enumeration."])$
+package $ctx.javaPackage$;
+
+import org.fiware.kiara.serialization.impl.Serializable;
+import org.fiware.kiara.serialization.impl.SerializerImpl;
+import org.fiware.kiara.transport.impl.TransportMessage;
+
+public enum $ctx.currentEnum.name$ implements Serializable {
+	
+	$ctx.currentEnum.members : {member | $member.name$($i$)}; separator=",\n"$;
+	
+	private int value;
+	
+	private $ctx.currentEnum.name$(int value) {
+		this.value = value;
+	}
+	
+	$serialization_methods(ctx.currentEnum)$;
+	
+}
+ 
+>>
+
+serialization_methods(enum) ::= <<
+/*
+ * This method serializes an enumeration $enum.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
+public void serialize(SerializerImpl impl, TransportMessage message, String name) {
+	impl.serializeI32(message, "", this.value);
+}
+
+/*
+ * This method deserializes an enumeration $enum.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
+public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
+	this.value = impl.deserializeI32(message, "");
+}
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

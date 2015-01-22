@@ -1,0 +1,395 @@
+group KIARAUnionSupportType;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentUnion.name, ".java"], description=["This file contains the class representing a user defined union."])$
+package $ctx.javaPackage$;
+
+import org.fiware.kiara.serialization.impl.Serializable;
+import org.fiware.kiara.serialization.impl.SerializerImpl;
+import org.fiware.kiara.serialization.impl.CDRSerializer;
+import org.fiware.kiara.transport.impl.TransportMessage;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
+
+public abstract class $ctx.currentUnion.name$ implements Serializable {
+	
+	public final Discriminator _d;
+	
+	$generate_discriminator(ctx)$
+	
+	protected $ctx.currentUnion.name$(Discriminator discriminator) {
+		this._d = discriminator;
+	}
+	
+	public Object getValue() {
+		// To be implemented in child classes
+		return null;
+	}
+	
+	public void setValue(Object value) {
+		// To be implemented in child classes
+	}
+	
+	@Override
+	public void deserialize(SerializerImpl ser, TransportMessage message, String name) {
+		// To be implemented in the child classes
+	}
+
+	@Override
+	public void serialize(SerializerImpl ser, TransportMessage message, String name) {
+		// To be implemented in the child classes
+	}
+	
+	$static_creators(ctx.currentUnion)$
+	
+	$accessor_methods(ctx.currentUnion)$
+	
+	$generate_subclasses(ctx)$
+	
+	/*
+	 *This method calculates the maximum size in CDR for this class.
+	 * 
+	 * @param current_alignment Integer containing the current position in the buffer.
+	 */
+	public static int getMaxCdrSerializedSize(int current_alignment)
+	{
+	    throw new UnsupportedOperationException("Invalid union value");
+	}
+	
+}
+ 
+>>
+
+generate_discriminator(ctx) ::= <<
+	public enum Discriminator {
+
+        // Pattern {field_name}_{label}
+        
+        $ctx.currentUnion.members : {member | $if(member.default)$$member.name$_default(Integer.MAX_VALUE, true)$else$$member.labels : {label | $member.name$_$label$($label$, false)}; separator=",\n"$$endif$}; separator = ",\n"$;
+        
+        private final int value;
+        private final boolean defaultValue;
+
+        private Discriminator(int value, boolean defaultValue) {
+            this.value = value;
+            this.defaultValue = defaultValue;
+        }
+
+        public int getValue() {
+            if (defaultValue) {
+                throw new UnsupportedOperationException("default value has no value");
+            }
+            return value;
+        }
+
+        public boolean isDefaultValue() {
+            return defaultValue;
+        }
+    }
+>>
+
+static_creators(union) ::= <<
+$ctx.currentUnion.members : {member | 
+$if(member.default)$
+public static $union.name$ create_default($paramTypeJava(typecode=member.typecode)$ param) {
+	return new $union.name$_$member.name$(Discriminator.$member.name$_default, param);
+}
+$else$
+$member.labels : {label | 
+public static $union.name$ create_$label$($paramTypeJava(typecode=member.typecode)$ param) {
+	return new $union.name$_$member.name$(Discriminator.$member.name$_$label$, param);
+}
+}; separator="\n"$
+$endif$
+}; separator = "\n"$;
+>>
+
+
+
+generate_subclasses(ctx) ::= <<
+$ctx.currentUnion.members : {member | 
+public final static class $ctx.currentUnion.name$_$member.name$ extends MyUnion {
+
+	private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+
+	public $ctx.currentUnion.name$_$member.name$(Discriminator discriminator, $paramTypeJava(typecode=member.typecode)$ param) {
+		super(discriminator);
+		this.$member.name$ = param;
+	}
+	
+	@Override
+	public Object getValue() {
+		return this.$member.name$;
+	}
+	
+	@Override
+	public void setValue(Object value) {
+		this.$member.name$ = ($paramTypeJava(typecode=member.typecode)$) value;
+	}
+	
+	$subclass_accessor_methods(member)$
+	
+	$serialization_methods(member)$
+	
+	/*
+	 *This method calculates the maximum size in CDR for this class.
+	 * 
+	 * @param current_alignment Integer containing the current position in the buffer.
+	 */
+	public static int getMaxCdrSerializedSize(int current_alignment)
+	{
+	    int current_align = current_alignment;
+	            
+	    $max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$
+	 
+	    return current_align;
+	}
+
+};
+}; separator="\n"$
+>>
+
+subclass_accessor_methods(member) ::= <<
+$if(member.typecode.isType_f)$
+/*
+ * Method to get the attribute $member.name$.
+ */
+$if(member.typecode.contentTypeCode.primitive)$
+public $member.typecode.cppTypename$ get$member.javaName$() {
+$else$
+public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
+$endif$ 
+	return this.$member.name$;
+}
+
+/*
+ * Method to set the attribute $member.javaName$.
+ */
+$if(member.typecode.contentTypeCode.primitive)$
+public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
+
+$else$
+public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
+
+$endif$
+	this.$member.name$ = $member.name$;
+}
+$else$
+/*
+ * Method to get the attribute $member.name$.
+ */
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+public $paramTypeJava(member.typecode)$ get$member.javaName$() \{
+
+$else$
+public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
+
+$endif$
+$else$
+public $paramTypeJava(member.typecode)$ get$member.javaName$() { 
+
+$endif$
+	return this.$member.name$;
+}
+
+/*
+ * Method to set the attribute $member.name$.
+ */
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) \{
+
+$else$
+public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
+
+$endif$
+$else$
+public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) {
+
+$endif$
+	this.$member.name$ = $member.name$;
+}
+$endif$
+>>
+
+serialization_methods(currentSt) ::= <<
+/*
+ * This method serializes the attribute $member.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
+public void serialize(SerializerImpl impl, TransportMessage message, String name) {
+$if(member.typecode.isType_e)$
+	impl.$serializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$);
+$else$
+$if(member.typecode.isType_f)$
+	impl.$serializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
+$else$
+	impl.$serializeJava.(member.typecode.stType)$(message, name, this.$member.name$);
+$endif$
+$endif$
+
+}
+
+/*
+ * This method deserializes the $member.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
+public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
+$if(member.typecode.primitive)$
+		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name);
+$else$
+$if(member.typecode.isType_f)$
+$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_a)$
+	try { 
+$endif$$endif$
+		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name$if(!member.typecode.contentTypeCode.primitive)$, $member.typecode.contentTypeCode.cppTypename$.class$endif$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
+$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_a)$
+	} catch (InstantiationException | IllegalAccessException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+$endif$$endif$
+$else$
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.depth$);
+$else$
+$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
+	try { 
+$endif$$endif$
+	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.depth$);
+$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
+	} catch (InstantiationException | IllegalAccessException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+$endif$$endif$
+$endif$
+$else$
+$if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
+	try { 
+$endif$$endif$
+		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name, $member.typecode.cppTypename$.class);
+$if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
+	} catch (InstantiationException | IllegalAccessException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+$endif$$endif$
+$endif$
+
+$endif$
+$endif$
+
+}
+>>
+
+accessor_methods(currentSt) ::= <<
+$currentSt.members : {member | 
+$if(member.typecode.isType_f)$
+/*
+ * Method to get the attribute $member.name$.
+ */
+$if(member.typecode.contentTypeCode.primitive)$
+public $member.typecode.cppTypename$ get$member.javaName$() {
+$else$
+public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
+$endif$ 
+	// To be implemented in child classes.
+	throw new UnsupportedOperationException("Invalid union value");
+}
+
+/*
+ * Method to set the attribute $member.javaName$.
+ */
+$if(member.typecode.contentTypeCode.primitive)$
+public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
+
+$else$
+public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
+
+$endif$
+	throw new UnsupportedOperationException("Invalid union value");
+}
+$else$
+/*
+ * Method to get the attribute $member.name$.
+ */
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+public $paramTypeJava(member.typecode)$ get$member.javaName$() \{
+
+$else$
+public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
+
+$endif$
+$else$
+public $paramTypeJava(member.typecode)$ get$member.javaName$() { 
+
+$endif$
+	throw new UnsupportedOperationException("Invalid union value");
+}
+
+/*
+ * Method to set the attribute $member.name$.
+ */
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) \{
+
+$else$
+public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
+
+$endif$
+$else$
+public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) {
+
+$endif$
+	throw new UnsupportedOperationException("Invalid union value");
+}
+$endif$
+}; separator="\n"$
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

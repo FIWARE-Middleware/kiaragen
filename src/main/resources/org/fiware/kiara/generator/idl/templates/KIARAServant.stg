@@ -76,16 +76,7 @@ if (operation.equals("$operation.name$")) {
 $if(operation.isOperation)$
 $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$if(param.typecode.isType_c)$
-	$param.typecode.cppTypename$ $param.name$ = null;
-	try {
-		$param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "", $param.typecode.name$.class);
-	} catch (InstantiationException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	} catch (IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+	$param.typecode.cppTypename$ $param.name$ = $param.typecode.cppTypename$.values()[serImpl.deserializeI32(message, "")];
 	$else$
 	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "");
 	$endif$
@@ -120,7 +111,7 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
     TransportMessage retMsg = transportImpl.createTransportMessage(null);
  	retMsg.setPayload(retBuffer);
  	serImpl.serializeMessageId(retMsg, messageId);
-	serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret);
+	serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret$if(operation.rettype.isType_c)$.ordinal()$endif$);
 	retMsg.getPayload().flip();
 	return retMsg;
 	$else$

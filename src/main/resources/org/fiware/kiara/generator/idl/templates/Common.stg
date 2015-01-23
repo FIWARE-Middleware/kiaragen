@@ -114,7 +114,7 @@ $sequence_max_serialized_size(ctx=ctx, typecodeSeq=typecode, var=var, loopvar=ct
 $elseif(typecode.isType_f)$
 $array_max_serialized_size(ctx=ctx, typecodeArr=typecode, var=var, loopvar=ctx.newLoopVarName)$
 $else$
-$var$ = $typecode.name$.getMaxCdrSerializedSize($var$);
+$var$ += $typecode.name$.getMaxCdrSerializedSize($var$);
 $endif$
 $endif$
 $else$
@@ -141,7 +141,7 @@ $if(typecodeArr.contentTypeCode.isType_e)$
 $elseif(typecodeArr.contentTypeCode.isType_f)$
 $array_max_serialized_size(ctx=ctx, typecodeArr=typecodeArr.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
 $else$
-	$var$ = $typecodeArr.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
+	$var$ += $typecodeArr.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
 
 $endif$
 }
@@ -167,7 +167,7 @@ $if(typecodeSeq.contentTypeCode.isType_e)$
 $elseif(typecodeSeq.contentTypeCode.isType_f)$
 $array_max_serialized_size(ctx=ctx, typecodeArr=typecodeSeq.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
 $else$
-    $var$ = $typecodeSeq.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
+    $var$ += $typecodeSeq.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
 
 $endif$
 }
@@ -273,7 +273,7 @@ deserializeJava ::= [
 		"type_15":"deserializeString",
 		"type_a":"deserialize",
 		"type_b":"deserialize",
-		"type_c":"deserialize",
+		"type_c":"deserializeI32",
 		"type_d":"deserializeString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -300,7 +300,7 @@ serializeJava ::= [
 		"type_15":"serializeString",
 		"type_a":"serialize",
 		"type_b":"serialize",
-		"type_c":"serialize",
+		"type_c":"serializeI32",
 		"type_d":"serializeString",
         "type_e":"undefined",
         "type_f_first":"undefined",

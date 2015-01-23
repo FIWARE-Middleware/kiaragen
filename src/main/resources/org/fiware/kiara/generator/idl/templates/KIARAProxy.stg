@@ -69,7 +69,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$) {
 $endif$
 	
 	if (m_ser != null && m_transport != null) {
-		ByteBuffer buffer = ByteBuffer.allocate($operation.name$_required_size());
+		ByteBuffer buffer = ByteBuffer.allocate(/*$operation.name$_required_size()*/100);
 		final TransportMessage trequest = m_transport.createTransportMessage(null);
         trequest.setPayload(buffer);
         
@@ -77,7 +77,7 @@ $endif$
         m_ser.serializeMessageId(trequest, messageId);   
 		m_ser.serializeService(trequest, "$first(ctx.scopedInterfaces).name$");
 		m_ser.serializeOperation(trequest, "$operation.name$");
-		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
+		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$$if(param.typecode.isType_c)$.ordinal()$endif$);}; separator="\n"$
 		trequest.getPayload().flip();
 		
 		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
@@ -91,6 +91,10 @@ $endif$
         		final Object responseMessageId = m_ser.deserializeMessageId(buf);
 				
 				$if(operation.rettype)$
+				$if(operation.rettype.isType_c)$
+				$operation.rettype.cppTypename$ ret = $operation.rettype.cppTypename$.values()[m_ser.$deserializeJava.(operation.rettype.stType)$(tresponse, ""$if(!operation.rettype.primitive)$
+				$endif$)];
+				$else$
 				$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(tresponse, ""$if(!operation.rettype.primitive)$
 				$if(!operation.rettype.isType_d)$
 					$if(!operation.rettype.isType_e)$
@@ -99,11 +103,8 @@ $endif$
 						$endif$
 					$endif$
 				$endif$
-			$else$
-			$if(operation.rettype.isType_c)$
-, $operation.rettype.name$.class
-			$endif$
 			$endif$);
+				$endif$
 				return ret;
 				$else$
 				return;
@@ -144,7 +145,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
         m_ser.serializeMessageId(trequest, messageId);   
 		m_ser.serializeService(trequest, "$first(ctx.scopedInterfaces).name$");
 		m_ser.serializeOperation(trequest, "$operation.name$");
-		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
+		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$$if(param.typecode.isType_c)$.ordinal()$endif$);}; separator="\n"$
 		
 		trequest.getPayload().flip();
 		

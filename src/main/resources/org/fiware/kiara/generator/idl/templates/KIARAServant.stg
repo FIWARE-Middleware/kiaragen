@@ -64,6 +64,18 @@ private int $operation.name$_required_size() {
 	$operation.outputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="op_size", name=param.name)$;}; separator="\n"$
 	$max_serialized_size(ctx=ctx, typecode=operation.rettype, var="op_size", name=operation.rettypeparam.name)$ // Return type
 	
+	$if(operation.exceptions)$
+	int currentSize = 0;
+	int messageIdSize = 4 + CDRSerializer.alignment(currentSize, Integer.SIZE); // MessageID Size
+$operation.exceptions : {exception|
+	currentSize += (messageIdSize + $exception.name$.getMaxCdrSerializedSize(currentSize));
+	if (currentSize > op_size) {
+		op_size = currentSize;
+	}
+	currentSize = 0;
+}; separator = ""$
+	$endif$
+	
 	return op_size;
 }
 $endif$
@@ -76,7 +88,7 @@ if (operation.equals("$operation.name$")) {
 $if(operation.isOperation)$
 $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$if(param.typecode.isType_c)$
-	$param.typecode.cppTypename$ $param.name$ = $param.typecode.cppTypename$.values()[serImpl.deserializeI32(message, "")];
+	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "", $param.typecode.cppTypename$.class);
 	$else$
 	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "");
 	$endif$
@@ -98,31 +110,40 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$endif$
 	$endif$}; separator="\n"$
 	
-	$if(operation.rettype)$
-	$operation.rettype.cppTypename$ ret = $operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
-	$else$
-	$operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
-	$endif$
-	$endif$
-	
-	$if(operation.isOperation)$
-	$if(operation.rettype)$
 	ByteBuffer retBuffer = ByteBuffer.allocate($operation.name$_required_size());
     TransportMessage retMsg = transportImpl.createTransportMessage(null);
  	retMsg.setPayload(retBuffer);
  	serImpl.serializeMessageId(retMsg, messageId);
-	serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret$if(operation.rettype.isType_c)$.ordinal()$endif$);
-	retMsg.getPayload().flip();
-	return retMsg;
-	$else$
-	ByteBuffer retBuffer = ByteBuffer.allocate($operation.name$_required_size());
-	TransportMessage retMsg = transportImpl.createTransportMessage(null);
- 	retMsg.setPayload(retBuffer);
- 	serImpl.serializeMessageId(retMsg, messageId);
+	
+	$if(operation.exceptions)$
+	try {
+		$if(operation.rettype)$
+		$operation.rettype.cppTypename$ ret = $operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
+		$else$
+		$operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
+		$endif$
+		$endif$
+		serImpl.serializeUI32(retMsg, "", 0);
+		$if(operation.isOperation)$
+		$if(operation.rettype)$
+		serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret);
+		$endif$
+		$endif$
+	} $operation.exceptions : {ex |
+	catch($ex.name$ ex_$ex.name$) {
+		ex_$ex.name$.printStackTrace();
+		serImpl.serializeUI32(retMsg, "", $ex.Md5$);
+		serImpl.serializeString(retMsg, "", "$ex.name$");
+		ex_$ex.name$.serialize(serImpl, retMsg, "");
+	}}; separator="\n"$
+	$endif$
+	
+	$if(operation.isOperation)$
 	retMsg.getPayload().flip();
 	return retMsg;
 	$endif$
-	$endif$
+	
+	
 } 
 >>
 

@@ -14,23 +14,24 @@ import org.fiware.kiara.serialization.impl.CDRSerializer;
 import org.fiware.kiara.transport.impl.TransportMessage;
 
 /**
- * Class definition for the user defined type $ctx.currentSt.name$. 
+ * Class definition for the user defined type $ctx.currentException.name$. 
  *
  * @author Kiaragen tool.
  *
  */
-public class $ctx.currentSt.name$ implements Serializable {
+@SuppressWarnings({ "serial", "unused" })
+public class $ctx.currentException.name$ extends Exception implements Serializable {
 	
 	/*
 	 *	Attributes
 	 */
-	$private_attributes(ctx.currentSt)$
+	 $private_attributes(ctx.currentException)$
 	
 	/*
 	 *	Default constructor
 	 */
-	public $ctx.currentSt.name$() {
-	$ctx.currentSt.members : {member | 
+	public $ctx.currentException.name$() {
+	$ctx.currentException.members : {member | 
 	$if(member.typecode.primitive)$
 	this.$member.name$ = $initJava.(member.typecode.stType)$;
 	$else$
@@ -52,10 +53,9 @@ public class $ctx.currentSt.name$ implements Serializable {
 	$endif$ 
 	$endif$}; separator="\n"$
 	}
-
-	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n"$
-	$serialization_methods(ctx.currentSt)$
-	$comparison_function(ctx.currentSt)$
+	
+	$serialization_methods(ctx.currentException)$
+	$comparison_function(ctx.currentException)$
 	
 	/*
 	 *This method calculates the maximum size in CDR for this class.
@@ -65,19 +65,23 @@ public class $ctx.currentSt.name$ implements Serializable {
 	public static int getMaxCdrSerializedSize(int current_alignment)
 	{
 	    int current_align = current_alignment;
+	    
+	    $max_serialized_size(ctx=ctx, typecode=ctx.currentException.typecode, var="current_align", name=ctx.currentException.name)$
 	            
-	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n"$
+	    $ctx.currentException.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n"$
 	 
 	    return current_align;
 	}
 	
-	$accessor_methods(ctx.currentSt)$
+	$accessor_methods(ctx.currentException)$
+
+	
 }
 
 >>
 
-private_attributes(currentSt) ::= <<
-$currentSt.members : {member | 
+private_attributes(currentException) ::= <<
+$currentException.members : {member | 
 $if(member.typecode.primitive)$
 private $paramTypeJava(typecode=member.typecode)$ $member.name$;
 $else$
@@ -143,6 +147,7 @@ serialization_methods(currentSt) ::= <<
  *
  * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
+@Override
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
 $if(member.typecode.isType_e)$
@@ -162,6 +167,7 @@ $endif$
  *
  * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
+@Override
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
 $currentSt.members : {member | 
 $if(member.typecode.primitive)$

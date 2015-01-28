@@ -390,6 +390,9 @@ public class kiaragen {
 			// Load Support class template
 			tmanager.addGroup("KIARAEnumSupportType");
 			
+			// Load Support class template
+			tmanager.addGroup("KIARAExceptionSupportType");
+			
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
 			maintemplates.setAttribute("ctx", ctx);
@@ -433,10 +436,10 @@ public class kiaragen {
 				
 				System.out.println("Generating Type support classes... ");
 				
-				for (Definition d: ctx.getDefinitions()) {
+				for (Definition definition: ctx.getDefinitions()) {
 					// Check if it is a structure
-					if (d.isIsTypeDeclaration()) {
-						TypeDeclaration type = (TypeDeclaration) d;
+					if (definition.isIsTypeDeclaration()) {
+						TypeDeclaration type = (TypeDeclaration) definition;
 						TypeCode tc = type.getTypeCode();
 						if (tc.getKind() == 0x0000000a) { // Struct typecode
 							StructTypeCode st = (StructTypeCode) tc;
@@ -452,16 +455,24 @@ public class kiaragen {
 							if (returnedValue = Utils.writeFile(this.m_package + ut.getName() + ".java", maintemplates.getTemplate("KIARAUnionSupportType"), m_replace)) {
 								System.out.println("OK");
 							}
-							System.out.println("");
 						} else if (tc.getKind() == 0x0000000c) { // Enum typecode
 							EnumTypeCode et = (EnumTypeCode) tc;
 							ctx.setCurrentEnum(et);
 							System.out.print("Generating Type support class for enum " + et.getName() +" and union cases... ");
-							System.out.println(et.getName());
+							System.out.print(et.getName());
 							if (returnedValue = Utils.writeFile(this.m_package + et.getName() + ".java", maintemplates.getTemplate("KIARAEnumSupportType"), m_replace)) {
 								System.out.println("OK");
 							}
-							System.out.println("");
+						}
+						
+					} else if (definition.isIsException()) {
+						if (definition instanceof org.fiware.kiara.generator.idl.tree.Exception) {
+							org.fiware.kiara.generator.idl.tree.Exception ex = (org.fiware.kiara.generator.idl.tree.Exception) definition;
+							ctx.setCurrentException(ex);
+							System.out.print("Generating Type support class for exception " + ex.getName() +"... ");
+							if (returnedValue = Utils.writeFile(this.m_package + ex.getName() + ".java", maintemplates.getTemplate("KIARAExceptionSupportType"), m_replace)) {
+								System.out.println("OK");
+							}
 						}
 						
 					}

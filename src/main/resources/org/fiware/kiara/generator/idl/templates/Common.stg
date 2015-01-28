@@ -85,7 +85,11 @@ $dims : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {di
 
 arrayAttribute(name, type, dims) ::= <<
 $if(type.contentTypeCode.primitive)$
+$if(type.contentTypeCode.isType_c)$
+$first(dims) : {dim |ArrayList<}; separator=""$$rest(dims) : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
+$else$
 $first(dims) : {dim |ArrayList<}; separator=""$$rest(dims) : {dim |List<}; separator=""$$envelopeJava.(type.contentTypeCode.stType)$$dims : {dim |>}; separator=""$
+$endif$
 $else$
 $first(dims) : {dim |ArrayList<}; separator=""$$rest(dims) : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
 $endif$
@@ -93,7 +97,11 @@ $endif$
 
 sequenceAttribute(name, type) ::= <<
 $if(type.contentTypeCode.primitive)$
+$if(type.contentTypeCode.isType_c)$
+ArrayList<$type.contentTypeCode.cppTypename$>
+$else$
 ArrayList<$envelopeJava.(type.contentTypeCode.stType)$>
+$endif$
 $else$
 ArrayList<$type.contentTypeCode.cppTypename$>
 $endif$
@@ -273,7 +281,7 @@ deserializeJava ::= [
 		"type_15":"deserializeString",
 		"type_a":"deserialize",
 		"type_b":"deserialize",
-		"type_c":"deserializeI32",
+		"type_c":"deserializeEnum",
 		"type_d":"deserializeString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -300,7 +308,7 @@ serializeJava ::= [
 		"type_15":"serializeString",
 		"type_a":"serialize",
 		"type_b":"serialize",
-		"type_c":"serializeI32",
+		"type_c":"serializeEnum",
 		"type_d":"serializeString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -326,8 +334,8 @@ serializeArrayJava ::= [
 		"type_14":"serializeArrayChar",
 		"type_15":"serializeArrayString",
 		"type_a":"serializeArray",
-		"type_b":"undefined",
-		"type_c":"undefined",
+		"type_b":"serializeArray",
+		"type_c":"serializeArrayEnum",
 		"type_d":"serializeArrayString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -353,8 +361,8 @@ deserializeArrayJava ::= [
 		"type_14":"deserializeArrayChar",
 		"type_15":"deserializeArrayString",
 		"type_a":"deserializeArray",
-		"type_b":"undefined",
-		"type_c":"undefined",
+		"type_b":"deserializeArray",
+		"type_c":"deserializeArrayEnum",
 		"type_d":"deserializeArrayString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -380,8 +388,8 @@ serializeSequenceJava ::= [
 		"type_14":"serializeSequenceChar",
 		"type_15":"serializeSequenceString",
 		"type_a":"serializeSequence",
-		"type_b":"undefined",
-		"type_c":"undefined",
+		"type_b":"serializeSequence",
+		"type_c":"serializeSequenceEnum",
 		"type_d":"serializeSequenceString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -407,8 +415,8 @@ deserializeSequenceJava ::= [
 		"type_14":"deserializeSequenceChar",
 		"type_15":"deserializeSequenceString",
 		"type_a":"deserializeSequence",
-		"type_b":"undefined",
-		"type_c":"undefined",
+		"type_b":"deserializeSequence",
+		"type_c":"deserializeSequenceEnum",
 		"type_d":"deserializeSequenceString",
         "type_e":"undefined",
         "type_f_first":"undefined",

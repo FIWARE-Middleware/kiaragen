@@ -61,7 +61,7 @@ operation_impl(operation) ::= <<
 	 *        It has to be implemented by the user.
 	 */
 
-	public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$) {
+	public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$) $if(operation.exceptions)$throws $operation.exceptions :{ex |$ex.name$}; separator=", "$$endif$ {
 	
 		// Your implementation code goes here
 		$if(operation.rettype)$

@@ -46,7 +46,7 @@ $endif$
 		try {
 			final Object messageId = ser.deserializeMessageId(message);
 			$if(operation.rettype)$
-			$operation.rettype.cppTypename$ result = $if(operation.rettype.isType_c)$$operation.rettype.cppTypename$.values()[$endif$ser.$deserializeJava.(operation.rettype.stType)$(message, ""$if(!operation.rettype.primitive)$
+			$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(message, ""$if(!operation.rettype.primitive)$
 				$if(!operation.rettype.isType_d)$
 					$if(!operation.rettype.isType_e)$
 						$if(!operation.rettype.isType_f)$
@@ -55,7 +55,7 @@ $endif$
 					$endif$
 				$endif$
 			$else$
-			$endif$)$if(operation.rettype.isType_c)$]$endif$;
+			$endif$$if(operation.rettype.isType_c)$, $operation.rettype.cppTypename$.class$endif$);
 			onSuccess(result);
 			$else$
 			onSuccess(null);

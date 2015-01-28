@@ -12,7 +12,7 @@ package $ctx.javaPackage$;
  */
 public interface $ctx.currentIfz.name$ {
 
-	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n\n"$
+	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$)$if(op.exceptions)$ throws $op.exceptions :{ex |$ex.name$}; separator=", "$ $endif$;}; separator="\n\n"$
 	
 }
 

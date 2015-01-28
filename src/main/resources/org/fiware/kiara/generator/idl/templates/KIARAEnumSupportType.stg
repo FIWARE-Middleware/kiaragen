@@ -4,11 +4,7 @@ main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentEnum.name, ".java"], description=["This file contains the class representing a user defined enumeration."])$
 package $ctx.javaPackage$;
 
-import org.fiware.kiara.serialization.impl.Serializable;
-import org.fiware.kiara.serialization.impl.SerializerImpl;
-import org.fiware.kiara.transport.impl.TransportMessage;
-
-public enum $ctx.currentEnum.name$ implements Serializable {
+public enum $ctx.currentEnum.name$ {
 	
 	$ctx.currentEnum.members : {member | $member.name$($i$)}; separator=",\n"$;
 	
@@ -17,8 +13,6 @@ public enum $ctx.currentEnum.name$ implements Serializable {
 	private $ctx.currentEnum.name$(int value) {
 		this.value = value;
 	}
-	
-	$serialization_methods(ctx.currentEnum)$;
 	
 }
  
@@ -31,7 +25,7 @@ serialization_methods(enum) ::= <<
  * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
-	impl.serializeI32(message, "", this.value);
+	impl.serializeUI32(message, "", this.value);
 }
 
 /*
@@ -40,7 +34,7 @@ public void serialize(SerializerImpl impl, TransportMessage message, String name
  * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
-	this.value = impl.deserializeI32(message, "");
+	this.value = impl.deserializeUI32(message, "");
 }
 >>
 

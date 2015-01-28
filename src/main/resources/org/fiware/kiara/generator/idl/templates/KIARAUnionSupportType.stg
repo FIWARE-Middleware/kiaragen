@@ -102,7 +102,7 @@ $endif$
  * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
-	this.m_d = impl.$deserializeJava.(union.discriminator.stType)$(message, name);
+	this.m_d = impl.$deserializeJava.(union.discriminator.stType)$(message, name$if(union.discriminator.isType_c)$, $union.discriminator.name$.class$endif$);
 	
 	$get_switch_type(union.discriminator)$
 $union.members : {member |
@@ -314,8 +314,19 @@ generate_max_serialized_size(union) ::= <<
 public static int getMaxCdrSerializedSize(int current_alignment)
 {
     int current_align = current_alignment;
+    int sum = 0;
+    int current_sum = 0;
             
-    $union.members : {member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n"$
+    $union.members : {member |
+$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_sum", name=member.name)$
+if (current_sum > sum) {
+	sum = current_sum;
+}
+current_sum = 0;
+
+    }; separator=""$
+    
+    current_align += sum;
  
     return current_align;
 }

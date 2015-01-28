@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 import com.eprosima.idl.parser.tree.Definition;
+import com.eprosima.idl.parser.tree.Exception;
 import com.eprosima.idl.parser.tree.Interface;
 import com.eprosima.idl.parser.typecode.EnumTypeCode;
 import com.eprosima.idl.parser.typecode.StructTypeCode;
@@ -48,6 +49,13 @@ public class Context extends com.eprosima.idl.context.Context
         // TODO Remove
         m_appProduct = appProduct;
         m_package = pck;
+    }
+    
+    public org.fiware.kiara.generator.idl.tree.Exception createException(String name)
+    {
+    	org.fiware.kiara.generator.idl.tree.Exception exceptionObject = new org.fiware.kiara.generator.idl.tree.Exception(getScopeFile(), isInScopedFile(), getScope(), name);
+        addException(exceptionObject);
+        return exceptionObject;
     }
     
     public void setTypelimitation(String lt)
@@ -167,6 +175,7 @@ public class Context extends com.eprosima.idl.context.Context
     private UnionMember m_current_union_member = null;
     private int m_current_union_member_index = 0;
     private EnumTypeCode m_current_enum = null;
+    private com.eprosima.idl.parser.tree.Exception m_currentException = null;
     
     
     private String m_package;
@@ -221,6 +230,14 @@ public class Context extends com.eprosima.idl.context.Context
 	
 	public void setCurrentEnum(EnumTypeCode enumTc) {
 		this.m_current_enum = enumTc;
+	}
+	
+	public Exception getCurrentException() {
+		return this.m_currentException;
+	}
+	
+	public void setCurrentException(Exception exception) {
+		this.m_currentException = exception;
 	}
 	
 	public String getJavaPackage() {

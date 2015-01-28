@@ -51,7 +51,11 @@ public class ClientExample {
 			$else$
 			client.$first(first(ctx.scopedInterfaces).operations).name$($first(first(ctx.scopedInterfaces).operations).inputparam : {param |$param.name$}; separator=", "$);
 			$endif$
-		} catch (Exception ex) {
+		}
+		$if(first(first(ctx.scopedInterfaces).operations).exceptions)$
+		$first(first(ctx.scopedInterfaces).operations).exceptions : {exception |$print_exception(exception)$}; separator="\n"$
+		$endif$
+		catch (Exception ex) {
 			System.out.println("Exception: " + ex.getMessage());
 			return;
 		}
@@ -60,6 +64,13 @@ public class ClientExample {
 	}
 }
 
+>>
+
+print_exception(exception) ::= <<
+catch ($exception.name$ ex) {
+	System.out.println("Exception: " + ex.getMessage());
+	return;
+}
 >>
 
 module(ctx, module, definition_list) ::= <<

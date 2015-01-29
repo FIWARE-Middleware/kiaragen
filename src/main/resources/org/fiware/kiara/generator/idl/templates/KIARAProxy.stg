@@ -92,7 +92,7 @@ $endif$
         		// Deserialize response message ID
         		final Object responseMessageId = m_ser.deserializeMessageId(buf);
         		
-        		// Deserialize return code (0 = OK, enything else = WRONG)
+        		// Deserialize return code (0 = OK, anything else = WRONG)
         		int retCode = m_ser.deserializeUI32(tresponse, "");
         		if (retCode == 0) { // Function execution was OK.
         			$if(operation.rettype)$

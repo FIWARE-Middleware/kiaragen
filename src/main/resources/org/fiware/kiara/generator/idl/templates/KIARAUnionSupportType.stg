@@ -75,7 +75,7 @@ public void serialize(SerializerImpl impl, TransportMessage message, String name
 	$get_switch_type(union.discriminator)$
 $union.members : {member | 
 $if(member.labels)$
-$member.labels : {label | 	case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
+$member.labels : {label | 	case $if(union.discriminator.type_character)$'$endif$$if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$$if(union.discriminator.type_character)$'$endif$:}; separator="\n"$
 
 $else$
 	default:
@@ -107,7 +107,7 @@ public void deserialize(SerializerImpl impl, TransportMessage message, String na
 	$get_switch_type(union.discriminator)$
 $union.members : {member |
 $if(!member.default)$$if(member.labels)$
-	$member.labels : {label |case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
+	$member.labels : {label |case $if(union.discriminator.type_character)$'$endif$$if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$$if(union.discriminator.type_character)$'$endif$:}; separator="\n"$
 $endif$
 
 $deserialize_function_member(member)$
@@ -285,7 +285,7 @@ $endif$
 
 candoit_switch_case(member, typecode) ::= <<
 $get_switch_type(typecode)$
-	$member.labels : {label |case $if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$:}; separator="\n"$$\n$$print_candoit_case(member)$
+	$member.labels : {label |case $if(typecode.type_character)$'$endif$$if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$$if(typecode.type_character)$'$endif$:}; separator="\n"$$\n$$print_candoit_case(member)$
 	default:
 		break;
 }
@@ -298,7 +298,7 @@ print_candoit_case(member) ::= <<
 
 candoit_default_switch_case(union, typecode) ::= <<
 $get_switch_type(typecode)$
-	$union.members : {member |$if(!member.default)$$member.labels : {label |case $if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$:}; separator="\n"$$\n$$\t$break;$endif$}; separator="\n"$
+	$union.members : {member |$if(!member.default)$$member.labels : {label |case $if(typecode.type_character)$'$endif$$if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$$if(typecode.type_character)$'$endif$:}; separator="\n"$$\n$$\t$break;$endif$}; separator="\n"$
 	default:
 		canDoIt=true;
 		break;
@@ -316,6 +316,8 @@ public static int getMaxCdrSerializedSize(int current_alignment)
     int current_align = current_alignment;
     int sum = 0;
     int current_sum = 0;
+    
+    $max_serialized_size(ctx=ctx, typecode=union.discriminator, var="current_align", name=union.name)$
             
     $union.members : {member |
 $max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_sum", name=member.name)$

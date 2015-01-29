@@ -459,7 +459,6 @@ public class kiaragen {
 							EnumTypeCode et = (EnumTypeCode) tc;
 							ctx.setCurrentEnum(et);
 							System.out.print("Generating Type support class for enum " + et.getName() +" and union cases... ");
-							System.out.print(et.getName());
 							if (returnedValue = Utils.writeFile(this.m_package + et.getName() + ".java", maintemplates.getTemplate("KIARAEnumSupportType"), m_replace)) {
 								System.out.println("OK");
 							}

@@ -122,6 +122,12 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 		$else$
 		$operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
 		$endif$
+		$else$
+		$if(operation.rettype)$
+		$operation.rettype.cppTypename$ ret = $operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
+		$else$
+		$operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
+		$endif$
 		$endif$
 		serImpl.serializeUI32(retMsg, "", 0);
 		$if(operation.isOperation)$
@@ -129,13 +135,14 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 		serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret);
 		$endif$
 		$endif$
-	} $operation.exceptions : {ex |
+	$if(operation.exceptions)$$\t$} $operation.exceptions : {ex |
 	catch($ex.name$ ex_$ex.name$) {
 		ex_$ex.name$.printStackTrace();
 		serImpl.serializeUI32(retMsg, "", $ex.Md5$);
 		serImpl.serializeString(retMsg, "", "$ex.name$");
 		ex_$ex.name$.serialize(serImpl, retMsg, "");
 	}}; separator="\n"$
+	$endif$
 	$endif$
 	
 	$if(operation.isOperation)$

@@ -38,6 +38,8 @@ type_d() ::= <<java.lang.String>>
 
 type_15() ::= <<java.lang.String>>
 
+type_18(firs, secon, type) ::= <<Set<$envelopeJava.(type)$\>>>
+
 type_f_first(prev) ::= <<$prev$List<>>
 type_f_second(prev, size) ::= <<$prev$\>>>
 type_f(firs, secon, type) ::= <<$firs$$envelopeJava.(type)$$secon$>>

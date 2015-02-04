@@ -17,13 +17,15 @@ public class $ctx.currentUnion.name$ implements Serializable {
 	
 	private $paramTypeJava(ctx.currentUnion.discriminator)$ m_d;
 	
-	$ctx.currentUnion.members : {member | private $paramTypeJava(typecode=member.typecode)$ $member.name$;}; separator="\n"$
+	$private_attributes(ctx.currentUnion)$
 	
 	public $ctx.currentUnion.name$() {
 		$ctx.currentUnion.members : {member | this.$member.name$ = $initialize_param(member)$;}; separator="\n"$
 	}
 	
 	$generate_disc_init(ctx)$
+	
+	$comparison_function(ctx.currentUnion)$
 	
 	$serialization_methods(union=ctx.currentUnion)$
 	
@@ -33,6 +35,41 @@ public class $ctx.currentUnion.name$ implements Serializable {
 	
 }
  
+>>
+
+private_attributes(union) ::= <<
+$union.members : {member | 
+$if(member.typecode.primitive)$
+private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+$else$
+$if(member.typecode.isType_f)$
+$if(member.typecode.contentTypeCode.primitive)$
+$if(member.typecode.isType_f)$
+private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
+$else$
+private $member.typecode.cppTypename$ $member.name$;
+$endif$
+$else$
+private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
+$endif$
+$else$
+$if(member.typecode.isType_e)$
+$if(member.typecode.contentTypeCode.primitive)$
+$if(member.typecode.contentTypeCode.isType_c)$
+private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
+$else$
+private $member.typecode.cppTypename$ $member.name$;
+$endif$
+$else$
+private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
+$endif$
+$else$
+private $paramTypeJava(typecode=member.typecode)$ $member.name$;
+$endif$
+$endif$
+$endif$
+}; separator="\n"$
+
 >>
 
 get_switch_type(typecode) ::= <<
@@ -75,7 +112,7 @@ public void serialize(SerializerImpl impl, TransportMessage message, String name
 	$get_switch_type(union.discriminator)$
 $union.members : {member | 
 $if(member.labels)$
-$member.labels : {label | 	case $if(union.discriminator.type_character)$'$endif$$if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$$if(union.discriminator.type_character)$'$endif$:}; separator="\n"$
+$member.labels : {label | 	case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
 
 $else$
 	default:
@@ -107,7 +144,7 @@ public void deserialize(SerializerImpl impl, TransportMessage message, String na
 	$get_switch_type(union.discriminator)$
 $union.members : {member |
 $if(!member.default)$$if(member.labels)$
-	$member.labels : {label |case $if(union.discriminator.type_character)$'$endif$$if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$$if(union.discriminator.type_character)$'$endif$:}; separator="\n"$
+	$member.labels : {label |case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
 $endif$
 
 $deserialize_function_member(member)$
@@ -129,7 +166,7 @@ $endif$
 
 deserialize_function_member(member) ::= <<
 $if(member.typecode.primitive)$
-		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name);
+		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name$if(member.typecode.isType_c)$, $member.typecode.cppTypename$.class$endif$);
 $else$
 $if(member.typecode.isType_f)$
 $if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_a)$
@@ -141,7 +178,16 @@ $if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeC
 		}
 $endif$
 $else$
+$if(member.typecode.contentTypeCode.isType_c)$
+		try {
+			this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+$else$
 		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name$if(!member.typecode.contentTypeCode.primitive)$, $member.typecode.contentTypeCode.cppTypename$.class$endif$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
+$endif$
 $endif$
 $else$
 $if(member.typecode.isType_e)$
@@ -178,20 +224,24 @@ $endif$
 $endif$ 
 >>
 
-accessor_methods(currentSt) ::= <<
-$currentSt.members : {member | 
+accessor_methods(union) ::= <<
+$union.members : {member | 
 $if(member.typecode.isType_f)$
 /*
  * Method to get the attribute $member.name$.
  */
 $if(member.typecode.contentTypeCode.primitive)$
+$if(member.typecode.contentTypeCode.isType_c)$
+public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
+$else$
 public $member.typecode.cppTypename$ get$member.javaName$() {
+$endif$
 $else$
 public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
 $endif$ 
 	boolean canDoIt = false;
 	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=currentSt.discriminator)$
+	$candoit_switch_case(member=member, typecode=union.discriminator)$
 	$else$
 	$endif$
 	
@@ -205,17 +255,22 @@ $endif$
  * Method to set the attribute $member.javaName$.
  */
 $if(member.typecode.contentTypeCode.primitive)$
+$if(member.typecode.contentTypeCode.isType_c)$
+public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
+
+$else$
 public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
 
+$endif$
 $else$
 public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
 
 $endif$
 	boolean canDoIt = false;
 	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=currentSt.discriminator)$
+	$candoit_switch_case(member=member, typecode=union.discriminator)$
 	$else$
-	$candoit_default_switch_case(union=currentSt, typecode=currentSt.discriminator)$
+	$candoit_default_switch_case(union=union, typecode=union.discriminator)$
 	$endif$
 	
 	if (!canDoIt) {
@@ -241,9 +296,9 @@ public $paramTypeJava(member.typecode)$ get$member.javaName$() {
 $endif$
 	boolean canDoIt = false;
 	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=currentSt.discriminator)$
+	$candoit_switch_case(member=member, typecode=union.discriminator)$
 	$else$
-	$candoit_default_switch_case(union=currentSt, typecode=currentSt.discriminator)$
+	$candoit_default_switch_case(union=union, typecode=union.discriminator)$
 	$endif$
 	
 	if (!canDoIt) {
@@ -269,9 +324,9 @@ public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$)
 $endif$
 	boolean canDoIt = false;
 	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=currentSt.discriminator)$
+	$candoit_switch_case(member=member, typecode=union.discriminator)$
 	$else$
-	$candoit_default_switch_case(union=currentSt, typecode=currentSt.discriminator)$
+	$candoit_default_switch_case(union=union, typecode=union.discriminator)$
 	$endif$
 	
 	if (!canDoIt) {
@@ -285,7 +340,7 @@ $endif$
 
 candoit_switch_case(member, typecode) ::= <<
 $get_switch_type(typecode)$
-	$member.labels : {label |case $if(typecode.type_character)$'$endif$$if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$$if(typecode.type_character)$'$endif$:}; separator="\n"$$\n$$print_candoit_case(member)$
+	$member.labels : {label |case $if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$:}; separator="\n"$$\n$$print_candoit_case(member)$
 	default:
 		break;
 }
@@ -298,7 +353,7 @@ print_candoit_case(member) ::= <<
 
 candoit_default_switch_case(union, typecode) ::= <<
 $get_switch_type(typecode)$
-	$union.members : {member |$if(!member.default)$$member.labels : {label |case $if(typecode.type_character)$'$endif$$if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$$if(typecode.type_character)$'$endif$:}; separator="\n"$$\n$$\t$break;$endif$}; separator="\n"$
+	$union.members : {member |$if(!member.default)$$member.labels : {label |case $if(typecode.type_boolean)$"$endif$$label$$if(typecode.type_boolean)$"$endif$:}; separator="\n"$$\n$$\t$break;$endif$}; separator="\n"$
 	default:
 		canDoIt=true;
 		break;
@@ -328,9 +383,46 @@ current_sum = 0;
 
     }; separator=""$
     
-    current_align += sum;
- 
-    return current_align;
+    return sum + (current_align - current_alignment);
+}
+>>
+
+comparison_function(union) ::= <<
+
+/*
+ * @param other An object instance of Object
+ */
+ @Override
+public boolean equals(Object other) {
+	boolean comparison = true;
+	
+	if (other instanceof $union.name$) {
+	
+		$get_switch_type(union.discriminator)$
+	
+		$union.members : {member | $if(member.labels)$
+	$member.labels : {label |case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
+		$else$
+	default:
+		$endif$
+			$if(member.typecode.isType_d)$
+		comparison = comparison && (this.$member.name$.compareTo((($union.name$) other).$member.name$) == 0);
+			$else$
+			$if(member.typecode.primitive)$
+		comparison = comparison && (this.$member.name$ == (($union.name$) other).$member.name$);
+			$else$
+			$if(member.typecode.isType_f)$
+		comparison = comparison && Objects.deepEquals(this.$member.name$, (($union.name$) other).$member.name$);
+			$else$
+		comparison = comparison && this.$member.name$.equals((($union.name$) other).$member.name$);$endif$
+		$endif$
+		$endif$
+		break;
+}; separator="\n"$
+		}
+	}
+	
+	return comparison;
 }
 >>
 

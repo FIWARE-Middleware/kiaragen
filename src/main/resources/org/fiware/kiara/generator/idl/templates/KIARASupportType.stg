@@ -7,6 +7,7 @@ package $ctx.javaPackage$;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Set;
 
 import org.fiware.kiara.serialization.impl.Serializable;
 import org.fiware.kiara.serialization.impl.SerializerImpl;
@@ -97,7 +98,11 @@ $if(member.typecode.contentTypeCode.primitive)$
 $if(member.typecode.contentTypeCode.isType_c)$
 private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
 $else$
+$if(member.typecode.type_set)$
 private $member.typecode.cppTypename$ $member.name$;
+$else$
+private $member.typecode.cppTypename$ $member.name$;
+$endif$
 $endif$
 $else$
 private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
@@ -178,7 +183,12 @@ $endif$$endif$
 		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
 		$else$
 		$if(member.typecode.contentTypeCode.isType_c)$
-		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
+		try {
+			this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		$else$
 		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
 		$endif$

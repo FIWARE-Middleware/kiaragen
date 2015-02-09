@@ -37,40 +37,52 @@ public class $ctx.currentUnion.name$ implements Serializable {
  
 >>
 
-private_attributes(union) ::= <<
-$union.members : {member | 
-$if(member.typecode.primitive)$
-private $paramTypeJava(typecode=member.typecode)$ $member.name$;
-$else$
-$if(member.typecode.isType_f)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.isType_f)$
-private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
-$else$
-private $member.typecode.cppTypename$ $member.name$;
-$endif$
-$else$
-private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
-$endif$
-$else$
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
-$else$
-private $member.typecode.cppTypename$ $member.name$;
-$endif$
-$else$
-private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
-$endif$
-$else$
-private $paramTypeJava(typecode=member.typecode)$ $member.name$;
-$endif$
-$endif$
-$endif$
-}; separator="\n"$
+// Attributes ---------------------------------------------------------------------
 
+private_attributes(currentSt) ::= <<
+$currentSt.members : {member | private $standardJavaType(member)$ $member.name$;}; separator="\n"$
 >>
+
+// Accessor method -----------------------------------------------------------------
+
+accessor_methods(currentSt) ::= <<
+$currentSt.members : {member|$get_method(member)$$\n$$\n$$set_method(member)$}; separator="\n\n"$
+>>
+
+get_method(member) ::= <<
+/*
+ * Method to get the attribute $member.name$.
+ */
+public $standardJavaType(member)$ get$member.javaName$() {
+	$supported_logic(union=currentSt, member=member)$
+	return this.$member.name$;
+}
+>>
+
+set_method(member) ::= <<
+/*
+ * Method to set the attribute $member.name$.
+ */
+public void set$member.javaName$($standardJavaType(member)$ $member.name$) {
+	$supported_logic(union=currentSt, member=member)$
+	this.$member.name$ = $member.name$;
+}
+>>
+
+supported_logic(union, member) ::= <<
+boolean canDoIt = false;
+$if(!member.default)$
+$candoit_switch_case(member=member, typecode=union.discriminator)$
+$else$
+$candoit_default_switch_case(union=union, typecode=union.discriminator)$
+$endif$
+
+if (!canDoIt) {
+	throw new UnsupportedOperationException("Invalid union value");
+}
+>>
+
+// ---------------------------------------------------------------------------------------
 
 get_switch_type(typecode) ::= <<
 $if(typecode.type_boolean)$
@@ -100,242 +112,41 @@ $endif$
 $endif$
 >>
 
+// ------------------------------ Serialization methods -------------------------------
+
 serialization_methods(union) ::= <<
 /*
- * This method serializes the union $union.name$.
+ * This method serializes a $union.name$.
  *
  * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
-	impl.$serializeJava.(union.discriminator.stType)$(message, name, this.m_d);
-
 	$get_switch_type(union.discriminator)$
-$union.members : {member | 
-$if(member.labels)$
-$member.labels : {label | 	case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
-
-$else$
-	default:
-
-$endif$
-$if(member.typecode.isType_e)$
-		impl.$serializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$);
-$else$
-$if(member.typecode.isType_f)$
-		impl.$serializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-$else$
-		impl.$serializeJava.(member.typecode.stType)$(message, name, this.$member.name$);
-$endif$
-$endif$
-
-		break;}; separator = "\n"$
+		$union.members : {member |$switch_labels(member)$$\t$$standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
 	}
-
 }
 
 /*
- * This method deserializes the $union.name$.
+ * This method deserializes a $union.name$.
  *
  * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
-	this.m_d = impl.$deserializeJava.(union.discriminator.stType)$(message, name$if(union.discriminator.isType_c)$, $union.discriminator.name$.class$endif$);
-	
 	$get_switch_type(union.discriminator)$
-$union.members : {member |
-$if(!member.default)$$if(member.labels)$
-	$member.labels : {label |case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
-$endif$
-
-$deserialize_function_member(member)$
-$endif$
-}; separator="\n"$
-$if(union.defaultvalue)$
-$if(union.defaultMember)$
-	default:
-$deserialize_function_member(union.defaultMember)$
-$endif$
-$endif$
-	
+		$union.members : {member |$switch_labels(member)$$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$}; separator="\n"$
 	}
-
 }
-
 
 >>
 
-deserialize_function_member(member) ::= <<
-$if(member.typecode.primitive)$
-		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name$if(member.typecode.isType_c)$, $member.typecode.cppTypename$.class$endif$);
-$else$
-$if(member.typecode.isType_f)$
-$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_a)$
-		try { 
-			this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name$if(!member.typecode.contentTypeCode.primitive)$, $member.typecode.contentTypeCode.cppTypename$.class$endif$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-$endif$
-$else$
-$if(member.typecode.contentTypeCode.isType_c)$
-		try {
-			this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-$else$
-		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name$if(!member.typecode.contentTypeCode.primitive)$, $member.typecode.contentTypeCode.cppTypename$.class$endif$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-$endif$
-$endif$
-$else$
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.depth$);
-$else$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
-		try { 
-$endif$$endif$
-			this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.depth$);
-$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
-		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-$endif$$endif$
-$endif$
-$else$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
-		try { 
-$endif$$endif$
-			this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name, $member.typecode.cppTypename$.class);
-$if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
-		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-$endif$$endif$
-$endif$
-$endif$
-$endif$
-		
-		break;
-$endif$ 
->>
-
-accessor_methods(union) ::= <<
-$union.members : {member | 
-$if(member.typecode.isType_f)$
-/*
- * Method to get the attribute $member.name$.
- */
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
-$else$
-public $member.typecode.cppTypename$ get$member.javaName$() {
-$endif$
-$else$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
-$endif$ 
-	boolean canDoIt = false;
-	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=union.discriminator)$
-	$else$
-	$endif$
-	
-	if (!canDoIt) {
-		throw new UnsupportedOperationException("Invalid union value");
-	}
-	return this.$member.name$;
-}
-
-/*
- * Method to set the attribute $member.javaName$.
- */
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
+switch_labels(member) ::= <<
+$if(member.labels)$
+$member.labels : {label |case $if(union.discriminator.type_boolean)$"$endif$$label$$if(union.discriminator.type_boolean)$"$endif$:}; separator="\n"$
 
 $else$
-public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
+default:
 
 $endif$
-$else$
-public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
-
-$endif$
-	boolean canDoIt = false;
-	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=union.discriminator)$
-	$else$
-	$candoit_default_switch_case(union=union, typecode=union.discriminator)$
-	$endif$
-	
-	if (!canDoIt) {
-		throw new UnsupportedOperationException("Invalid union value");
-	}
-	this.$member.name$ = $member.name$;
-}
-$else$
-/*
- * Method to get the attribute $member.name$.
- */
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-public $paramTypeJava(member.typecode)$ get$member.javaName$() \{
-
-$else$
-public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
-
-$endif$
-$else$
-public $paramTypeJava(member.typecode)$ get$member.javaName$() { 
-
-$endif$
-	boolean canDoIt = false;
-	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=union.discriminator)$
-	$else$
-	$candoit_default_switch_case(union=union, typecode=union.discriminator)$
-	$endif$
-	
-	if (!canDoIt) {
-		throw new UnsupportedOperationException("Invalid union value");
-	}
-	return this.$member.name$;
-}
-
-/*
- * Method to set the attribute $member.name$.
- */
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) \{
-
-$else$
-public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
-
-$endif$
-$else$
-public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) {
-
-$endif$
-	boolean canDoIt = false;
-	$if(!member.default)$
-	$candoit_switch_case(member=member, typecode=union.discriminator)$
-	$else$
-	$candoit_default_switch_case(union=union, typecode=union.discriminator)$
-	$endif$
-	
-	if (!canDoIt) {
-		throw new UnsupportedOperationException("Invalid union value");
-	}
-	this.$member.name$ = $member.name$;
-}
-$endif$
-}; separator="\n"$
 >>
 
 candoit_switch_case(member, typecode) ::= <<

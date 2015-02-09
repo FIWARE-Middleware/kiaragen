@@ -38,7 +38,9 @@ type_d() ::= <<java.lang.String>>
 
 type_15() ::= <<java.lang.String>>
 
-type_18(firs, secon, type) ::= <<Set<$envelopeJava.(type)$\>>>
+type_18(type, maxsize) ::= <<Set<$envelopeJava.(type)$\>>>
+
+type_19(key, value, maxsize) ::= <<Map<$envelopeJava.(key)$, $envelopeJava.(value)$\>>>
 
 type_f_first(prev) ::= <<$prev$List<>>
 type_f_second(prev, size) ::= <<$prev$\>>>

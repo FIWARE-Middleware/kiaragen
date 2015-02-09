@@ -410,7 +410,7 @@ public class kiaragen {
 				returnedValue = specification != null;
 				
 			} catch (FileNotFoundException ex) {
-				System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " was not found.");
+				System.out.println(ColorMessage.error("FileNotFoundException") + "The File " + idlParseFileName + " was not found.");
 			} catch(ParseCancellationException ex) {
 				System.out.println(ColorMessage.error("ParseCancellationException") + "The File " + idlParseFileName + " cannot be parsed.");
 				Throwable arrayt[] = ex.getSuppressed();

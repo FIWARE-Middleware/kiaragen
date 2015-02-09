@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.fiware.kiara.serialization.impl.Serializable;
 import org.fiware.kiara.serialization.impl.SerializerImpl;
@@ -30,32 +33,13 @@ public class $ctx.currentSt.name$ implements Serializable {
 	/*
 	 *	Default constructor
 	 */
-	public $ctx.currentSt.name$() {
-	$ctx.currentSt.members : {member | 
-	$if(member.typecode.primitive)$
-	this.$member.name$ = $initJava.(member.typecode.stType)$;
-	$else$
-	$if(member.typecode.isType_f)$
-	this.$member.name$ = new $arrayAttribute(type=member.typecode, dims=member.typecode.dimensions)$();
-	$else$
-	$if(member.typecode.isType_e)$
-	$if(member.typecode.contentTypeCode.primitive)$
-	this.$member.name$ = new $sequenceAttribute(type=member.typecode)$();
-	$else$
-	this.$member.name$ = new $sequenceAttribute(type=member.typecode)$();
-	$endif$
-	$if(member.typecode.isType_c)$
-	this.$member.name$ = new $sequenceAttribute(type=member.typecode)$();
-	$endif$
-	$else$
-	this.$member.name$ = new $member.typecode.name$();
-	$endif$
-	$endif$ 
-	$endif$}; separator="\n"$
-	}
-
+	 
+	$default_constructor(ctx.currentSt)$ 
+	
 	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$);}; separator="\n"$
+	
 	$serialization_methods(ctx.currentSt)$
+	
 	$comparison_function(ctx.currentSt)$
 	
 	/*
@@ -67,7 +51,7 @@ public class $ctx.currentSt.name$ implements Serializable {
 	{
 	    int current_align = current_alignment;
 	            
-	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n"$
+	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n\n"$
 	 
 	    return current_align;
 	}
@@ -77,44 +61,69 @@ public class $ctx.currentSt.name$ implements Serializable {
 
 >>
 
+// Attributes ---------------------------------------------------------------------
+
 private_attributes(currentSt) ::= <<
-$currentSt.members : {member | 
-$if(member.typecode.primitive)$
-private $paramTypeJava(typecode=member.typecode)$ $member.name$;
-$else$
-$if(member.typecode.isType_f)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.isType_f)$
-private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
-$else$
-private $member.typecode.cppTypename$ $member.name$;
-$endif$
-$else$
-private $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$;
-$endif$
-$else$
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
-$else$
-$if(member.typecode.type_set)$
-private $member.typecode.cppTypename$ $member.name$;
-$else$
-private $member.typecode.cppTypename$ $member.name$;
-$endif$
-$endif$
-$else$
-private $sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$;
-$endif$
-$else$
-private $paramTypeJava(typecode=member.typecode)$ $member.name$;
-$endif$
-$endif$
-$endif$
-}; separator="\n"$
+$currentSt.members : {member | private $standardJavaType(member)$ $member.name$;}; separator="\n"$
+>>
+
+// Constructor ---------------------------------------------------------------------
+
+default_constructor(currentSt) ::= <<
+public $currentSt.name$() {
+	$ctx.currentSt.members : {member |this.$member.name$ = $standardJavaInitialization(member.typecode)$;}; separator="\n"$
+}
+>>
+
+// ----------------------------------Accessor methods ------------------------------
+
+accessor_methods(currentSt) ::= <<
+$currentSt.members : {member|$get_method(member)$$\n$$\n$$set_method(member)$}; separator="\n\n"$
+>>
+
+get_method(member) ::= <<
+/*
+ * Method to get the attribute $member.name$.
+ */
+public $standardJavaType(member)$ get$member.javaName$() {
+	return this.$member.name$;
+}
+>>
+
+set_method(member) ::= <<
+/*
+ * Method to set the attribute $member.name$.
+ */
+public void set$member.javaName$($standardJavaType(member)$ $member.name$) {
+	this.$member.name$ = $member.name$;
+}
+>>
+
+// -------------------------------Serialization methods ----------------------------------
+serialization_methods(currentSt) ::= <<
+/*
+ * This method serializes a $currentSt.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
+public void serialize(SerializerImpl impl, TransportMessage message, String name) {
+	$currentSt.members : {member | $standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
+}
+
+/*
+ * This method deserializes a $currentSt.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
+ */
+public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
+	$currentSt.members : {member | $membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$}; separator="\n"$
+}
 
 >>
+
+
+
+// ---------------------------
 
 comparison_function(currentSt) ::= <<
 
@@ -140,213 +149,6 @@ public boolean equals(Object other) {
 	
 	return comparison;
 }
->>
-
-serialization_methods(currentSt) ::= <<
-/*
- * This method serializes a $currentSt.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
- */
-public void serialize(SerializerImpl impl, TransportMessage message, String name) {
-$currentSt.members : {member | 
-$if(member.typecode.isType_e)$
-	impl.$serializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$);
-$else$
-$if(member.typecode.isType_f)$
-	impl.$serializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, this.$member.name$, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-$else$
-	impl.$serializeJava.(member.typecode.stType)$(message, name, this.$member.name$);
-$endif$
-$endif$
-}; separator="\n"$
-}
-
-/*
- * This method deserializes a $currentSt.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
- */
-public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
-$currentSt.members : {member | 
-$if(member.typecode.primitive)$
-		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name$if(member.typecode.isType_c)$, $member.typecode.cppTypename$.class$endif$);
-$else$
-$if(member.typecode.isType_f)$
-$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_a)$
-	try { 
-$endif$$endif$
-$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_b)$
-	try { 
-$endif$$endif$
-		$if(!member.typecode.contentTypeCode.primitive)$
-		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-		$else$
-		$if(member.typecode.contentTypeCode.isType_c)$
-		try {
-			this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		$else$
-		this.$member.name$ = impl.$deserializeArrayJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.dimensions : {dim |$dim$}; separator=", "$);
-		$endif$
-		$endif$
-$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_a)$
-	} catch (InstantiationException | IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-$endif$$endif$
-$if(!member.typecode.contentTypeCode.primitive)$$if(member.typecode.contentTypeCode.isType_b)$
-	} catch (InstantiationException | IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-$endif$$endif$
-$else$
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if (member.typecode.contentTypeCode.isType_c)$
-	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.depth$);
-$else$
-	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.depth$);
-$endif$
-$else$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
-	try { 
-$endif$$endif$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_b)$
-	try { 
-$endif$$endif$
-	this.$member.name$ = impl.$deserializeSequenceJava.(member.typecode.contentTypeCode.stType)$(message, name, $member.typecode.contentTypeCode.cppTypename$.class, $member.typecode.depth$);
-$if(!member.typecode.primitive)$$if(member.typecode.isType_e)$
-	} catch (InstantiationException | IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-$endif$$endif$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_b)$
-	} catch (InstantiationException | IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-$endif$$endif$
-$endif$
-$else$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
-	try { 
-$endif$$endif$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_b)$
-	try { 
-$endif$$endif$
-		this.$member.name$ = impl.$deserializeJava.(member.typecode.stType)$(message, name, $member.typecode.cppTypename$.class);
-$if(!member.typecode.primitive)$$if(member.typecode.isType_a)$
-	} catch (InstantiationException | IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-$endif$$endif$
-$if(!member.typecode.primitive)$$if(member.typecode.isType_b)$
-	} catch (InstantiationException | IllegalAccessException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-$endif$$endif$
-$endif$
-
-$endif$
-$endif$
-}; separator="\n"$
-}
->>
-
-accessor_methods(currentSt) ::= <<
-$currentSt.members : {member | 
-$if(member.typecode.isType_f)$
-/*
- * Method to get the attribute $member.name$.
- */
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
-$else$
-public $member.typecode.cppTypename$ get$member.javaName$() {
-
-$endif$
-$else$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
-$endif$ 
-	return this.$member.name$;
-}
-
-/*
- * Method to set the attribute $member.javaName$.
- */
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
-
-$else$
-public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
-$endif$
-
-$else$
-public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
-
-$endif$
-	this.$member.name$ = $member.name$;
-}
-$else$
-/*
- * Method to get the attribute $member.name$.
- */
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
-
-$else$
-public $paramTypeJava(member.typecode)$ get$member.javaName$() \{
-
-$endif$
-
-$else$
-public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
-
-$endif$
-$else$
-public $paramTypeJava(member.typecode)$ get$member.javaName$() { 
-
-$endif$
-	return this.$member.name$;
-}
-
-/*
- * Method to set the attribute $member.name$.
- */
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
-
-$else$
-public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) \{
-
-$endif$
-$else$
-public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
-
-$endif$
-$else$
-public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) {
-
-$endif$
-	this.$member.name$ = $member.name$;
-}
-$endif$
-}; separator="\n"$
 >>
 
 module(ctx, module, definition_list) ::= <<

@@ -80,8 +80,306 @@ $type.depth : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$type
 >>
 
 arrayAttributeFirst(name, type, dims) ::= <<
-$dims : {dim |List<}; separator=""$$type.contentTypeCode.cppTypename$$dims : {dim |>}; separator=""$
+$dims : {dim |List<}; separator=""$$if(!type.contentTypeCode.primitive)$$type.contentTypeCode.cppTypename$$else$$envelopeJava.(type.contentTypeCode.stType)$$endif$$dims : {dim |>}; separator=""$
 >>
+
+setAttributeFirst(name, type) ::= <<
+Set<$objectName(type.contentTypeCode)$>
+>>
+
+mapAttributeFirst(name, type) ::= <<
+Map<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+>>
+
+// ---------------------------------Java Types---------------------------------------------------
+
+standardJavaType(member) ::= <<
+$if(member.typecode.primitive)$
+$primitive_type(member.typecode)$
+$endif$
+$if(member.typecode.container)$
+$container_type(member.typecode)$
+$endif$
+$if(member.typecode.membered)$
+$membered_type(member.typecode)$
+$endif$
+>>
+
+// Only primitive types. Check if it's an enum first (enum are primitive)
+primitive_type(type) ::= <<
+$if(!type.isType_c)$
+$if(type.string)$
+$type.cppTypename$
+$else$
+$type.cppTypename$
+$endif$
+$endif$
+>>
+
+// f = Array, e = sequence
+container_type(type) ::= <<
+$if(type.isType_f)$
+$type.dimensions : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.dimensions : {dim |>}; separator=""$
+$endif$
+$if(type.isType_e)$
+$type.depth : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.depth : {dim |>}; separator=""$
+$endif$
+$if(type.type_set)$
+Set<$objectName(type.contentTypeCode)$>
+$endif$
+$if(type.type_map)$
+Map<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$endif$
+>>
+
+// a = enum, c = struct, b = union
+membered_type(type) ::= <<
+$if(type.isType_a)$
+$type.cppTypename$
+$endif$
+$if(type.isType_c)$
+$objectName(type)$
+$endif$
+$if(type.isType_b)$
+$objectName(type)$
+$endif$
+>>
+
+objectName(type) ::= <<
+$if(type.primitive)$
+$if(type.isType_c)$
+$type.cppTypename$
+$else$
+$envelopeJava.(type.stType)$
+$endif$
+$else$
+$type.cppTypename$
+$endif$
+>>
+
+// -------------------------------- Java Initialization ------------------------------------------------
+
+standardJavaInitialization(type) ::= <<
+$if(type.primitive)$
+$primitive_type_init(type)$
+$endif$
+$if(type.container)$
+$container_type_init(type)$
+$endif$
+$if(type.membered)$
+$membered_type_init(type)$
+$endif$
+>>
+
+// Only primitive types. Check if it's an enum first (enum are primitive)
+primitive_type_init(type) ::= <<
+$if(!type.isType_c)$
+$initJava.(type.stType)$
+$endif$
+>>
+
+// f = Array, e = sequence
+container_type_init(type) ::= <<
+$if(type.isType_f)$
+new $first(type.dimensions) : {dim |ArrayList<}; separator=""$$rest(type.dimensions) : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.dimensions : {dim |>}; separator=""$()
+$endif$
+$if(type.isType_e)$
+new $first(type.depth) : {dim |ArrayList<}; separator=""$$rest(type.depth) : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.depth : {dim |>}; separator=""$()
+$endif$
+$if(type.type_set)$
+new HashSet<$objectName(type.contentTypeCode)$>()
+$endif$
+$if(type.type_map)$
+new HashMap<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>()
+$endif$
+>>
+
+// a = struct, c = enum, b = union
+membered_type_init(type) ::= <<
+$if(type.isType_a)$
+new $type.cppTypename$()
+$endif$
+$if(type.isType_c)$
+$objectName(type)$.$if(type.members)$$first(type.members) : {member |$member.name$}; separator=""$$else$null$endif$
+$endif$
+$if(type.isType_b)$
+new $objectName(type)$()
+$endif$
+>>
+
+// -----------------------------------------Try & catch for membered types-----------------------------------------------
+
+membered_try(type) ::= <<
+$if(type.membered)$
+$if(!type.isType_c)$
+try {
+	
+$endif$
+$else$
+$if(type.container)$
+$if(type.contentTypeCode.membered)$
+try {
+	
+$endif$
+$endif$
+$endif$
+>>
+
+membered_catch(type) ::= <<
+$if(type.membered)$
+$if(!type.isType_c)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$else$
+$if(type.container)$
+$if(type.contentTypeCode.membered)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$endif$
+$endif$
+>>
+
+// -------------------------------- Java Serialization ------------------------------------------------
+
+standardJavaSerialization(type, name, ser, scope) ::= <<
+$if(type.primitive)$
+$primitive_type_ser(type)$
+$endif$
+$if(type.container)$
+$container_type_ser(type)$
+$endif$
+$if(type.membered)$
+$membered_type_ser(type)$
+$endif$
+>>
+
+// Only primitive types. Check if it's an enum first (enum are primitive)
+primitive_type_ser(type) ::= <<
+$if(!type.isType_c)$
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+$endif$
+>>
+
+// f = Array, e = sequence
+container_type_ser(type) ::= <<
+$if(type.isType_f)$
+$ser$.$serializeArrayJava.(type.contentTypeCode.stType)$(message, name, $scope$$name$, $type.dimensions : {dim |$dim$}; separator=", "$)
+$endif$
+$if(type.isType_e)$
+$ser$.$serializeSequenceJava.(type.contentTypeCode.stType)$(message, name, $scope$$name$)
+$endif$
+$if(type.type_set)$
+$ser$.$serializeSetJava.(type.contentTypeCode.stType)$(message, name, $scope$$name$)
+$endif$
+$if(type.type_map)$
+$serializeMap(type=type, name=name, ser=ser)$
+$endif$
+>>
+
+// a = struct, c = enum, b = union
+membered_type_ser(type) ::= <<
+$if(type.isType_a)$
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+$endif$
+$if(type.isType_c)$
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+$endif$
+$if(type.isType_b)$
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+$endif$
+>>
+
+serializeMap(type, name, ser) ::= <<
+$ser$.serializeI32(message, name, $name$.size());
+for(Map.Entry<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$> entry : this.$name$.entrySet()) {
+	$standardJavaSerialization(type=type.keyTypeCode, name="entry.getKey()", ser=ser)$;
+	$standardJavaSerialization(type=type.valueTypeCode, name="entry.getValue()", ser=ser)$;
+}
+>>
+
+// -------------------------------- Java Deserialization ------------------------------------------------
+
+standardJavaDeserialization(type, name, ser) ::= <<
+$if(type.primitive)$
+$primitive_type_deser(type)$
+$endif$
+$if(type.container)$
+$container_type_deser(type)$
+$endif$
+$if(type.membered)$
+$membered_type_deser(type)$
+$endif$
+>>
+
+// Only primitive types. Check if it's an enum first (enum are primitive)
+primitive_type_deser(type) ::= <<
+$if(!type.isType_c)$
+$ser$.$deserializeJava.(type.stType)$(message, name)
+$endif$
+>>
+
+// f = Array, e = sequence
+container_type_deser(type) ::= <<
+$if(type.isType_f)$
+$ser$.$deserializeArrayJava.(type.contentTypeCode.stType)$(message, name$deserialization_switcher(type.contentTypeCode)$, $type.dimensions : {dim |$dim$}; separator=", "$)
+$endif$
+$if(type.isType_e)$
+$ser$.$deserializeSequenceJava.(type.contentTypeCode.stType)$(message, name$deserialization_switcher(type.contentTypeCode)$, $type.depth$)
+$endif$
+$if(type.type_set)$
+$ser$.$deserializeSetJava.(type.contentTypeCode.stType)$(message, name$deserialization_switcher(type.contentTypeCode)$, $type.depth$)
+$endif$
+$if(type.type_map)$
+$deserializeMap(type=type, name=name, ser=ser)$
+$endif$
+>>
+
+// a = struct, c = enum, b = union
+membered_type_deser(type) ::= <<
+$if(type.isType_a)$
+$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
+$endif$
+$if(type.isType_c)$
+$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
+$endif$
+$if(type.isType_b)$
+$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
+$endif$
+>>
+
+deserialization_switcher(type) ::= <<
+$if(type.primitive)$
+$if(type.isType_c)$
+, $type.cppTypename$.class
+$endif$
+$else$
+, $type.cppTypename$.class
+$endif$
+>>
+
+deserializeMap(type, name, ser) ::= <<
+new HashMap<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>();
+int size_$name$ = $ser$.deserializeI32(message, name);
+for (int i = 0; i < size_$name$; ++i) {
+	$objectName(type.keyTypeCode)$ key = $standardJavaInitialization(type.keyTypeCode)$;
+	$objectName(type.valueTypeCode)$ value = $standardJavaInitialization(type.valueTypeCode)$;
+	$membered_try(type.keyTypeCode)$
+	key = $standardJavaDeserialization(type=type.keyTypeCode, name="entry.getKey()", ser=ser)$;
+	$membered_catch(type.keyTypeCode)$
+	$membered_try(type.valueTypeCode)$
+	value = $standardJavaDeserialization(type=type.valueTypeCode, name="entry.getKey()", ser=ser)$;
+	$membered_catch(type.valueTypeCode)$
+	this.$name$.put(key, value);
+}
+>>
+
+// -----------------------------------------------------------------------------------------------------
 
 arrayAttribute(name, type, dims) ::= <<
 $if(type.contentTypeCode.primitive)$
@@ -107,80 +405,92 @@ ArrayList<$type.contentTypeCode.cppTypename$>
 $endif$
 >>
 
+setlistAttribute(name, type) ::= <<
+$if(type.contentTypeCode.primitive)$
+$if(type.contentTypeCode.isType_c)$
+HashSet<$type.contentTypeCode.cppTypename$>
+$else$
+HashSet<$envelopeJava.(type.contentTypeCode.stType)$>
+$endif$
+$else$
+HashSet<$type.contentTypeCode.cppTypename$>
+$endif$
+>>
+
+hashmapAttribute(name, type) ::= <<
+HashMap<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+>>
+
+
+
+// -------------------------------- Max Serialized Size -------------------------------------------
+
 max_serialized_size(ctx, typecode, var, name) ::= <<
-$if(typecode.stType)$
 $if(typecode.primitive)$
-$if(typecode.isType_d)$
-$var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$ + $typecode.maxsize$ + 1;
-$else$
-$var$ += $typecode.size$$if(ctx.cdr)$ + CDRSerializer.alignment($var$, $typecode.size$)$endif$;
+$max_size_primitive_type(typecode)$
 $endif$
-$else$
-$if(typecode.isType_e)$
-$var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$;
-$sequence_max_serialized_size(ctx=ctx, typecodeSeq=typecode, var=var, loopvar=ctx.newLoopVarName)$
-$elseif(typecode.isType_f)$
-$array_max_serialized_size(ctx=ctx, typecodeArr=typecode, var=var, loopvar=ctx.newLoopVarName)$
-$else$
-$var$ += $typecode.name$.getMaxCdrSerializedSize($var$);
+$if(typecode.container)$
+$max_size_container_type(typecode)$
 $endif$
-$endif$
-$else$
-// Return type Void is not serialized
+$if(typecode.membered)$
+$max_size_membered_type(typecode)$
 $endif$
 >>
 
-array_max_serialized_size(ctx, typecodeArr, var, loopvar) ::= <<
-$if(typecodeArr.contentTypeCode.primitive)$
-$if(typecodeArr.contentTypeCode.isType_d)$
-for(int $loopvar$ = 0; $loopvar$ < $typecodeArr.size$; ++$loopvar$)
-{
-    $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$ + $typecodeArr.contentTypeCode.maxsize$ + 1;
-}
+// Only primitive types. Check if it's an enum first (enum are primitive)
+max_size_primitive_type(type) ::= <<
+$if(!type.isType_c)$
+$if(type.string)$
+$var$ += 4 + CDRSerializer.alignment($var$, 4) + $typecode.maxsize$ + 1;
 $else$
-$var$ += ($typecodeArr.size$ * $typecodeArr.contentTypeCode.size$)$if(ctx.cdr)$ + CDRSerializer.alignment($var$, $typecodeArr.contentTypeCode.size$)$endif$;
+$var$ += $typecode.size$ + CDRSerializer.alignment($var$, $typecode.size$);
 $endif$
-$else$
-for(int $loopvar$ = 0; $loopvar$ < $typecodeArr.size$; ++$loopvar$)
-{
-$if(typecodeArr.contentTypeCode.isType_e)$
-    $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$;
-    $sequence_max_serialized_size(ctx=ctx, typecodeArr=typecodeArr.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
-$elseif(typecodeArr.contentTypeCode.isType_f)$
-$array_max_serialized_size(ctx=ctx, typecodeArr=typecodeArr.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
-$else$
-	$var$ += $typecodeArr.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
+$endif$
+>>
 
+// f = Array, e = sequence
+max_size_container_type(type) ::= <<
+$if(type.isType_f)$
+for(int i = 0; i < $type.size$; ++i) {
+    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name)$
+}
 $endif$
+$if(type.isType_e)$
+$var$ += 4 + CDRSerializer.alignment($var$, 4); // Sequence size
+for(int i = 0; i < $type.maxsize$; ++i) {
+    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name)$
+}
+$endif$
+$if(type.type_set)$
+$var$ += 4 + CDRSerializer.alignment($var$, 4); // Sequence size
+for(int i = 0; i < $type.maxsize$; ++i) {
+    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name)$
+}
+$endif$
+$if(type.type_map)$
+// Map $name$ serialization
+$var$ += 4 + CDRSerializer.alignment($var$, 4); // Map size
+for(int i=0; i < $type.maxsize$; ++i) {
+	$max_serialized_size(ctx=ctx, typecode=type.keyTypeCode, var=var, name=name)$ // Key
+	$max_serialized_size(ctx=ctx, typecode=type.valueTypeCode, var=var, name=name)$ // Value
 }
 $endif$
 >>
 
-sequence_max_serialized_size(ctx, typecodeSeq, var, loopvar) ::= <<
-$if(typecodeSeq.contentTypeCode.primitive)$
-$if(typecodeSeq.contentTypeCode.isType_d)$
-for(int $loopvar$ = 0; $loopvar$ < $typecodeSeq.maxsize$; ++$loopvar$)
-{
-    $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$ + $typecodeSeq.contentTypeCode.maxsize$ + 1;
-}
-$else$
-$var$ += ($typecodeSeq.maxsize$ * $typecodeSeq.contentTypeCode.size$)$if(ctx.cdr)$ + CDRSerializer.alignment($var$, $typecodeSeq.contentTypeCode.size$)$endif$;
+// a = enum, c = struct, b = union
+max_size_membered_type(type) ::= <<
+$if(type.isType_a)$
+$var$ += $type.name$.getMaxCdrSerializedSize($var$);
 $endif$
-$else$
-for(int $loopvar$ = 0; $loopvar$ < $typecodeSeq.maxsize$; ++$loopvar$)
-{
-$if(typecodeSeq.contentTypeCode.isType_e)$
-    $var$ += 4$if(ctx.cdr)$ + CDRSerializer.alignment($var$, 4)$endif$;
-    $sequence_max_serialized_size(ctx=ctx, typecodeSeq=typecodeSeq.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
-$elseif(typecodeSeq.contentTypeCode.isType_f)$
-$array_max_serialized_size(ctx=ctx, typecodeArr=typecodeSeq.contentTypeCode, var=var, loopvar=ctx.nextLoopVarName)$
-$else$
-    $var$ += $typecodeSeq.contentTypeCode.scopedname$.getMaxCdrSerializedSize($var$);
-
+$if(type.isType_c)$
+$var$ += 4 + CDRSerializer.alignment($var$, 4); // Enum type
 $endif$
-}
+$if(type.isType_b)$
+$var$ += $type.name$.getMaxCdrSerializedSize($var$);
 $endif$
 >>
+
+// -------------------------------- ---------------------- -------------------------------------------
 
 initJava ::= [
 		"type_1":"0",
@@ -255,7 +565,7 @@ envelopeJava ::= [
 		"type_18":"Set",
 		"type_a":"undefined",
 		"type_b":"undefined",
-		"type_c":"serializeEnum",
+		"type_c":"undefined",
 		"type_d":"java.lang.String",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -390,7 +700,7 @@ serializeSequenceJava ::= [
 		"type_15":"serializeSequenceString",
 		"type_a":"serializeSequence",
 		"type_b":"serializeSequence",
-		"type_c":"serializeSequenceEnum",
+		"type_c":"serializeSequence",
 		"type_d":"serializeSequenceString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -417,8 +727,62 @@ deserializeSequenceJava ::= [
 		"type_15":"deserializeSequenceString",
 		"type_a":"deserializeSequence",
 		"type_b":"deserializeSequence",
-		"type_c":"deserializeSequenceEnum",
+		"type_c":"deserializeSequence",
 		"type_d":"deserializeSequenceString",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
+serializeSetJava ::= [
+		"type_1":"serializeSetI16",
+		"type_2":"serializeSetI32",
+		"type_3":"serializeSetUI16",
+		"type_4":"serializeSetUI32",
+		"type_5":"serializeSetFloat32",
+		"type_6":"serializeSetFloat64",
+		"type_7":"serializeSetBoolean",
+		"type_8":"serializeSetChar",
+		"type_9":"serializeSetByte",
+		"type_10":"undefined",
+		"type_11":"serializeSetI64",
+		"type_12":"serializeSetUI64",
+		"type_13":"unsupported",
+		"type_14":"serializeSetChar",
+		"type_15":"serializeSetString",
+		"type_a":"serializeSet",
+		"type_b":"serializeSet",
+		"type_c":"serializeSetEnum",
+		"type_d":"serializeSetString",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: // not basic type.
+]
+
+deserializeSetJava ::= [
+		"type_1":"deserializeSetI16",
+		"type_2":"deserializeSetI32",
+		"type_3":"deserializeSetUI16",
+		"type_4":"deserializeSetUI32",
+		"type_5":"deserializeSetFloat32",
+		"type_6":"deserializeSetFloat64",
+		"type_7":"deserializeSetBoolean",
+		"type_8":"deserializeSetChar",
+		"type_9":"deserializeSetByte",
+		"type_10":"undefined",
+		"type_11":"deserializeSetI64",
+		"type_12":"deserializeSetUI64",
+		"type_13":"unsupported",
+		"type_14":"deserializeSetChar",
+		"type_15":"deserializeSetString",
+		"type_a":"deserializeSet",
+		"type_b":"deserializeSet",
+		"type_c":"deserializeSetEnum",
+		"type_d":"deserializeSetString",
         "type_e":"undefined",
         "type_f_first":"undefined",
         "type_f_second":"undefined",

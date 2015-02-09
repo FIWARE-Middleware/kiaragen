@@ -54,6 +54,8 @@ public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.curr
 
 >>
 
+// --------------------------- Servant operation requires size -----------------------------
+
 servant_operation_required_size(ctx, operation) ::= <<
 
 $if(operation.isOperation)$
@@ -61,26 +63,31 @@ private int $operation.name$_required_size() {
 	int op_size = 0;
 	
 	op_size += 4 + CDRSerializer.alignment(op_size, Integer.SIZE); // MessageID
-	$operation.outputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="op_size", name=param.name)$;}; separator="\n"$
+	op_size += 4 + CDRSerializer.alignment(op_size, Integer.SIZE); // Error indicator code
+	$operation.outputparam : {param |$output_required_size(param)$}; separator="\n"$
 	$max_serialized_size(ctx=ctx, typecode=operation.rettype, var="op_size", name=operation.rettypeparam.name)$ // Return type
 	
 	$if(operation.exceptions)$
-	int currentSize = 0;
-	int messageIdSize = 4 + CDRSerializer.alignment(currentSize, Integer.SIZE); // MessageID Size
+	int currentSize = 0, maxSize = 0;
 $operation.exceptions : {exception|
-	currentSize += (messageIdSize + $exception.name$.getMaxCdrSerializedSize(currentSize));
-	if (currentSize > op_size) {
-		op_size = currentSize;
+	currentSize += $exception.name$.getMaxCdrSerializedSize(currentSize);
+	if (currentSize > maxSize) {
+		maxSize = currentSize;
 	}
 	currentSize = 0;
 }; separator = ""$
 	$endif$
-	
-	return op_size;
+	return op_size$if(operation.exceptions)$ + maxSize$endif$;
 }
 $endif$
 
 >>
+
+output_required_size(param) ::= <<
+$max_serialized_size(ctx=ctx, typecode=param.typecode, var="op_size", name=param.name)$ // Output parameter $param.name$
+>>
+
+// ------------------------- Servant Process operation ----------------------------
 
 process_operation(operation) ::= <<
 
@@ -129,17 +136,22 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 		$operation.name$ ($operation.inputparam : {param |$param.name$}; separator=", "$);
 		$endif$
 		$endif$
+		// Serialize return code (0 = OK)
 		serImpl.serializeUI32(retMsg, "", 0);
 		$if(operation.isOperation)$
 		$if(operation.rettype)$
+		// Serialize return type
 		serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret);
 		$endif$
 		$endif$
 	$if(operation.exceptions)$$\t$} $operation.exceptions : {ex |
 	catch($ex.name$ ex_$ex.name$) {
 		ex_$ex.name$.printStackTrace();
+		// Serialize return code (non-zero error code)
 		serImpl.serializeUI32(retMsg, "", $ex.Md5$);
+		// Serialize exception name
 		serImpl.serializeString(retMsg, "", "$ex.name$");
+		// Serialize exception data
 		ex_$ex.name$.serialize(serImpl, retMsg, "");
 	}}; separator="\n"$
 	$endif$

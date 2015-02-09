@@ -44,22 +44,28 @@ $endif$
 > {
 	public void process(TransportMessage message, SerializerImpl ser) {
 		try {
+			// Deserialize message ID
 			final Object messageId = ser.deserializeMessageId(message);
+			// Deserialize return code (0 = OK, anything else = WRONG)
+    		int retCode = ser.deserializeUI32(message, "");
+    		if (retCode == 0) { // Function execution was OK.
 			$if(operation.rettype)$
-			$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(message, ""$if(!operation.rettype.primitive)$
-				$if(!operation.rettype.isType_d)$
-					$if(!operation.rettype.isType_e)$
-						$if(!operation.rettype.isType_f)$
-, $operation.rettype.cppTypename$.class
+				$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(message, ""$if(!operation.rettype.primitive)$
+					$if(!operation.rettype.isType_d)$
+						$if(!operation.rettype.isType_e)$
+							$if(!operation.rettype.isType_f)$
+	, $operation.rettype.cppTypename$.class
+							$endif$
 						$endif$
 					$endif$
-				$endif$
-			$else$
-			$endif$$if(operation.rettype.isType_c)$, $operation.rettype.cppTypename$.class$endif$);
-			onSuccess(result);
-			$else$
-			onSuccess(null);
+				$else$
+				$endif$$if(operation.rettype.isType_c)$, $operation.rettype.cppTypename$.class$endif$);
+				onSuccess(result);
+				$else$
+				onSuccess(null);
 			$endif$
+			} 
+			$if(operation.exceptions)$$error_code(operation)$$endif$
 		} catch (Exception ex) {
 			onFailure(ex);
 		}
@@ -68,6 +74,21 @@ $endif$
 
 $endif$
 $endif$
+>>
+
+error_code(operation) ::= <<
+else {
+	String name = ser.deserializeString(message, "");
+	$operation.exceptions : {ex |$error_code_else_blocks(ex)$}; separator="\n"$
+}
+>>
+
+error_code_else_blocks(ex) ::= <<
+if (name.equals("$ex.name$")) {
+	$ex.name$ exception = new $ex.name$();
+	exception.deserialize(ser, message, "");
+	throw exception;
+}
 >>
 
 module(ctx, module, definition_list) ::= <<

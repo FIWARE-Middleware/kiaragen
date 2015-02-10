@@ -63,9 +63,11 @@ $endif$
 proxy_operation(operation) ::= <<
 $if(operation.isOperation)$
 $if(operation.rettype)$
-public $operation.rettype.cppTypename$ $operation.name$($javaParams(params=operation.parameters)$) {
+@Override
+public $operation.rettype.cppTypename$ $operation.name$($javaParams(params=operation.parameters)$)$if(operation.exceptions)$ throws $operation.exceptions :{ex |$ex.name$}; separator=", "$ $endif$ {
 $else$
-public void $operation.name$($javaParams(params=operation.parameters)$) {
+@Override
+public void $operation.name$($javaParams(params=operation.parameters)$)$if(operation.exceptions)$ throws $operation.exceptions :{ex |$ex.name$}; separator=", "$ $endif$ {
 $endif$
 	
 	if (m_ser != null && m_transport != null) {
@@ -124,7 +126,9 @@ $endif$
 	        	}$endif$
 				
 			}
-        } catch (Exception ex) {
+        } 
+        $operation.exceptions : {exception |$catch_blocks(exception)$}; separator="\n"$
+        catch (Exception ex) {
             throw new RuntimeException(ex);
         }
 		
@@ -143,6 +147,12 @@ $endif$
 
 $endif$
 
+>>
+
+catch_blocks(exception) ::= <<
+catch ($exception.name$ ex) {
+	throw ex;
+}
 >>
 
 proxy_operation_async(operation) ::= <<

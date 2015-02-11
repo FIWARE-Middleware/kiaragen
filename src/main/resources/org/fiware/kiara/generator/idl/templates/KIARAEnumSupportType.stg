@@ -18,6 +18,7 @@ public enum $ctx.currentEnum.name$ {
  
 >>
 
+
 module(ctx, module, definition_list) ::= <<
 $definition_list$
 >>

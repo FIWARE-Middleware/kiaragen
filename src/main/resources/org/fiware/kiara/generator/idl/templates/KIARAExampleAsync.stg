@@ -6,6 +6,7 @@ package $ctx.javaPackage$;
 
 import org.fiware.kiara.transport.impl.TransportMessage;
 import org.fiware.kiara.client.AsyncCallback;
+import org.fiware.kiara.serialization.impl.BinaryInputStream;
 import org.fiware.kiara.serialization.impl.SerializerImpl;
 
 /**
@@ -42,15 +43,17 @@ $else$
 Void
 $endif$
 > {
+	@Override
 	public void process(TransportMessage message, SerializerImpl ser) {
 		try {
+			final BinaryInputStream bis = BinaryInputStream.fromByteBuffer(message.getPayload());
 			// Deserialize message ID
-			final Object messageId = ser.deserializeMessageId(message);
+			final Object messageId = ser.deserializeMessageId(bis);
 			// Deserialize return code (0 = OK, anything else = WRONG)
-    		int retCode = ser.deserializeUI32(message, "");
+    		int retCode = ser.deserializeUI32(bis, "");
     		if (retCode == 0) { // Function execution was OK.
 			$if(operation.rettype)$
-				$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(message, ""$if(!operation.rettype.primitive)$
+				$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(bis, ""$if(!operation.rettype.primitive)$
 					$if(!operation.rettype.isType_d)$
 						$if(!operation.rettype.isType_e)$
 							$if(!operation.rettype.isType_f)$
@@ -78,7 +81,7 @@ $endif$
 
 error_code(operation) ::= <<
 else {
-	String name = ser.deserializeString(message, "");
+	String name = ser.deserializeString(bis, "");
 	$operation.exceptions : {ex |$error_code_else_blocks(ex)$}; separator="\n"$
 }
 >>
@@ -86,7 +89,7 @@ else {
 error_code_else_blocks(ex) ::= <<
 if (name.equals("$ex.name$")) {
 	$ex.name$ exception = new $ex.name$();
-	exception.deserialize(ser, message, "");
+	exception.deserialize(ser, bis, "");
 	throw exception;
 }
 >>

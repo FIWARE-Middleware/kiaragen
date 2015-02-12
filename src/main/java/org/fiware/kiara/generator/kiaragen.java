@@ -333,8 +333,11 @@ public class kiaragen {
 	private void parseIDLtoCDR(String idlFilename) {
 		boolean returnedValue = false;
 		String idlParseFileName = idlFilename;
-		
 		String onlyFileName = Util.getIDLFileNameOnly(idlFilename);
+		
+		if (idlFilename.startsWith("."+File.separator)) {
+			idlFilename = idlFilename.substring(2, idlFilename.length());
+		}
 		
 		if (!m_ppDisable) {
 			idlParseFileName = callPreprocessor(idlFilename);
@@ -508,8 +511,13 @@ public class kiaragen {
 					
 					Interface ifz_handler = null;
 
-                    if(ctx.getScopedInterfaces().size() > 0)
+					if(ctx.getScopedInterfaces().size() > 0) {
                         ifz_handler = ctx.getScopedInterfaces().get(0);
+                    } else {
+                    	if (ctx.getInterfaces().size() > 0) {
+                    		ifz_handler = ctx.getInterfaces().get(0);
+                    	}
+                    }
 
 					ctx.setCurrentIfz(ifz_handler);
 					
@@ -570,6 +578,12 @@ public class kiaragen {
 				ppPath = "cl.exe";
 			} else if (m_os.contains("Linux")) {
 				ppPath = "cpp";
+			}
+		} else {
+			if (m_os.contains("Windows")) {
+				ppPath = ppPath + File.separator + "cl.exe";
+			} else if (m_os.contains("Linux")) {
+				ppPath = ppPath + File.separator + "cpp";
 			}
 		}
 		

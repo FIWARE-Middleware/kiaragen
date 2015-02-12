@@ -121,8 +121,9 @@ serialization_methods(union) ::= <<
  * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void serialize(SerializerImpl impl, TransportMessage message, String name) {
+	$standardJavaSerialization(type=union.discriminator, name="m_d", ser="impl", scope="this.")$;
 	$get_switch_type(union.discriminator)$
-		$union.members : {member |$switch_labels(member)$$\t$$standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
+		$union.members : {member |$switch_labels(member)$$\t$$standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;$\n$$\t$break;}; separator="\n"$
 	}
 }
 
@@ -132,8 +133,9 @@ public void serialize(SerializerImpl impl, TransportMessage message, String name
  * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
  */
 public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
+	this.m_d = $standardJavaDeserialization(type=union.discriminator, name="", ser="impl")$;
 	$get_switch_type(union.discriminator)$
-		$union.members : {member |$switch_labels(member)$$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$}; separator="\n"$
+		$union.members : {member |$switch_labels(member)$$\t$$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$\n$$\t$break;$membered_catch(member.typecode)$}; separator="\n"$
 	}
 }
 

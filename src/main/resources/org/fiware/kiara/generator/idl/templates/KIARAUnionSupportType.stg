@@ -33,6 +33,8 @@ public class $ctx.currentUnion.name$ implements Serializable {
 	
 	$generate_max_serialized_size(ctx.currentUnion)$
 	
+	$generate_hash_function(ctx.currentUnion)$
+	
 }
  
 >>
@@ -238,6 +240,30 @@ public boolean equals(Object other) {
 	return comparison;
 }
 >>
+
+// ------------------------- Hash Funtion ----------------------------
+
+generate_hash_function(currentUnion) ::= <<
+@Override
+public int hashCode() {
+	$get_switch_type(currentUnion.discriminator)$
+	$currentUnion.members : {member | $print_labels(member)$
+		return Objects.hash(this.m_d, this.$member.name$);
+	}; separator="\n"$
+	}
+}
+>>
+
+print_labels(member) ::= <<
+$if(member.labels)$$member.labels : {label |$print_discriminator(currentUnion=currentUnion, label=label)$}; separator="\n"$$else$default:$endif$
+>>
+
+print_discriminator(currentUnion, label) ::= <<
+case $if(currentUnion.discriminator.type_boolean)$"$endif$$label$$if(currentUnion.discriminator.type_boolean)$"$endif$:
+>>
+
+
+// ------------------------- Inherited functions ----------------------------
 
 module(ctx, module, definition_list) ::= <<
 $definition_list$

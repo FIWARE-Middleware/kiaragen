@@ -18,26 +18,6 @@ public enum $ctx.currentEnum.name$ {
  
 >>
 
-serialization_methods(enum) ::= <<
-/*
- * This method serializes an enumeration $enum.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
- */
-public void serialize(SerializerImpl impl, TransportMessage message, String name) {
-	impl.serializeUI32(message, "", this.value);
-}
-
-/*
- * This method deserializes an enumeration $enum.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.transport.impl.TransportMessage, java.lang.String)
- */
-public void deserialize(SerializerImpl impl, TransportMessage message, String name) {
-	this.value = impl.deserializeUI32(message, "");
-}
->>
-
 module(ctx, module, definition_list) ::= <<
 $definition_list$
 >>

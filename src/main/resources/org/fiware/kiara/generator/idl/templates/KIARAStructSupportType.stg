@@ -57,6 +57,8 @@ public class $ctx.currentSt.name$ implements Serializable {
 	}
 	
 	$accessor_methods(ctx.currentSt)$
+	
+	$generate_hash_function(ctx.currentSt)$
 }
 
 >>
@@ -150,6 +152,17 @@ public boolean equals(Object other) {
 	return comparison;
 }
 >>
+
+// ----------------------------- Hash Function ----------------------------
+
+generate_hash_function(currentSt) ::= <<
+@Override
+public int hashCode() {
+	return Objects.hash($currentSt.members : {member|this.$member.name$}; separator=", "$);	
+}
+>>
+
+// ------------------------------------------------------------------------
 
 module(ctx, module, definition_list) ::= <<
 $definition_list$

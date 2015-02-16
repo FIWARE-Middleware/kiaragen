@@ -385,7 +385,7 @@ public class kiaragen {
 			tmanager.addGroup("KIARAClientExampleGradle");
 			
 			// Load Support class template
-			tmanager.addGroup("KIARASupportType");
+			tmanager.addGroup("KIARAStructSupportType");
 			
 			// Load Support class template
 			tmanager.addGroup("KIARAUnionSupportType");
@@ -448,7 +448,7 @@ public class kiaragen {
 							StructTypeCode st = (StructTypeCode) tc;
 							ctx.setCurrentSt(st);
 							System.out.print("Generating Type support class for structure " + st.getName() +"... ");
-							if (returnedValue = Utils.writeFile(this.m_package + st.getName() + ".java", maintemplates.getTemplate("KIARASupportType"), m_replace)) {
+							if (returnedValue = Utils.writeFile(this.m_package + st.getName() + ".java", maintemplates.getTemplate("KIARAStructSupportType"), m_replace)) {
 								System.out.println("OK");
 							}
 						} else if (tc.getKind() == 0x0000000b) { // Union typecode

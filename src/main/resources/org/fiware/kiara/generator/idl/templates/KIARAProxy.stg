@@ -6,7 +6,7 @@ package $ctx.javaPackage$;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import java.io.IOException;
 
 import org.fiware.kiara.netty.TransportMessageDispatcher;
 import org.fiware.kiara.serialization.Serializer;
@@ -14,7 +14,8 @@ import org.fiware.kiara.serialization.impl.CDRSerializer;
 import org.fiware.kiara.transport.Transport;
 import org.fiware.kiara.transport.impl.TransportMessage;
 
-import java.nio.ByteBuffer;
+import org.fiware.kiara.serialization.impl.BinaryInputStream;
+import org.fiware.kiara.serialization.impl.BinaryOutputStream;
 
 /**
  * Class containing the proxy implementation for all the services. 
@@ -71,17 +72,20 @@ public void $operation.name$($javaParams(params=operation.parameters)$)$if(opera
 $endif$
 	
 	if (m_ser != null && m_transport != null) {
-		ByteBuffer buffer = ByteBuffer.allocate($operation.name$_required_size());
+		final BinaryOutputStream bos = new BinaryOutputStream($operation.name$_required_size());
 		final TransportMessage trequest = m_transport.createTransportMessage(null);
-        trequest.setPayload(buffer);
         
-        final Object messageId = m_ser.getNewMessageId(); 
-        m_ser.serializeMessageId(trequest, messageId);
+        final Object messageId = m_ser.getNewMessageId();
+		try {
+            m_ser.serializeMessageId(bos, messageId);
           
-		m_ser.serializeService(trequest, "$first(ctx.scopedInterfaces).name$");
-		m_ser.serializeOperation(trequest, "$operation.name$");
-		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
-		trequest.getPayload().flip();
+            m_ser.serializeService(bos, "$first(ctx.scopedInterfaces).name$");
+            m_ser.serializeOperation(bos, "$operation.name$");
+            $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+		trequest.setPayload(bos.getByteBuffer());
 		
 		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
         m_transport.send(trequest);
@@ -89,17 +93,16 @@ $endif$
         try {
         	TransportMessage tresponse = dispatcher.get();
         	if (tresponse != null && tresponse.getPayload() != null) {
-                final ByteBuffer buf = tresponse.getPayload();
-        		buf.rewind();
+                final BinaryInputStream bis = BinaryInputStream.fromByteBuffer(tresponse.getPayload());
         		
         		// Deserialize response message ID
-        		final Object responseMessageId = m_ser.deserializeMessageId(buf);
+        		final Object responseMessageId = m_ser.deserializeMessageId(bis);
         		
         		// Deserialize return code (0 = OK, anything else = WRONG)
-        		int retCode = m_ser.deserializeUI32(tresponse, "");
+        		int retCode = m_ser.deserializeUI32(bis, "");
         		if (retCode == 0) { // Function execution was OK.
         			$if(operation.rettype)$
-					$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(tresponse, ""$if(!operation.rettype.primitive)$
+					$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(bis, ""$if(!operation.rettype.primitive)$
 					$if(!operation.rettype.isType_d)$
 						$if(!operation.rettype.isType_e)$
 							$if(!operation.rettype.isType_f)$
@@ -117,11 +120,11 @@ $endif$
 					return;
 					$endif$
 	            }$if(operation.exceptions)$ else {$\n$
-	    			String name = m_ser.deserializeString(tresponse, "");
+	    			String name = m_ser.deserializeString(bis, "");
 	        $operation.exceptions : {ex |
 	        if (name.equals("$ex.name$")) {
 	        	$ex.name$ exception = new $ex.name$();
-	        	exception.deserialize(m_ser, tresponse, "");
+	        	exception.deserialize(m_ser, bis, "");
 	        	throw exception;
 	        }}; separator="\n"$
 	        	}$endif$
@@ -159,33 +162,35 @@ catch ($exception.name$ ex) {
 proxy_operation_async(operation) ::= <<
 $if(!operation.oneway)$
 $if(operation.isOperation)$
+@Override
 public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final $operation.name$_AsyncCallback callback) {
 	
 	if (m_ser != null && m_transport != null) {
-		ByteBuffer buffer = ByteBuffer.allocate($operation.name$_required_size());
+		final BinaryOutputStream bos = new BinaryOutputStream($operation.name$_required_size());
 		final TransportMessage trequest = m_transport.createTransportMessage(null);
-        trequest.setPayload(buffer);
         
-        final Object messageId = m_ser.getNewMessageId(); 
-        m_ser.serializeMessageId(trequest, messageId);   
-		m_ser.serializeService(trequest, "$first(ctx.scopedInterfaces).name$");
-		m_ser.serializeOperation(trequest, "$operation.name$");
-		$operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(trequest, "", $param.name$);}; separator="\n"$
-		
-		trequest.getPayload().flip();
+        final Object messageId = m_ser.getNewMessageId();
+        try {
+            m_ser.serializeMessageId(bos, messageId);   
+            m_ser.serializeService(bos, "$first(ctx.scopedInterfaces).name$");
+            m_ser.serializeOperation(bos, "$operation.name$");
+            $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
+        } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+        }
+		trequest.setPayload(bos.getByteBuffer());
 		
 		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
 				
 		
 		Futures.addCallback(dispatcher, new FutureCallback<TransportMessage> () {
 
+			@Override
 			public void onSuccess(TransportMessage result) {
-				final ByteBuffer buf = result.getPayload();
-        		buf.rewind();
-        		
 				callback.process(result, m_ser);
 			}
 
+			@Override
 			public void onFailure(Throwable t) {
 				callback.onFailure(t);
 			}

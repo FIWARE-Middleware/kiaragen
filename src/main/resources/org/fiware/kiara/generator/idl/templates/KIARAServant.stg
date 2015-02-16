@@ -4,6 +4,7 @@ main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Servant.java"], description=["This file contains the servant processing implementation code. It parses the service executed and calls the corresponding method."])$
 package $ctx.javaPackage$;
 
+import java.io.IOException;
 import org.fiware.kiara.serialization.Serializer;
 import org.fiware.kiara.serialization.impl.CDRSerializer;
 import org.fiware.kiara.serialization.impl.SerializerImpl;
@@ -12,7 +13,8 @@ import org.fiware.kiara.transport.Transport;
 import org.fiware.kiara.transport.impl.TransportImpl;
 import org.fiware.kiara.transport.impl.TransportMessage;
 
-import java.nio.ByteBuffer;
+import org.fiware.kiara.serialization.impl.BinaryInputStream;
+import org.fiware.kiara.serialization.impl.BinaryOutputStream;
 
 /**
  * Abstract class used to process the incoming remote calls. 
@@ -20,16 +22,17 @@ import java.nio.ByteBuffer;
  * @author Kiaragen tool.
  *
  */
-public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.currentIfz.name$
-{
+public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.currentIfz.name$ {
 
+	@Override
 	public String getServiceName() {
 		return "$ctx.currentIfz.name$";
 	}
 	
 	$ctx.currentIfz.operations : {operation |$servant_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
 	
-	public TransportMessage process(Serializer ser, Transport transport, TransportMessage message, Object messageId) {
+	@Override
+	public TransportMessage process(Serializer ser, Transport transport, Object messageId, BinaryInputStream bis) {
 	
 		SerializerImpl serImpl;
         TransportImpl transportImpl;
@@ -41,10 +44,14 @@ public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.curr
             return null; // TODO Raise error
         }
         
-		String operation = serImpl.deserializeOperation(message);
+		try {
+			String operation = serImpl.deserializeOperation(bis);
 		
 		$ctx.currentIfz.operations : {operation |$process_operation(operation)$}; separator="\n"$
 		
+		} catch (IOException ex) {
+                    throw new RuntimeException(ex);
+		}
 		return null;
 		
 	}
@@ -95,16 +102,16 @@ if (operation.equals("$operation.name$")) {
 $if(operation.isOperation)$
 $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$if(param.typecode.isType_c)$
-	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "", $param.typecode.cppTypename$.class);
+	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(bis, "", $param.typecode.cppTypename$.class);
 	$else$
-	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "");
+	$param.typecode.cppTypename$ $param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(bis, "");
 	$endif$
 	$else$$if(!param.typecode.isType_d)$
 	$if(!param.typecode.isType_e)$
 	$if(!param.typecode.isType_f)$
 	$param.typecode.cppTypename$ $param.name$ = null;
 	try {
-		$param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(message, "", $param.typecode.name$.class);
+		$param.name$ = serImpl.$deserializeJava.(param.typecode.stType)$(bis, "", $param.typecode.name$.class);
 	} catch (InstantiationException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -117,10 +124,9 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$endif$
 	$endif$}; separator="\n"$
 	
-	ByteBuffer retBuffer = ByteBuffer.allocate($operation.name$_required_size());
+	BinaryOutputStream retBuffer = new BinaryOutputStream($operation.name$_required_size());
     TransportMessage retMsg = transportImpl.createTransportMessage(null);
- 	retMsg.setPayload(retBuffer);
- 	serImpl.serializeMessageId(retMsg, messageId);
+ 	serImpl.serializeMessageId(retBuffer, messageId);
 	
 	$if(operation.exceptions)$
 	try {
@@ -137,28 +143,28 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 		$endif$
 		$endif$
 		// Serialize return code (0 = OK)
-		serImpl.serializeUI32(retMsg, "", 0);
+		serImpl.serializeUI32(retBuffer, "", 0);
 		$if(operation.isOperation)$
 		$if(operation.rettype)$
 		// Serialize return type
-		serImpl.$serializeJava.(operation.rettype.stType)$(retMsg, "", ret);
+		serImpl.$serializeJava.(operation.rettype.stType)$(retBuffer, "", ret);
 		$endif$
 		$endif$
 	$if(operation.exceptions)$$\t$} $operation.exceptions : {ex |
 	catch($ex.name$ ex_$ex.name$) {
 		ex_$ex.name$.printStackTrace();
 		// Serialize return code (non-zero error code)
-		serImpl.serializeUI32(retMsg, "", $ex.Md5$);
+		serImpl.serializeUI32(retBuffer, "", $ex.Md5$);
 		// Serialize exception name
-		serImpl.serializeString(retMsg, "", "$ex.name$");
+		serImpl.serializeString(retBuffer, "", "$ex.name$");
 		// Serialize exception data
-		ex_$ex.name$.serialize(serImpl, retMsg, "");
+		ex_$ex.name$.serialize(serImpl, retBuffer, "");
 	}}; separator="\n"$
 	$endif$
 	$endif$
 	
 	$if(operation.isOperation)$
-	retMsg.getPayload().flip();
+ 	retMsg.setPayload(retBuffer.getByteBuffer());
 	return retMsg;
 	$endif$
 	

@@ -255,6 +255,10 @@ public int hashCode() {
 	$currentUnion.members : {member | $print_labels(member)$
 		return Objects.hash(this.m_d, this.$member.name$);
 	}; separator="\n"$
+	$if(!currentUnion.defaultvalue)$
+	default:
+		return -1;
+	$endif$
 	}
 }
 >>

@@ -97,6 +97,8 @@ public class kiaragen {
     private String m_os = null;
     private String m_package = "main.java";
     private String m_javaPackage = "";
+    
+    private boolean packageParsed = false;
 	
 	/*
 	 * ----------------------------------------------------------------------------------------
@@ -218,8 +220,8 @@ public class kiaragen {
 			System.out.println("Loading templates...");
 			TemplateManager.setGroupLoaderDirectories("org/fiware/kiara/generator/idl/templates");
 			
-			System.out.println(this.getClass().getCanonicalName());
-			System.out.println(Context.class.getCanonicalName());
+			//System.out.println(this.getClass().getCanonicalName());
+			//System.out.println(Context.class.getCanonicalName());
 			
 			for (int count = 0; returnedValue && (count < m_idlFiles.size()); ++count) {
 				boolean result = process(m_idlFiles.get(count));
@@ -245,25 +247,28 @@ public class kiaragen {
 	
 	private void parsePackage() {
 		
-		StringBuffer sbjava = new StringBuffer("");
-		String path[] = this.m_package.split("\\.");
-		StringBuffer sb = new StringBuffer(m_outputDir + "src/main/java");
-		boolean firstTime = true;
-		for(String s: path) {
-			//Set Java package
-			sb.append(File.separator);
-			sb.append(s);
-			//Set folder package
-			if (!firstTime) {
-				sbjava.append(".");
+		if (!packageParsed) {
+			StringBuffer sbjava = new StringBuffer("");
+			String path[] = this.m_package.split("\\.");
+			StringBuffer sb = new StringBuffer(m_outputDir + "src/main/java");
+			boolean firstTime = true;
+			for(String s: path) {
+				//Set Java package
+				sb.append(File.separator);
+				sb.append(s);
+				//Set folder package
+				if (!firstTime) {
+					sbjava.append(".");
+				}
+				firstTime = false;
+				sbjava.append(s);
 			}
-			firstTime = false;
-			sbjava.append(s);
+			sb.append(File.separator);
+			
+			this.m_package = sb.toString();
+			this.m_javaPackage = sbjava.toString();
+			this.packageParsed = true;
 		}
-		sb.append(File.separator);
-		
-		this.m_package = sb.toString();
-		this.m_javaPackage = sbjava.toString();
 	}
 	
 	public static void printHelp()
@@ -335,7 +340,7 @@ public class kiaragen {
 		String idlParseFileName = idlFilename;
 		String onlyFileName = Util.getIDLFileNameOnly(idlFilename);
 		
-		if (idlFilename.startsWith("."+File.separator)) {
+		if (idlFilename.startsWith("."+File.separator) || idlFilename.startsWith("./") || idlFilename.startsWith("./")) {
 			idlFilename = idlFilename.substring(2, idlFilename.length());
 		}
 		
@@ -350,7 +355,7 @@ public class kiaragen {
 			Context ctx = new Context(onlyFileName, idlFilename, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct, m_javaPackage);
 			
 			// Create template manager
-			TemplateManager tmanager = new TemplateManager("eprosima:Common");
+			TemplateManager tmanager = new TemplateManager("eprosima:Common:KIARAClassCommon");
 			
 			tmanager.changeCppTypesTemplateGroup("JavaTypes");
 			

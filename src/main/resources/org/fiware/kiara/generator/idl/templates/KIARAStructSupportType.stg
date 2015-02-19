@@ -1,10 +1,11 @@
-group KIARASupportType;
+group KIARAStringSupportType;
 
 main(ctx, definitions) ::= <<
 $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the class representing a user defined structure."])$
 package $ctx.javaPackage$;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -53,8 +54,8 @@ public class $ctx.currentSt.name$ implements Serializable {
 	{
 	    int current_align = current_alignment;
 	            
-	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n\n"$
-	 
+	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name, index=ctx.newLoopVarName)$}; separator="\n\n"$
+	    
 	    return current_align;
 	}
 	
@@ -64,109 +65,6 @@ public class $ctx.currentSt.name$ implements Serializable {
 }
 
 >>
-
-// Attributes ---------------------------------------------------------------------
-
-private_attributes(currentSt) ::= <<
-$currentSt.members : {member | private $standardJavaType(member)$ $member.name$;}; separator="\n"$
->>
-
-// Constructor ---------------------------------------------------------------------
-
-default_constructor(currentSt) ::= <<
-public $currentSt.name$() {
-	$ctx.currentSt.members : {member |this.$member.name$ = $standardJavaInitialization(member.typecode)$;}; separator="\n"$
-}
->>
-
-// ----------------------------------Accessor methods ------------------------------
-
-accessor_methods(currentSt) ::= <<
-$currentSt.members : {member|$get_method(member)$$\n$$\n$$set_method(member)$}; separator="\n\n"$
->>
-
-get_method(member) ::= <<
-/*
- * Method to get the attribute $member.name$.
- */
-public $standardJavaType(member)$ get$member.javaName$() {
-	return this.$member.name$;
-}
->>
-
-set_method(member) ::= <<
-/*
- * Method to set the attribute $member.name$.
- */
-public void set$member.javaName$($standardJavaType(member)$ $member.name$) {
-	this.$member.name$ = $member.name$;
-}
->>
-
-// -------------------------------Serialization methods ----------------------------------
-serialization_methods(currentSt) ::= <<
-/*
- * This method serializes a $currentSt.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.serialization.impl.BinaryOutputStream, java.lang.String)
- */
-@Override
-public void serialize(SerializerImpl impl, BinaryOutputStream message, String name) throws IOException {
-	$currentSt.members : {member | $standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
-}
-
-/*
- * This method deserializes a $currentSt.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.serialization.impl.BinaryInputStream, java.lang.String)
- */
-@Override
-public void deserialize(SerializerImpl impl, BinaryInputStream message, String name) throws IOException {
-	$currentSt.members : {member | $membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$}; separator="\n"$
-}
-
->>
-
-
-
-// ---------------------------
-
-comparison_function(currentSt) ::= <<
-
-/*
- * @param other An object instance of Object
- */
- @Override
-public boolean equals(Object other) {
-	boolean comparison = true;
-	
-	if (other instanceof $currentSt.name$) {
-	
-		$currentSt.members : {member | $if(member.typecode.isType_d)$comparison = comparison && (this.$member.name$.compareTo((($currentSt.name$) other).$member.name$) == 0);
-		$else$
-		$if(member.typecode.primitive)$comparison = comparison && (this.$member.name$ == (($currentSt.name$) other).$member.name$);
-		$else$
-		$if(member.typecode.isType_f)$comparison = comparison && Objects.deepEquals(this.$member.name$, (($currentSt.name$) other).$member.name$);
-		$else$comparison = comparison && this.$member.name$.equals((($currentSt.name$) other).$member.name$);$endif$
-		$endif$
-		$endif$
-}; separator="\n"$
-	}
-	
-	return comparison;
-}
->>
-
-// ----------------------------- Hash Function ----------------------------
-
-generate_hash_function(currentSt) ::= <<
-@Override
-public int hashCode() {
-	return Objects.hash($currentSt.members : {member|this.$member.name$}; separator=", "$);	
-}
->>
-
-// ------------------------------------------------------------------------
 
 module(ctx, module, definition_list) ::= <<
 $definition_list$

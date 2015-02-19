@@ -93,15 +93,19 @@ Map<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
 
 // ---------------------------------Java Types---------------------------------------------------
 
-standardJavaType(member) ::= <<
-$if(member.typecode.primitive)$
-$primitive_type(member.typecode)$
+standardJavaType(type) ::= <<
+$if(type.isType_10)$
+$standardJavaType(type.typedefContentTypeCode)$
+$else$
+$if(type.primitive)$
+$primitive_type(type)$
 $endif$
-$if(member.typecode.container)$
-$container_type(member.typecode)$
+$if(type.container)$
+$container_type(type)$
 $endif$
-$if(member.typecode.membered)$
-$membered_type(member.typecode)$
+$if(type.membered)$
+$membered_type(type)$
+$endif$
 $endif$
 >>
 
@@ -119,16 +123,20 @@ $endif$
 // f = Array, e = sequence
 container_type(type) ::= <<
 $if(type.isType_f)$
-$type.dimensions : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.dimensions : {dim |>}; separator=""$
+$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
 $endif$
 $if(type.isType_e)$
-$type.depth : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.depth : {dim |>}; separator=""$
+$if(type.contentTypeCode.isType_10)$
+$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
+$else$
+$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
+$endif$
 $endif$
 $if(type.type_set)$
-Set<$objectName(type.contentTypeCode)$>
+$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
 $endif$
 $if(type.type_map)$
-Map<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$map_declaration(type)$
 $endif$
 >>
 
@@ -145,7 +153,18 @@ $objectName(type)$
 $endif$
 >>
 
+map_declaration(type) ::= <<
+$if(type.container)$
+Map<$map_declaration(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$else$
+$objectName(type)$
+$endif$
+>>
+
 objectName(type) ::= <<
+$if(type.isType_10)$
+$objectName(type.typedefContentTypeCode)$
+$else$
 $if(type.primitive)$
 $if(type.isType_c)$
 $type.cppTypename$
@@ -155,11 +174,74 @@ $endif$
 $else$
 $type.cppTypename$
 $endif$
+$endif$
+>>
+
+// -------------------------------- Membered switches -------------------------------------------------
+
+membered_tags_open(type) ::= <<
+$type.containerLevels : {tc |$tag_switch_open(tc)$}; separator=""$
+>>
+
+first_membered_tags_open(type) ::= <<
+$first(type.containerLevels) : {tc |$first_tag_switch_open(tc)$}; separator=""$$rest(type.containerLevels) : {tc |$tag_switch_open(tc)$}; separator=""$
+>>
+
+tag_switch_open(tc) ::= <<
+$if(tc.isType_f)$
+$type.dimensions : {dim |List<}; separator=""$
+$endif$
+$if(tc.isType_e)$
+List<
+$endif$
+$if(tc.type_set)$
+Set<
+$endif$
+$if(tc.type_map)$
+Map<
+$endif$
+>>
+
+first_tag_switch_open(tc) ::= <<
+$if(tc.isType_f)$
+$first(type.dimensions) : {dim |ArrayList<}; separator=""$$rest(type.dimensions) : {dim |List<}; separator=""$
+$endif$
+$if(tc.isType_e)$
+ArrayList<
+$endif$
+$if(tc.type_set)$
+HashSet<
+$endif$
+$if(tc.type_map)$
+HashMap<
+$endif$
+>>
+
+membered_tags_close(type) ::= <<
+$type.containerLevels : {tc |$tag_switch_close(tc)$}; separator=""$
+>>
+
+tag_switch_close(tc) ::= <<
+$if(tc.isType_f)$
+$type.dimensions : {dim |>}; separator=""$
+$endif$
+$if(tc.isType_e)$
+>
+$endif$
+$if(tc.type_set)$
+>
+$endif$
+$if(tc.type_map)$
+>
+$endif$
 >>
 
 // -------------------------------- Java Initialization ------------------------------------------------
 
 standardJavaInitialization(type) ::= <<
+$if(type.isType_10)$
+$standardJavaInitialization(type.typedefContentTypeCode)$
+$else$
 $if(type.primitive)$
 $primitive_type_init(type)$
 $endif$
@@ -168,6 +250,7 @@ $container_type_init(type)$
 $endif$
 $if(type.membered)$
 $membered_type_init(type)$
+$endif$
 $endif$
 >>
 
@@ -181,16 +264,20 @@ $endif$
 // f = Array, e = sequence
 container_type_init(type) ::= <<
 $if(type.isType_f)$
-new $first(type.dimensions) : {dim |ArrayList<}; separator=""$$rest(type.dimensions) : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.dimensions : {dim |>}; separator=""$()
+new $first_membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$()
 $endif$
 $if(type.isType_e)$
-new $first(type.depth) : {dim |ArrayList<}; separator=""$$rest(type.depth) : {dim |List<}; separator=""$$objectName(type.contentTypeCode)$$type.depth : {dim |>}; separator=""$()
+$if(type.contentTypeCode.isType_10)$
+new $first_membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$()
+$else$
+new $first_membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$()
+$endif$
 $endif$
 $if(type.type_set)$
-new HashSet<$objectName(type.contentTypeCode)$>()
+new $first_membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$()
 $endif$
 $if(type.type_map)$
-new HashMap<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>()
+new $map_initialization_first(type)$()
 $endif$
 >>
 
@@ -207,6 +294,22 @@ new $objectName(type)$()
 $endif$
 >>
 
+map_initialization_first(type) ::= <<
+$if(type.container)$
+HashMap<$map_initialization_rest(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$else$
+$objectName(type)$
+$endif$
+>>
+
+map_initialization_rest(type) ::= <<
+$if(type.container)$
+Map<$map_initialization_rest(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$else$
+$objectName(type)$
+$endif$
+>>
+
 // -----------------------------------------Try & catch for membered types-----------------------------------------------
 
 membered_try(type) ::= <<
@@ -217,9 +320,25 @@ try {
 $endif$
 $else$
 $if(type.container)$
-$if(type.contentTypeCode.membered)$
+$if(type.isType_10)$
+$if(type.upperTypeCode.membered)$
+$if(!type.typedefContentTypeCode.isType_c)$
 try {
 	
+$endif$
+$endif$
+$else$
+$if(type.contentTypeCode.isType_10)$
+$if(type.upperTypeCode.membered)$
+try {
+	
+$endif$
+$else$
+$if(type.upperTypeCode.membered)$
+try {
+	
+$endif$
+$endif$
 $endif$
 $endif$
 $endif$
@@ -235,7 +354,25 @@ $if(!type.isType_c)$
 $endif$
 $else$
 $if(type.container)$
-$if(type.contentTypeCode.membered)$
+$if(type.isType_10)$
+$if(type.upperTypeCode.membered)$
+$if(!type.typedefContentTypeCode.isType_c)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$endif$
+$else$
+$if(type.contentTypeCode.isType_10)$
+$if(type.upperTypeCode.membered)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$else$
+$if(type.upperTypeCode.membered)$
 
 } catch (InstantiationException | IllegalAccessException e) {
 	e.printStackTrace();
@@ -243,47 +380,91 @@ $if(type.contentTypeCode.membered)$
 $endif$
 $endif$
 $endif$
+$endif$
+$endif$
+>>
+
+old_membered_catch(type) ::= <<
+$if(type.membered)$
+$if(!type.isType_c)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$else$
+$if(type.container)$
+$if(type.contentTypeCode.isType_10)$
+$if(!type.contentTypeCode.upperTypeCode.isType_c)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$endif$
+$if(type.contentTypeCode.membered)$
+$if(!type.contentTypeCode.isType_c)$
+
+} catch (InstantiationException | IllegalAccessException e) {
+	e.printStackTrace();
+}
+$endif$
+$endif$
+$endif$
+$endif$
 >>
 
 // -------------------------------- Java Serialization ------------------------------------------------
 
-standardJavaSerialization(type, name, ser, scope) ::= <<
+standardJavaSerialization(type, name, ser, scope, loopVar) ::= <<
+$if(type.isType_10)$
+$standardJavaSerialization(type=type.typedefContentTypeCode, name=name, ser=ser, scope=scope, loopVar=loopVar)$
+$else$
 $if(type.primitive)$
-$primitive_type_ser(type)$
+$primitive_type_ser(type=type, loopVar=loopVar)$
 $endif$
 $if(type.container)$
-$container_type_ser(type)$
+$container_type_ser(type=type, loopVar=loopVar)$
 $endif$
 $if(type.membered)$
-$membered_type_ser(type)$
+$membered_type_ser(type=type, loopVar=loopVar)$
+$endif$
 $endif$
 >>
 
 // Only primitive types. Check if it's an enum first (enum are primitive)
-primitive_type_ser(type) ::= <<
+primitive_type_ser(type, loopVar) ::= <<
 $if(!type.isType_c)$
 $ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
 $endif$
 >>
 
 // f = Array, e = sequence
-container_type_ser(type) ::= <<
+container_type_ser(type, loopVar) ::= <<
 $if(type.isType_f)$
-$ser$.$serializeArrayJava.(type.contentTypeCode.stType)$(message, name, $scope$$name$, $type.dimensions : {dim |$dim$}; separator=", "$)
+$ser$.$serializeArrayJava.(type.upperTypeCode.stType)$(message, name, $scope$$name$, $type.dimensions : {dim |$dim$}; separator=", "$)
 $endif$
 $if(type.isType_e)$
-$ser$.$serializeSequenceJava.(type.contentTypeCode.stType)$(message, name, $scope$$name$)
+$if(type.contentTypeCode.isType_10)$
+$ser$.$serializeSequenceJava.(type.upperTypeCode.stType)$(message, name, $scope$$name$)
+$else$
+$ser$.$serializeSequenceJava.(type.upperTypeCode.stType)$(message, name, $scope$$name$)
+$endif$
 $endif$
 $if(type.type_set)$
-$ser$.$serializeSetJava.(type.contentTypeCode.stType)$(message, name, $scope$$name$)
+$ser$.$serializeSetJava.(type.upperTypeCode.stType)$(message, name, $scope$$name$)
 $endif$
 $if(type.type_map)$
-$serializeMap(type=type, name=name, ser=ser)$
+$if(loopVar)$
+$serializeMap(type=type, name=name, ser=ser, loopVar=loopVar)$
+$else$
+$serializeMap(type=type, name=name, ser=ser, loopVar=ctx.newLoopVarName)$
+$endif$
 $endif$
 >>
 
 // a = struct, c = enum, b = union
-membered_type_ser(type) ::= <<
+membered_type_ser(type, loopVar) ::= <<
 $if(type.isType_a)$
 $ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
 $endif$
@@ -295,53 +476,72 @@ $ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
 $endif$
 >>
 
-serializeMap(type, name, ser) ::= <<
+serializeMap(type, name, ser, loopVar) ::= <<
 $ser$.serializeI32(message, name, $name$.size());
-for(Map.Entry<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$> entry : this.$name$.entrySet()) {
-	$standardJavaSerialization(type=type.keyTypeCode, name="entry.getKey()", ser=ser)$;
-	$standardJavaSerialization(type=type.valueTypeCode, name="entry.getValue()", ser=ser)$;
+for($map_entry_first(type)$ entry_$loopVar$ : $name$.entrySet()) {
+	$standardJavaType(type.keyTypeCode)$ key_$loopVar$ = entry_$loopVar$.getKey();
+	$standardJavaType(type.valueTypeCode)$ value_$loopVar$ = entry_$loopVar$.getValue();
+	
+	$standardJavaSerialization(type=type.keyTypeCode, name=formNameGetKey(name="key", loopVar=loopVar), ser=ser, loopVar=ctx.nextLoopVarName)$;
+	$standardJavaSerialization(type=type.valueTypeCode, name=formNameGetKey(name="value", loopVar=loopVar), ser=ser, loopVar=ctx.nextLoopVarName)$;
 }
+>>
+
+formNameGetKey(name, loopVar) ::= <<
+$name$_$loopVar$
 >>
 
 // -------------------------------- Java Deserialization ------------------------------------------------
 
-standardJavaDeserialization(type, name, ser) ::= <<
+standardJavaDeserialization(type, name, ser, loopVar) ::= <<
+$if(type.isType_10)$
+$standardJavaDeserialization(type=type.typedefContentTypeCode, name=name, ser=ser)$
+$else$
 $if(type.primitive)$
-$primitive_type_deser(type)$
+$primitive_type_deser(type=type)$
 $endif$
 $if(type.container)$
-$container_type_deser(type)$
+$container_type_deser(type=type, depth="", loopVar=loopVar)$
 $endif$
 $if(type.membered)$
-$membered_type_deser(type)$
+$membered_type_deser(type=type)$
+$endif$
 $endif$
 >>
 
 // Only primitive types. Check if it's an enum first (enum are primitive)
-primitive_type_deser(type) ::= <<
+primitive_type_deser(type, loopVar) ::= <<
 $if(!type.isType_c)$
 $ser$.$deserializeJava.(type.stType)$(message, name)
 $endif$
 >>
 
 // f = Array, e = sequence
-container_type_deser(type) ::= <<
+container_type_deser(type, depth, loopVar) ::= <<
 $if(type.isType_f)$
-$ser$.$deserializeArrayJava.(type.contentTypeCode.stType)$(message, name$deserialization_switcher(type.contentTypeCode)$, $type.dimensions : {dim |$dim$}; separator=", "$)
+$ser$.$deserializeArrayJava.(type.upperTypeCode.stType)$(message, name$deserialization_switcher(type.upperTypeCode)$, $type.dimensions : {dim |$dim$}; separator=", "$)
 $endif$
 $if(type.isType_e)$
-$ser$.$deserializeSequenceJava.(type.contentTypeCode.stType)$(message, name$deserialization_switcher(type.contentTypeCode)$, $type.depth$)
+$if(type.contentTypeCode.isType_10)$
+$ser$.$deserializeSequenceJava.(type.upperTypeCode.stType)$(message, name$deserialization_switcher(type.upperTypeCode)$, $type.depth$)
+$else$
+$ser$.$deserializeSequenceJava.(type.upperTypeCode.stType)$(message, name$deserialization_switcher(type.upperTypeCode)$, $type.depth$)
+$endif$
 $endif$
 $if(type.type_set)$
-$ser$.$deserializeSetJava.(type.contentTypeCode.stType)$(message, name$deserialization_switcher(type.contentTypeCode)$, $type.depth$)
+$ser$.$deserializeSetJava.(type.upperTypeCode.stType)$(message, name$deserialization_switcher(type.upperTypeCode)$, $type.depth$)
 $endif$
 $if(type.type_map)$
-$deserializeMap(type=type, name=name, ser=ser)$
+$if(loopVar)$
+$deserializeMap(type=type, name=name, ser=ser, loopVar=loopVar)$
+$else$
+$deserializeMap(type=type, name=name, ser=ser, loopVar=ctx.newLoopVarName)$
+$endif$
 $endif$
 >>
 
 // a = struct, c = enum, b = union
-membered_type_deser(type) ::= <<
+membered_type_deser(type, loopVar) ::= <<
 $if(type.isType_a)$
 $ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
 $endif$
@@ -359,11 +559,43 @@ $if(type.isType_c)$
 , $type.cppTypename$.class
 $endif$
 $else$
+$if(type.isType_10)$
+$if(!type.typedefContentTypeCode)$
+, $type.cppTypename$.class
+$endif$
+$endif$
 , $type.cppTypename$.class
 $endif$
 >>
 
-deserializeMap(type, name, ser) ::= <<
+deserializeMap(type, name, ser, loopVar) ::= <<
+int size_$name$ = $ser$.deserializeI32(message, name);
+for (int $loopVar$ = 0; $loopVar$ < size_$name$; ++$loopVar$) {
+	$standardJavaType(type.keyTypeCode)$ key_$loopVar$ = $standardJavaInitialization(type.keyTypeCode)$;
+	$standardJavaType(type.valueTypeCode)$ value_$loopVar$ = $standardJavaInitialization(type.valueTypeCode)$;
+	
+	$membered_try(type.keyTypeCode)$
+	$print_this(type=type.keyTypeCode, loopVar=loopVar)$$standardJavaDeserialization(type=type.keyTypeCode, name=formNameGetKey(name="key", loopVar=loopVar), ser=ser, loopVar=ctx.nextLoopVarName)$;
+	$membered_catch(type.keyTypeCode)$
+	$membered_try(type.valueTypeCode)$
+	value_$loopVar$ = $standardJavaDeserialization(type=type.valueTypeCode, name=formNameGetKey(name="value", loopVar=loopVar), ser=ser)$;
+	$membered_catch(type.valueTypeCode)$
+	$name$.put(key_$loopVar$, value_$loopVar$);
+}
+>>
+
+print_this(type, loopVar) ::= <<
+$if(type.container)$
+$if(type.type_map)$
+$else$
+key_$loopVar$ = 
+$endif$
+$else$
+key_$loopVar$ = 
+$endif$
+>>
+
+old_deserializeMap(type, name, ser) ::= <<
 new HashMap<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>();
 int size_$name$ = $ser$.deserializeI32(message, name);
 for (int i = 0; i < size_$name$; ++i) {
@@ -377,6 +609,24 @@ for (int i = 0; i < size_$name$; ++i) {
 	$membered_catch(type.valueTypeCode)$
 	this.$name$.put(key, value);
 }
+>>
+
+// --------------------------------------- Map Entry Sets ----------------------------------------------
+
+map_entry_first(type) ::= <<
+$if(type.container)$
+Map.Entry<$map_entry_rest(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$else$
+$objectName(type)$
+$endif$
+>>
+
+map_entry_rest(type) ::= <<
+$if(type.container)$
+Map<$map_entry_rest(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+$else$
+$objectName(type)$
+$endif$
 >>
 
 // -----------------------------------------------------------------------------------------------------
@@ -425,7 +675,10 @@ HashMap<$objectName(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
 
 // -------------------------------- Max Serialized Size -------------------------------------------
 
-max_serialized_size(ctx, typecode, var, name) ::= <<
+max_serialized_size(ctx, typecode, var, name, index) ::= <<
+$if(typecode.isType_10)$
+$max_serialized_size(ctx=ctx, typecode=typecode.typedefContentTypeCode, var=var, name=name, index=index)$
+$else$
 $if(typecode.primitive)$
 $max_size_primitive_type(typecode)$
 $endif$
@@ -435,9 +688,10 @@ $endif$
 $if(typecode.membered)$
 $max_size_membered_type(typecode)$
 $endif$
+$endif$
 >>
 
-// Only primitive types. Check if it's an enum first (enum are primitive)
+// Only primitive types. Check if it's an enum first (enums are primitive)
 max_size_primitive_type(type) ::= <<
 $if(!type.isType_c)$
 $if(type.string)$
@@ -451,28 +705,28 @@ $endif$
 // f = Array, e = sequence
 max_size_container_type(type) ::= <<
 $if(type.isType_f)$
-for(int i = 0; i < $type.size$; ++i) {
-    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name)$
+for(int $index$ = 0; $index$ < $type.size$; ++$index$) {
+    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name, index=ctx.nextLoopVarName)$
 }
 $endif$
 $if(type.isType_e)$
 $var$ += 4 + CDRSerializer.alignment($var$, 4); // Sequence size
-for(int i = 0; i < $type.maxsize$; ++i) {
-    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name)$
+for(int $index$ = 0; $index$ < $type.maxsize$; ++$index$) {
+    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name, index=ctx.nextLoopVarName)$
 }
 $endif$
 $if(type.type_set)$
 $var$ += 4 + CDRSerializer.alignment($var$, 4); // Sequence size
-for(int i = 0; i < $type.maxsize$; ++i) {
-    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name)$
+for(int $index$ = 0; $index$ < $type.maxsize$; ++$index$) {
+    $max_serialized_size(ctx=ctx, typecode=type.contentTypeCode, var=var, name=name, index=ctx.nextLoopVarName)$
 }
 $endif$
 $if(type.type_map)$
 // Map $name$ serialization
 $var$ += 4 + CDRSerializer.alignment($var$, 4); // Map size
-for(int i=0; i < $type.maxsize$; ++i) {
-	$max_serialized_size(ctx=ctx, typecode=type.keyTypeCode, var=var, name=name)$ // Key
-	$max_serialized_size(ctx=ctx, typecode=type.valueTypeCode, var=var, name=name)$ // Value
+for(int $index$=0; $index$ < $type.maxsize$; ++$index$) {
+	$max_serialized_size(ctx=ctx, typecode=type.keyTypeCode, var=var, name=name, index=ctx.nextLoopVarName)$ // Key
+	$max_serialized_size(ctx=ctx, typecode=type.valueTypeCode, var=var, name=name, index=ctx.nextLoopVarName)$ // Value
 }
 $endif$
 >>
@@ -709,6 +963,17 @@ serializeSequenceJava ::= [
         default: // not basic type.
 ]
 
+eoo(type) ::= <<
+$type.stType$
+$if(type.isType_10)$
+ES_10
+$serializeSequenceJava.(type.typedefContentTypeCode.stType)$
+$else$
+NOES_10
+$serializeSequenceJava.(type.stType)$
+$endif$
+>>
+
 deserializeSequenceJava ::= [
 		"type_1":"deserializeSequenceI16",
 		"type_2":"deserializeSequenceI32",
@@ -754,7 +1019,7 @@ serializeSetJava ::= [
 		"type_15":"serializeSetString",
 		"type_a":"serializeSet",
 		"type_b":"serializeSet",
-		"type_c":"serializeSetEnum",
+		"type_c":"serializeSet",
 		"type_d":"serializeSetString",
         "type_e":"undefined",
         "type_f_first":"undefined",
@@ -781,7 +1046,7 @@ deserializeSetJava ::= [
 		"type_15":"deserializeSetString",
 		"type_a":"deserializeSet",
 		"type_b":"deserializeSet",
-		"type_c":"deserializeSetEnum",
+		"type_c":"deserializeSet",
 		"type_d":"deserializeSetString",
         "type_e":"undefined",
         "type_f_first":"undefined",

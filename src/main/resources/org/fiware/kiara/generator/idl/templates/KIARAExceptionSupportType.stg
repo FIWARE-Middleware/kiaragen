@@ -5,9 +5,14 @@ $fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This fi
 package $ctx.javaPackage$;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 import org.fiware.kiara.serialization.impl.BinaryInputStream;
 import org.fiware.kiara.serialization.impl.BinaryOutputStream;
 
@@ -49,7 +54,7 @@ public class $ctx.currentException.name$ extends Exception implements Serializab
 	    
 	    $max_serialized_size(ctx=ctx, typecode=ctx.currentException.typecode, var="current_align", name=ctx.currentException.name)$
 	            
-	    $ctx.currentException.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name)$}; separator="\n"$
+	    $ctx.currentException.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name, index=ctx.newLoopVarName)$}; separator="\n\n"$
 	 
 	    return current_align;
 	}
@@ -61,182 +66,7 @@ public class $ctx.currentException.name$ extends Exception implements Serializab
 
 >>
 
-// Attributes ---------------------------------------------------------------------
 
-private_attributes(currentException) ::= <<
-$currentException.members : {member | private $standardJavaType(member)$ $member.name$;}; separator="\n"$
->>
-
-// Constructor ---------------------------------------------------------------------
-
-default_constructor(currentException) ::= <<
-public $currentException.name$() {
-	$ctx.currentException.members : {member |this.$member.name$ = $standardJavaInitialization(member.typecode)$;}; separator="\n"$
-}
->>
-
-// ---------------------------------- Serialization methods ---------------------------
-serialization_methods(currentException) ::= <<
-/*
- * This method serializes a $currentException.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.serialization.impl.BinaryOutputStream, java.lang.String)
- */
-@Override
-public void serialize(SerializerImpl impl, BinaryOutputStream message, String name) throws IOException {
-	$currentException.members : {member | $standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
-}
-
-/*
- * This method deserializes a $currentException.name$.
- *
- * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.serialization.impl.BinaryInputStream, java.lang.String)
- */
-@Override
-public void deserialize(SerializerImpl impl, BinaryInputStream message, String name) throws IOException {
-	$currentException.members : {member | $membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$}; separator="\n"$
-}
-
->>
-
-// ----------------------------------------Comparison function ----------------------------
-
-comparison_function(currentSt) ::= <<
-
-/*
- * @param other An object instance of Object
- */
- @Override
-public boolean equals(Object other) {
-	boolean comparison = true;
-	
-	if (other instanceof $currentSt.name$) {
-	
-		$currentSt.members : {member | $if(member.typecode.isType_d)$comparison = comparison && (this.$member.name$.compareTo((($currentSt.name$) other).$member.name$) == 0);
-		$else$
-		$if(member.typecode.primitive)$comparison = comparison && (this.$member.name$ == (($currentSt.name$) other).$member.name$);
-		$else$
-		$if(member.typecode.isType_f)$comparison = comparison && Objects.deepEquals(this.$member.name$, (($currentSt.name$) other).$member.name$);
-		$else$comparison = comparison && this.$member.name$.equals((($currentSt.name$) other).$member.name$);$endif$
-		$endif$
-		$endif$
-}; separator="\n"$
-	}
-	
-	return comparison;
-}
->>
-
-// ----------------------------------Accessor methods ------------------------------
-
-accessor_methods(currentSt) ::= <<
-$currentSt.members : {member|$get_method(member)$$\n$$\n$$set_method(member)$}; separator="\n\n"$
->>
-
-get_method(member) ::= <<
-/*
- * Method to get the attribute $member.name$.
- */
-public $standardJavaType(member)$ get$member.javaName$() {
-	return this.$member.name$;
-}
->>
-
-set_method(member) ::= <<
-/*
- * Method to set the attribute $member.name$.
- */
-public void set$member.javaName$($standardJavaType(member)$ $member.name$) {
-	this.$member.name$ = $member.name$;
-}
->>
-
-old_accessor_methods(currentSt) ::= <<
-$currentSt.members : {member | 
-$if(member.typecode.isType_f)$
-/*
- * Method to get the attribute $member.name$.
- */
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
-$else$
-public $member.typecode.cppTypename$ get$member.javaName$() {
-
-$endif$
-$else$
-public $arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ get$member.javaName$() \{
-$endif$ 
-	return this.$member.name$;
-}
-
-/*
- * Method to set the attribute $member.javaName$.
- */
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
-
-$else$
-public void set$member.javaName$($member.typecode.cppTypename$ $member.name$) {
-$endif$
-
-$else$
-public void set$member.javaName$($arrayAttributeFirst(name=member.name, type=member.typecode, dims=member.typecode.dimensions)$ $member.name$) \{
-
-$endif$
-	this.$member.name$ = $member.name$;
-}
-$else$
-/*
- * Method to get the attribute $member.name$.
- */
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
-
-$else$
-public $paramTypeJava(member.typecode)$ get$member.javaName$() \{
-
-$endif$
-
-$else$
-public $sequenceAttributeFirst(name=member.name, type=member.typecode)$ get$member.javaName$() \{
-
-$endif$
-$else$
-public $paramTypeJava(member.typecode)$ get$member.javaName$() { 
-
-$endif$
-	return this.$member.name$;
-}
-
-/*
- * Method to set the attribute $member.name$.
- */
-$if(member.typecode.isType_e)$
-$if(member.typecode.contentTypeCode.primitive)$
-$if(member.typecode.contentTypeCode.isType_c)$
-public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
-
-$else$
-public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) \{
-
-$endif$
-$else$
-public void set$member.javaName$($sequenceAttributeFirst(name=member.name, type=member.typecode)$ $member.name$) \{
-
-$endif$
-$else$
-public void set$member.javaName$($paramTypeJava(member.typecode)$ $member.name$) {
-
-$endif$
-	this.$member.name$ = $member.name$;
-}
-$endif$
-}; separator="\n"$
->>
 
 module(ctx, module, definition_list) ::= <<
 $definition_list$

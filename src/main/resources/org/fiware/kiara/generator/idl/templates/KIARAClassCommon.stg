@@ -1,0 +1,136 @@
+group KIARAClassCommon;
+
+
+// Attributes ---------------------------------------------------------------------
+
+private_attributes(currentSt) ::= <<
+$currentSt.members : {member | private $standardJavaType(member.typecode)$ $member.name$;}; separator="\n"$
+>>
+
+// Constructor ---------------------------------------------------------------------
+
+default_constructor(currentSt) ::= <<
+public $currentSt.name$() {
+	$currentSt.members : {member |this.$member.name$ = $standardJavaInitialization(member.typecode)$;}; separator="\n"$
+}
+>>
+
+// ----------------------------------Accessor methods ------------------------------
+
+accessor_methods(currentSt) ::= <<
+$currentSt.members : {member|$get_method(member)$$\n$$\n$$set_method(member)$}; separator="\n\n"$
+>>
+
+get_method(member) ::= <<
+/*
+ * Method to get the attribute $member.name$.
+ */
+public $standardJavaType(member.typecode)$ get$member.javaName$() {
+	return this.$member.name$;
+}
+>>
+
+set_method(member) ::= <<
+/*
+ * Method to set the attribute $member.name$.
+ */
+public void set$member.javaName$($standardJavaType(member.typecode)$ $member.name$) {
+	this.$member.name$ = $member.name$;
+}
+>>
+
+// -------------------------------Serialization methods ----------------------------------
+serialization_methods(currentSt) ::= <<
+/*
+ * This method serializes a $currentSt.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#serialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.serialization.impl.BinaryOutputStream, java.lang.String)
+ */
+@Override
+public void serialize(SerializerImpl impl, BinaryOutputStream message, String name) throws IOException {
+	$currentSt.members : {member | $standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
+}
+
+/*
+ * This method deserializes a $currentSt.name$.
+ *
+ * @see org.fiware.kiara.serialization.impl.Serializable#deserialize(org.fiware.kiara.serialization.impl.SerializerImpl, org.fiware.kiara.serialization.impl.BinaryInputStream, java.lang.String)
+ */
+@Override
+public void deserialize(SerializerImpl impl, BinaryInputStream message, String name) throws IOException {
+	$currentSt.members : {member | $deserialize_according_type(member=member, type=member.typecode, name=member.name, ser="impl")$}; separator="\n"$
+}
+
+>>
+
+deserialize_according_type(member, type, name, ser) ::= <<
+$if(type.container)$
+$if(type.type_map)$
+$standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$
+$else$
+$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$
+$endif$
+$else$
+$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$
+$endif$
+>>
+
+
+
+// ---------------------------
+
+comparison_function(currentSt) ::= <<
+
+/*
+ * @param other An object instance of Object
+ */
+ @Override
+public boolean equals(Object other) {
+	boolean comparison = true;
+	
+	if (other instanceof $currentSt.name$) {
+	
+		$currentSt.members : {member | $if(member.typecode.isType_d)$comparison = comparison && (this.$member.name$.compareTo((($currentSt.name$) other).$member.name$) == 0);
+		$else$
+		$if(member.typecode.primitive)$comparison = comparison && (this.$member.name$ == (($currentSt.name$) other).$member.name$);
+		$else$
+		$if(member.typecode.isType_f)$comparison = comparison && Objects.deepEquals(this.$member.name$, (($currentSt.name$) other).$member.name$);
+		$else$comparison = comparison && this.$member.name$.equals((($currentSt.name$) other).$member.name$);$endif$
+		$endif$
+		$endif$
+}; separator="\n"$
+	}
+	
+	return comparison;
+}
+>>
+
+// ----------------------------- Hash Function ----------------------------
+
+generate_hash_function(currentSt) ::= <<
+@Override
+public int hashCode() {
+	return Objects.hash($currentSt.members : {member|this.$member.name$}; separator=", "$);	
+}
+>>
+
+// ------------------------------------------------------------------------
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+

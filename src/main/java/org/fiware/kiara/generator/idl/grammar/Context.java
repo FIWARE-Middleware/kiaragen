@@ -138,6 +138,13 @@ public class Context extends com.eprosima.idl.context.Context
     {
         return Character.toString(++m_loopVarName);
     }
+    
+    public String getLastLoopVarName()
+    {
+    	char lastLoopVarName = m_loopVarName;
+    	lastLoopVarName--;
+        return Character.toString(lastLoopVarName);
+    }
 
     // TODO Para stringtemplate TopicsPlugin de nuestros tipos DDS.
     public String getLastRandomName()

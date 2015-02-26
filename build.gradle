@@ -10,7 +10,7 @@ apply plugin: 'maven'
 
 
 
-mainClassName = 'org.fiware.kiara.generator.kiaragen'
+mainClassName = hasProperty("mainClass") ? property("mainClass") : 'org.fiware.kiara.generator.kiaragen';
 
 //general properties
 version = '0.1.0'

@@ -10,10 +10,20 @@ $currentSt.members : {member | private $standardJavaType(member.typecode)$ $memb
 // Attribute Serializers -----------------------------------------------------------
 
 private_attribute_serializers(currentSt) ::= <<
-$currentSt.members : {member | private static final $standardJavaTypeSerializer(member.typecode)$ s_$member.name$ =
-    $createJavaTypeSerializer(member.typecode)$;}; separator="\n"$
+$currentSt.members : {member | $private_attribute_serializer(member)$}; separator="\n"$
 >>
 
+private_attribute_serializer(member) ::= <<
+$if(member.typecode.primitive)$
+$if(member.typecode.isType_c)$
+private static final $standardJavaTypeSerializer(member.typecode)$ s_$member.name$ =
+    $createJavaTypeSerializer(member.typecode)$;
+$endif$
+$else$
+private static final $standardJavaTypeSerializer(member.typecode)$ s_$member.name$ =
+    $createJavaTypeSerializer(member.typecode)$;
+$endif$
+>>
 
 // Constructor ---------------------------------------------------------------------
 

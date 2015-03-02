@@ -25,6 +25,8 @@ import org.fiware.kiara.serialization.impl.ListAsSequenceSerializer;
 import org.fiware.kiara.serialization.impl.Serializer;
 import org.fiware.kiara.serialization.impl.MapAsMapSerializer;
 import org.fiware.kiara.serialization.impl.SetAsSetSerializer;
+import org.fiware.kiara.serialization.impl.ObjectSerializer;
+import org.fiware.kiara.serialization.impl.EnumSerializer;
 
 /**
  * Class definition for the user defined type $ctx.currentSt.name$. 

@@ -443,6 +443,7 @@ $endif$
 $endif$
 >>
 
+// a = struct, c = enum, b = union
 createJavaTypeSerializer(type) ::= <<
 $if(type.isType_10)$
 $createJavaTypeSerializer(type.typedefContentTypeCode)$
@@ -454,7 +455,15 @@ $if(type.container)$
 $createContainerTypeSerializer(type)$
 $endif$
 $if(type.membered)$
-$membered_type(type)$
+$if(type.isType_a)$
+new ObjectSerializer<>($type.cppTypename$.class)
+$endif$
+$if(type.isType_c)$
+new EnumSerializer<>($objectName(type)$.class)
+$endif$
+$if(type.isType_b)$
+new ObjectSerializer<>($objectName(type)$.class)
+$endif$
 $endif$
 $endif$
 >>

@@ -416,6 +416,95 @@ $endif$
 
 // -------------------------------- Java Serialization ------------------------------------------------
 
+serializerJavaType(type) ::= <<
+$if(type.isType_10)$
+$standardJavaType(type.typedefContentTypeCode)$
+$else$
+$if(type.primitive)$
+$serializer_primitive_type(type)$
+$endif$
+$if(type.container)$
+$container_type(type)$
+$endif$
+$if(type.membered)$
+$membered_type(type)$
+$endif$
+$endif$
+>>
+
+// Only primitive types. Check if it's an enum first (enum are primitive)
+serializer_primitive_type(type) ::= <<
+$if(!type.isType_c)$
+$if(type.string)$
+$type.cppTypename$
+$else$
+$envelopeJava.(type.stType)$
+$endif$
+$endif$
+>>
+
+createJavaTypeSerializer(type) ::= <<
+$if(type.isType_10)$
+$createJavaTypeSerializer(type.typedefContentTypeCode)$
+$else$
+$if(type.primitive)$
+$createPrimitiveTypeSerializer(type)$
+$endif$
+$if(type.container)$
+$createContainerTypeSerializer(type)$
+$endif$
+$if(type.membered)$
+$membered_type(type)$
+$endif$
+$endif$
+>>
+
+createPrimitiveTypeSerializer(type) ::= <<
+$if(!type.isType_c)$
+$if(type.string)$
+new BasicSerializers.StringSerializer()
+$else$
+new $primitiveJavaSerializers.(type.stType)$()
+$endif$
+$endif$
+>>
+
+// f = Array, e = sequence
+createContainerTypeSerializer(type) ::= <<
+$if(type.isType_f)$
+$createArrayTypeSerializer(type=type, dimensions=type.dimensions)$
+$endif$
+$if(type.isType_e)$
+$if(type.contentTypeCode.isType_10)$
+$createSequenceTypeSerializer(type)$
+$else$
+$createSequenceTypeSerializer(type)$
+$endif$
+$endif$
+$if(type.type_set)$
+new SetAsSetSerializer<>($createJavaTypeSerializer(type.contentTypeCode)$)
+$endif$
+$if(type.type_map)$
+new MapAsMapSerializer<>($createJavaTypeSerializer(type.keyTypeCode)$, $createJavaTypeSerializer(type.valueTypeCode)$)
+$endif$
+>>
+
+createArrayTypeSerializer(type, dimensions) ::= <<
+$if(dimensions)$
+new ListAsArraySerializer<>($first(dimensions)$, $createArrayTypeSerializer(type=type, dimensions=rest(dimensions))$)
+$else$
+$createJavaTypeSerializer(type.contentTypeCode)$
+$endif$
+>>
+
+createSequenceTypeSerializer(type) ::= <<
+new ListAsSequenceSerializer<>($createJavaTypeSerializer(type.contentTypeCode)$)
+>>
+
+standardJavaTypeSerializer(type) ::= <<
+org.fiware.kiara.serialization.impl.Serializer<$serializerJavaType(type)$>
+>>
+
 standardJavaSerialization(type, name, ser, scope, loopVar) ::= <<
 $if(type.isType_10)$
 $standardJavaSerialization(type=type.typedefContentTypeCode, name=name, ser=ser, scope=scope, loopVar=loopVar)$
@@ -827,6 +916,35 @@ envelopeJava ::= [
         "type_f":"undefined",
         default: "Void"
 ]
+
+primitiveJavaSerializers ::= [
+		"type_1":"BasicSerializers.I16Serializer",
+		"type_2":"BasicSerializers.I32Serializer",
+		"type_3":"BasicSerializers.UI16Serializer",
+		"type_4":"BasicSerializers.UI32Serializer",
+		"type_5":"BasicSerializers.Float32Serializer",
+		"type_6":"BasicSerializers.Float64Serializer",
+		"type_7":"BasicSerializers.BooleanSerializer",
+		"type_8":"BasicSerializers.CharSerializer",
+		"type_9":"BasicSerializers.ByteSerializer",
+		"type_10":"undefined",
+		"type_11":"BasicSerializers.I64Serializer",
+		"type_12":"BasicSerializers.UI64Serializer",
+		"type_13":"Long",
+		"type_14":"BasicSerializers.CharSerializer",
+		"type_15":"BasicSerializers.StringSerializer",
+		"type_18":"undefined",
+		"type_a":"undefined",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"type_d":"BasicSerializers.StringSerializer",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: "undefined"
+]
+
 
 deserializeJava ::= [
 		"type_1":"deserializeI16",

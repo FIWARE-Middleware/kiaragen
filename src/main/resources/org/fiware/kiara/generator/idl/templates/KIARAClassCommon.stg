@@ -7,6 +7,14 @@ private_attributes(currentSt) ::= <<
 $currentSt.members : {member | private $standardJavaType(member.typecode)$ $member.name$;}; separator="\n"$
 >>
 
+// Attribute Serializers -----------------------------------------------------------
+
+private_attribute_serializers(currentSt) ::= <<
+$currentSt.members : {member | private static final $standardJavaTypeSerializer(member.typecode)$ s_$member.name$ =
+    $createJavaTypeSerializer(member.typecode)$;}; separator="\n"$
+>>
+
+
 // Constructor ---------------------------------------------------------------------
 
 default_constructor(currentSt) ::= <<

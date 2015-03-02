@@ -522,10 +522,10 @@ $if(type.primitive)$
 $primitive_type_ser(type=type, loopVar=loopVar)$
 $endif$
 $if(type.container)$
-$container_type_ser(type=type, loopVar=loopVar)$
+s_$name$.write($ser$, message, name, $scope$$name$)
 $endif$
 $if(type.membered)$
-$membered_type_ser(type=type, loopVar=loopVar)$
+s_$name$.write($ser$, message, name, $scope$$name$)
 $endif$
 $endif$
 >>
@@ -599,10 +599,10 @@ $if(type.primitive)$
 $primitive_type_deser(type=type)$
 $endif$
 $if(type.container)$
-$container_type_deser(type=type, depth="", loopVar=loopVar)$
+s_$name$.read($ser$, message, name)
 $endif$
 $if(type.membered)$
-$membered_type_deser(type=type)$
+s_$name$.read($ser$, message, name)
 $endif$
 $endif$
 >>

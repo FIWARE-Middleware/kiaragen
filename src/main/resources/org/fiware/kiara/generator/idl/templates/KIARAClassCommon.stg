@@ -72,15 +72,7 @@ public void deserialize(SerializerImpl impl, BinaryInputStream message, String n
 >>
 
 deserialize_according_type(member, type, name, ser) ::= <<
-$if(type.container)$
-$if(type.type_map)$
-$standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$
-$else$
-$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$
-$endif$
-$else$
-$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$
-$endif$
+this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;
 >>
 
 

@@ -109,6 +109,22 @@ $endif$
 $endif$
 >>
 
+envelopedStandardJavaType(type) ::= <<
+$if(type.isType_10)$
+$envelopedStandardJavaType(type.typedefContentTypeCode)$
+$else$
+$if(type.primitive)$
+$enveloped_primitive_type(type)$
+$endif$
+$if(type.container)$
+$container_type(type)$
+$endif$
+$if(type.membered)$
+$membered_type(type)$
+$endif$
+$endif$
+>>
+
 // Only primitive types. Check if it's an enum first (enum are primitive)
 primitive_type(type) ::= <<
 $if(!type.isType_c)$
@@ -120,23 +136,38 @@ $endif$
 $endif$
 >>
 
+// Only primitive types. Check if it's an enum first (enum are primitive)
+enveloped_primitive_type(type) ::= <<
+$if(!type.isType_c)$
+$if(type.string)$
+$type.cppTypename$
+$else$
+$envelopeJava.(type.stType)$
+$endif$
+$endif$
+>>
+
 // f = Array, e = sequence
 container_type(type) ::= <<
 $if(type.isType_f)$
-$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
+$array_type(type=type, dimensions=type.dimensions)$
 $endif$
 $if(type.isType_e)$
-$if(type.contentTypeCode.isType_10)$
-$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
-$else$
-$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
-$endif$
+List<$envelopedStandardJavaType(type.contentTypeCode)$>
 $endif$
 $if(type.type_set)$
-$membered_tags_open(type)$$objectName(type.upperTypeCode)$$membered_tags_close(type)$
+Set<$envelopedStandardJavaType(type.contentTypeCode)$>
 $endif$
 $if(type.type_map)$
-$map_declaration(type)$
+Map<$envelopedStandardJavaType(type.keyTypeCode)$, $envelopedStandardJavaType(type.valueTypeCode)$>
+$endif$
+>>
+
+array_type(type, dimensions) ::= <<
+$if(dimensions)$
+List<$array_type(type=type, dimensions=rest(dimensions))$>
+$else$
+$envelopedStandardJavaType(type.contentTypeCode)$
 $endif$
 >>
 
@@ -296,9 +327,9 @@ $endif$
 
 map_initialization_first(type) ::= <<
 $if(type.container)$
-HashMap<$map_initialization_rest(type.keyTypeCode)$, $objectName(type.valueTypeCode)$>
+HashMap<$envelopedStandardJavaType(type.keyTypeCode)$, $envelopedStandardJavaType(type.valueTypeCode)$>
 $else$
-$objectName(type)$
+$envelopedStandardJavaType(type)$
 $endif$
 >>
 
@@ -372,32 +403,7 @@ $endif$
 
 // -------------------------------- Java Serialization ------------------------------------------------
 
-serializerJavaType(type) ::= <<
-$if(type.isType_10)$
-$standardJavaType(type.typedefContentTypeCode)$
-$else$
-$if(type.primitive)$
-$serializer_primitive_type(type)$
-$endif$
-$if(type.container)$
-$container_type(type)$
-$endif$
-$if(type.membered)$
-$membered_type(type)$
-$endif$
-$endif$
->>
-
-// Only primitive types. Check if it's an enum first (enum are primitive)
-serializer_primitive_type(type) ::= <<
-$if(!type.isType_c)$
-$if(type.string)$
-$type.cppTypename$
-$else$
-$envelopeJava.(type.stType)$
-$endif$
-$endif$
->>
+serializerJavaType(type) ::= <<$envelopedStandardJavaType(type)$>>
 
 // a = struct, c = enum, b = union
 createJavaTypeSerializer(type) ::= <<

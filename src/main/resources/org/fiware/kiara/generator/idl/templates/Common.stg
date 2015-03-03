@@ -220,7 +220,7 @@ $first(type.containerLevels) : {tc |$first_tag_switch_open(tc)$}; separator=""$$
 
 tag_switch_open(tc) ::= <<
 $if(tc.isType_f)$
-$type.dimensions : {dim |List<}; separator=""$
+$tc.dimensions : {dim |List<}; separator=""$
 $endif$
 $if(tc.isType_e)$
 List<
@@ -235,7 +235,7 @@ $endif$
 
 first_tag_switch_open(tc) ::= <<
 $if(tc.isType_f)$
-$first(type.dimensions) : {dim |ArrayList<}; separator=""$$rest(type.dimensions) : {dim |List<}; separator=""$
+$first(tc.dimensions) : {dim |ArrayList<}; separator=""$$rest(tc.dimensions) : {dim |List<}; separator=""$
 $endif$
 $if(tc.isType_e)$
 ArrayList<
@@ -254,7 +254,7 @@ $type.containerLevels : {tc |$tag_switch_close(tc)$}; separator=""$
 
 tag_switch_close(tc) ::= <<
 $if(tc.isType_f)$
-$type.dimensions : {dim |>}; separator=""$
+$tc.dimensions : {dim |>}; separator=""$
 $endif$
 $if(tc.isType_e)$
 >

@@ -180,9 +180,9 @@ public static int getMaxCdrSerializedSize(int current_alignment)
     int current_sum = 0;
     
     $max_serialized_size(ctx=ctx, typecode=union.discriminator, var="current_align", name=union.name)$
-            
+
     $union.members : {member |
-$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_sum", name=member.name)$
+$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_sum", name=member.name, index=ctx.newLoopVarName)$
 if (current_sum > sum) {
 	sum = current_sum;
 }

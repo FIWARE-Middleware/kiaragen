@@ -313,72 +313,28 @@ $endif$
 // -----------------------------------------Try & catch for membered types-----------------------------------------------
 
 membered_try(type) ::= <<
+$if(type.isType_10)$
+$membered_try(type.typedefContentTypeCode)$
+$else$
 $if(type.membered)$
 $if(!type.isType_c)$
 try {
-	
-$endif$
-$else$
-$if(type.container)$
-$if(type.isType_10)$
-$if(type.upperTypeCode.membered)$
-$if(!type.typedefContentTypeCode.isType_c)$
-try {
-	
-$endif$
-$endif$
-$else$
-$if(type.contentTypeCode.isType_10)$
-$if(type.upperTypeCode.membered)$
-try {
-	
-$endif$
-$else$
-$if(type.upperTypeCode.membered)$
-try {
-	
-$endif$
-$endif$
+
 $endif$
 $endif$
 $endif$
 >>
 
 membered_catch(type) ::= <<
+$if(type.isType_10)$
+$membered_catch(type.typedefContentTypeCode)$
+$else$
 $if(type.membered)$
 $if(!type.isType_c)$
 
 } catch (InstantiationException | IllegalAccessException e) {
 	e.printStackTrace();
 }
-$endif$
-$else$
-$if(type.container)$
-$if(type.isType_10)$
-$if(type.upperTypeCode.membered)$
-$if(!type.typedefContentTypeCode.isType_c)$
-
-} catch (InstantiationException | IllegalAccessException e) {
-	e.printStackTrace();
-}
-$endif$
-$endif$
-$else$
-$if(type.contentTypeCode.isType_10)$
-$if(type.upperTypeCode.membered)$
-
-} catch (InstantiationException | IllegalAccessException e) {
-	e.printStackTrace();
-}
-$endif$
-$else$
-$if(type.upperTypeCode.membered)$
-
-} catch (InstantiationException | IllegalAccessException e) {
-	e.printStackTrace();
-}
-$endif$
-$endif$
 $endif$
 $endif$
 $endif$
@@ -519,23 +475,37 @@ $if(type.isType_10)$
 $standardJavaSerialization(type=type.typedefContentTypeCode, name=name, ser=ser, scope=scope, loopVar=loopVar)$
 $else$
 $if(type.primitive)$
-$primitive_type_ser(type=type, loopVar=loopVar)$
+$if(!type.isType_c)$
+$primitive_type_ser(type)$
+$endif$
 $endif$
 $if(type.container)$
 s_$name$.write($ser$, message, name, $scope$$name$)
 $endif$
 $if(type.membered)$
-s_$name$.write($ser$, message, name, $scope$$name$)
+$membered_type_ser(type)$
 $endif$
 $endif$
 >>
 
-// Only primitive types. Check if it's an enum first (enum are primitive)
-primitive_type_ser(type, loopVar) ::= <<
-$if(!type.isType_c)$
+// Only for primitive builtin types
+primitive_type_ser(type) ::= <<
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+>>
+
+// a = struct, c = enum, b = union
+membered_type_ser(type) ::= <<
+$if(type.isType_a)$
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+$endif$
+$if(type.isType_c)$
+$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
+$endif$
+$if(type.isType_b)$
 $ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
 $endif$
 >>
+
 
 // f = Array, e = sequence
 container_type_ser(type, loopVar) ::= <<
@@ -561,19 +531,6 @@ $endif$
 $endif$
 >>
 
-// a = struct, c = enum, b = union
-membered_type_ser(type, loopVar) ::= <<
-$if(type.isType_a)$
-$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
-$endif$
-$if(type.isType_c)$
-$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
-$endif$
-$if(type.isType_b)$
-$ser$.$serializeJava.(type.stType)$(message, name, $scope$$name$)
-$endif$
->>
-
 serializeMap(type, name, ser, loopVar) ::= <<
 $ser$.serializeI32(message, name, $name$.size());
 for($map_entry_first(type)$ entry_$loopVar$ : $name$.entrySet()) {
@@ -596,23 +553,37 @@ $if(type.isType_10)$
 $standardJavaDeserialization(type=type.typedefContentTypeCode, name=name, ser=ser)$
 $else$
 $if(type.primitive)$
-$primitive_type_deser(type=type)$
+$if(!type.isType_c)$
+$primitive_type_deser(type)$
+$endif$
 $endif$
 $if(type.container)$
 s_$name$.read($ser$, message, name)
 $endif$
 $if(type.membered)$
-s_$name$.read($ser$, message, name)
+$membered_type_deser(type)$
 $endif$
 $endif$
 >>
 
-// Only primitive types. Check if it's an enum first (enum are primitive)
-primitive_type_deser(type, loopVar) ::= <<
-$if(!type.isType_c)$
+// Only for primitive builtin types
+primitive_type_deser(type) ::= <<
 $ser$.$deserializeJava.(type.stType)$(message, name)
+>>
+
+// a = struct, c = enum, b = union
+membered_type_deser(type) ::= <<
+$if(type.isType_a)$
+$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
+$endif$
+$if(type.isType_c)$
+$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
+$endif$
+$if(type.isType_b)$
+$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
 $endif$
 >>
+
 
 // f = Array, e = sequence
 container_type_deser(type, depth, loopVar) ::= <<
@@ -635,19 +606,6 @@ $deserializeMap(type=type, name=name, ser=ser, loopVar=loopVar)$
 $else$
 $deserializeMap(type=type, name=name, ser=ser, loopVar=ctx.newLoopVarName)$
 $endif$
-$endif$
->>
-
-// a = struct, c = enum, b = union
-membered_type_deser(type, loopVar) ::= <<
-$if(type.isType_a)$
-$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
-$endif$
-$if(type.isType_c)$
-$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
-$endif$
-$if(type.isType_b)$
-$ser$.$deserializeJava.(type.stType)$(message, name, $objectName(type)$.class)
 $endif$
 >>
 

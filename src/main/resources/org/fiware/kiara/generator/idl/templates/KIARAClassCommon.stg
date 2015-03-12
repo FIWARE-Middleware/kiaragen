@@ -7,6 +7,31 @@ private_attributes(currentSt) ::= <<
 $currentSt.members : {member | private $standardJavaType(member.typecode)$ $member.name$;}; separator="\n"$
 >>
 
+// Attribute Serializers -----------------------------------------------------------
+
+private_attribute_serializers(currentSt) ::= <<
+$currentSt.members : {member | $private_attribute_serializer(member)$}; separator="\n"$
+>>
+
+// serializers should be not generated for primitive types, enums, and serializable objects
+// note: enums are primitives
+// enum: isType_c
+// struct: isType_a
+// union: isType_b
+//
+private_attribute_serializer(member) ::= <<
+$make_private_attribute_serializer(type=member.typecode, member=member)$
+>>
+
+make_private_attribute_serializer(type, member) ::= <<
+$if(type.isType_10)$
+$make_private_attribute_serializer(type=type.typedefContentTypeCode, member=member)$
+$elseif(type.container)$
+private static final $standardJavaTypeSerializer(member.typecode)$ s_$member.name$ =
+    $createJavaTypeSerializer(member.typecode)$;
+$endif$
+>>
+
 // Constructor ---------------------------------------------------------------------
 
 default_constructor(currentSt) ::= <<
@@ -64,15 +89,7 @@ public void deserialize(SerializerImpl impl, BinaryInputStream message, String n
 >>
 
 deserialize_according_type(member, type, name, ser) ::= <<
-$if(type.container)$
-$if(type.type_map)$
-$standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$
-$else$
 $membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$
-$endif$
-$else$
-$membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization(type=member.typecode, name=member.name, ser="impl")$;$membered_catch(member.typecode)$
-$endif$
 >>
 
 

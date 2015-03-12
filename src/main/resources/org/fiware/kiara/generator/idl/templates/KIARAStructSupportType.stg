@@ -13,12 +13,20 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import org.fiware.kiara.serialization.impl.BasicSerializers;
 import org.fiware.kiara.serialization.impl.BinaryInputStream;
 import org.fiware.kiara.serialization.impl.BinaryOutputStream;
 
 import org.fiware.kiara.serialization.impl.Serializable;
 import org.fiware.kiara.serialization.impl.SerializerImpl;
 import org.fiware.kiara.serialization.impl.CDRSerializer;
+import org.fiware.kiara.serialization.impl.ListAsArraySerializer;
+import org.fiware.kiara.serialization.impl.ListAsSequenceSerializer;
+import org.fiware.kiara.serialization.impl.Serializer;
+import org.fiware.kiara.serialization.impl.MapAsMapSerializer;
+import org.fiware.kiara.serialization.impl.SetAsSetSerializer;
+import org.fiware.kiara.serialization.impl.ObjectSerializer;
+import org.fiware.kiara.serialization.impl.EnumSerializer;
 
 /**
  * Class definition for the user defined type $ctx.currentSt.name$. 
@@ -32,7 +40,12 @@ public class $ctx.currentSt.name$ implements Serializable {
 	 *	Attributes
 	 */
 	$private_attributes(ctx.currentSt)$
-	
+
+        /*
+         *      Attribute Serializers
+         */
+        $private_attribute_serializers(ctx.currentSt)$
+
 	/*
 	 *	Default constructor
 	 */

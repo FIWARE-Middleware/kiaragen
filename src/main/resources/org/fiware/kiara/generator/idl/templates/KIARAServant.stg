@@ -29,8 +29,6 @@ public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.curr
 		return "$ctx.currentIfz.name$";
 	}
 	
-	$ctx.currentIfz.operations : {operation |$servant_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
-	
 	@Override
 	public TransportMessage process(Serializer ser, Transport transport, Object messageId, BinaryInputStream bis) {
 	
@@ -61,7 +59,7 @@ public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.curr
 
 >>
 
-// --------------------------- Servant operation requires size -----------------------------
+// --------------------------- Servant operation required size -----------------------------
 
 servant_operation_required_size(ctx, operation) ::= <<
 
@@ -124,7 +122,7 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$endif$
 	$endif$}; separator="\n"$
 	
-	BinaryOutputStream retBuffer = new BinaryOutputStream($operation.name$_required_size());
+	BinaryOutputStream retBuffer = new BinaryOutputStream();
     TransportMessage retMsg = transportImpl.createTransportMessage(null);
  	serImpl.serializeMessageId(retBuffer, messageId);
 	

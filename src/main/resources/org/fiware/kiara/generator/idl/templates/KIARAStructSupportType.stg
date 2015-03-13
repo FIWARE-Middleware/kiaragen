@@ -41,10 +41,10 @@ public class $ctx.currentSt.name$ implements Serializable {
 	 */
 	$private_attributes(ctx.currentSt)$
 
-        /*
-         *      Attribute Serializers
-         */
-        $private_attribute_serializers(ctx.currentSt)$
+    /*
+     *      Attribute Serializers
+     */
+    $private_attribute_serializers(ctx.currentSt)$
 
 	/*
 	 *	Default constructor
@@ -57,20 +57,6 @@ public class $ctx.currentSt.name$ implements Serializable {
 	$serialization_methods(ctx.currentSt)$
 	
 	$comparison_function(ctx.currentSt)$
-	
-	/*
-	 *This method calculates the maximum size in CDR for this class.
-	 * 
-	 * @param current_alignment Integer containing the current position in the buffer.
-	 */
-	public static int getMaxCdrSerializedSize(int current_alignment)
-	{
-	    int current_align = current_alignment;
-	            
-	    $ctx.currentSt.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name, index=ctx.newLoopVarName)$}; separator="\n\n"$
-	    
-	    return current_align;
-	}
 	
 	$accessor_methods(ctx.currentSt)$
 	

@@ -30,8 +30,6 @@ class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 		m_transport = (org.fiware.kiara.transport.impl.TransportImpl) transport;
 	}
 	
-	$ctx.currentIfz.operations : {operation |$proxy_operation_required_size(ctx=ctx, operation=operation)$}; separator="\n"$
-	
 	$ctx.currentIfz.operations : {operation |$proxy_operation(operation)$}; separator="\n"$
 	
 	$ctx.currentIfz.operations : {operation |$proxy_operation_async(operation)$}; separator="\n"$
@@ -72,7 +70,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$)$if(opera
 $endif$
 	
 	if (m_ser != null && m_transport != null) {
-		final BinaryOutputStream bos = new BinaryOutputStream($operation.name$_required_size());
+		final BinaryOutputStream bos = new BinaryOutputStream();
 		final TransportMessage trequest = m_transport.createTransportMessage(null);
         
         final Object messageId = m_ser.getNewMessageId();
@@ -166,7 +164,7 @@ $if(operation.isOperation)$
 public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final $operation.name$_AsyncCallback callback) {
 	
 	if (m_ser != null && m_transport != null) {
-		final BinaryOutputStream bos = new BinaryOutputStream($operation.name$_required_size());
+		final BinaryOutputStream bos = new BinaryOutputStream();
 		final TransportMessage trequest = m_transport.createTransportMessage(null);
         
         final Object messageId = m_ser.getNewMessageId();

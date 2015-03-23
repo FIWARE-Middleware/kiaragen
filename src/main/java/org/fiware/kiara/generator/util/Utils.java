@@ -22,6 +22,7 @@ import org.antlr.stringtemplate.StringTemplate;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
+import java.text.CharacterIterator;
 
 /**
 *
@@ -121,4 +122,72 @@ public class Utils
 		
 		return fileName.substring(lastDot+1);
 	}
+
+    public static String readFile(String fileName) throws IOException {
+        try (final BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            final StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            while (line != null) {
+                sb.append(line);
+                sb.append("\n");
+                line = br.readLine();
+            }
+            return sb.toString();
+        }
+    }
+
+    public static String escapeString(String text, boolean addQuotes) {
+        final StringBuilder result = new StringBuilder();
+        if (addQuotes) {
+            result.append('"');
+        }
+        for (int i = 0; i < text.length(); ++i) {
+            final char c = text.charAt(i);
+            switch (c) {
+                case '\b':
+                    result.append("\\b");
+                    break;
+                case '\t':
+                    result.append("\\t");
+                    break;
+                case '\n':
+                    result.append("\\n");
+                    break;
+                case '\f':
+                    result.append("\\f");
+                    break;
+                case '\r':
+                    result.append("\\r");
+                    break;
+                case '\"':
+                    result.append("\\\"");
+                    break;
+                case '\'':
+                    result.append("\\\'");
+                    break;
+                case '\\':
+                    result.append("\\\\");
+                    break;
+                default:
+                    // encode non-ascii chars as unicode
+                    if ((c < 32) || (c > 127)) {
+                        String hex = Integer.toHexString(c);
+                        result.append("\\u");
+                        for (int i1 = hex.length(); i1 < 4; i1++) {
+                            result.append('0');
+                        }
+                        result.append(hex);
+                    } else {
+                        result.append(c);
+                    }
+                    break;
+            }
+        }
+        if (addQuotes) {
+            result.append('"');
+        }
+        return result.toString();
+    }
+
 }

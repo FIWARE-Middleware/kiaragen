@@ -351,12 +351,19 @@ public class kiaragen {
 		if (idlParseFileName != null) {
 			
 			this.parsePackage();
-			
-			Context ctx = new Context(onlyFileName, idlFilename, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct, m_javaPackage);
-			
+
+                        String idlText = "";
+                        try {
+                            idlText = Utils.readFile(idlParseFileName);
+                        } catch (IOException ex) {
+                            System.out.println(ColorMessage.error("IOException") + "Could not read file " + idlParseFileName + ".");
+                        }
+
+			Context ctx = new Context(onlyFileName, idlFilename, idlText, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct, m_javaPackage);
+
 			// Create template manager
 			TemplateManager tmanager = new TemplateManager("eprosima:Common:KIARAClassCommon");
-			
+
 			tmanager.changeCppTypesTemplateGroup("JavaTypes");
 			
 			// Load ServerExample template
@@ -400,11 +407,14 @@ public class kiaragen {
 			
 			// Load Support class template
 			tmanager.addGroup("KIARAExceptionSupportType");
-			
+
+                        // Load IDL text template
+                        tmanager.addGroup("KIARAIDLText");
+
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
 			maintemplates.setAttribute("ctx", ctx);
-			
+
 			try {
 				ANTLRFileStream input = new ANTLRFileStream(idlParseFileName);
 				KIARAIDLLexer lexer = new KIARAIDLLexer(input);
@@ -543,14 +553,18 @@ public class kiaragen {
 							}
 						}
 					}
-					
+
+                                        System.out.print("Generating IDL text file... ");
+                                        if (returnedValue = Utils.writeFile(this.m_package + "IDLText.java", maintemplates.getTemplate("KIARAIDLText"), m_replace)) {
+                                            System.out.println("OK");
+                                        }
 				}
 			}
-			
+
 		}
-		
+
 	}
-	
+
 	String callPreprocessor(String idlFilename) {
 		final String METHOD_NAME = "callPreprocessor";
 		

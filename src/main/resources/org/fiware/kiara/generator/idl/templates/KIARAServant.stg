@@ -6,7 +6,6 @@ package $ctx.javaPackage$;
 
 import java.io.IOException;
 import org.fiware.kiara.serialization.Serializer;
-import org.fiware.kiara.serialization.impl.CDRSerializer;
 import org.fiware.kiara.serialization.impl.SerializerImpl;
 import org.fiware.kiara.server.Servant;
 import org.fiware.kiara.transport.Transport;
@@ -29,32 +28,32 @@ public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.curr
 		return "$ctx.currentIfz.name$";
 	}
 	
-	@Override
-	public TransportMessage process(Serializer ser, Transport transport, Object messageId, BinaryInputStream bis) {
-	
-		SerializerImpl serImpl;
+    @Override
+    public TransportMessage process(Serializer ser, TransportMessage message, Transport transport, Object messageId, BinaryInputStream bis) {
+
+        SerializerImpl serImpl;
         TransportImpl transportImpl;
-        
+
         if (ser instanceof SerializerImpl && transport instanceof TransportImpl) {
             serImpl = (SerializerImpl) ser;
             transportImpl = (TransportImpl) transport;
         } else {
             return null; // TODO Raise error
         }
-        
-		try {
-			String operation = serImpl.deserializeOperation(bis);
-		
-		$ctx.currentIfz.operations : {operation |$process_operation(operation)$}; separator="\n"$
-		
-		} catch (IOException ex) {
-                    throw new RuntimeException(ex);
-		}
-		return null;
-		
-	}
+
+        try {
+            String operation = serImpl.deserializeOperation(bis);
+
+            $ctx.currentIfz.operations : {operation |$process_operation(operation)$}; separator="\n"$
+
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        return null;
+
+    }
 	
-	$definitions$
+    $definitions$
 }
 
 >>
@@ -123,7 +122,7 @@ $operation.inputparam : {param | $if(param.typecode.primitive)$
 	$endif$}; separator="\n"$
 	
 	BinaryOutputStream retBuffer = new BinaryOutputStream();
-    TransportMessage retMsg = transportImpl.createTransportMessage(null);
+    TransportMessage retMsg = transportImpl.createTransportMessage(message);
  	serImpl.serializeMessageId(retBuffer, messageId);
 	
 	$if(operation.exceptions)$

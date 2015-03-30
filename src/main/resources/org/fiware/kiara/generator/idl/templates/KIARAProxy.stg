@@ -10,12 +10,12 @@ import java.io.IOException;
 
 import org.fiware.kiara.netty.TransportMessageDispatcher;
 import org.fiware.kiara.serialization.Serializer;
-import org.fiware.kiara.serialization.impl.CDRSerializer;
 import org.fiware.kiara.transport.Transport;
 import org.fiware.kiara.transport.impl.TransportMessage;
 
 import org.fiware.kiara.serialization.impl.BinaryInputStream;
 import org.fiware.kiara.serialization.impl.BinaryOutputStream;
+import org.fiware.kiara.client.AsyncCallback;
 
 /**
  * Class containing the proxy implementation for all the services. 
@@ -161,7 +161,7 @@ proxy_operation_async(operation) ::= <<
 $if(!operation.oneway)$
 $if(operation.isOperation)$
 @Override
-public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final $operation.name$_AsyncCallback callback) {
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final AsyncCallback<$enveloped_operation_rettype(operation)$> callback) {
 	
 	if (m_ser != null && m_transport != null) {
 		final BinaryOutputStream bos = new BinaryOutputStream();
@@ -183,16 +183,16 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
 		
 		Futures.addCallback(dispatcher, new FutureCallback<TransportMessage> () {
 
-			@Override
-			public void onSuccess(TransportMessage result) {
-				callback.process(result, m_ser);
-			}
+                @Override
+                public void onSuccess(TransportMessage result) {
+                    $ctx.currentIfz.name$Process.$operation.name$_processAsync(result, m_ser, callback);
+                }
 
-			@Override
-			public void onFailure(Throwable t) {
-				callback.onFailure(t);
-			}
-			
+                @Override
+                public void onFailure(Throwable t) {
+                    callback.onFailure(t);
+                }
+
 		}); 
 			
 		m_transport.send(trequest);

@@ -383,10 +383,13 @@ public class kiaragen {
 			
 			// Load Servant template
 			tmanager.addGroup("KIARAExampleAsync");
-			
+
+			// Load Servant template
+			tmanager.addGroup("KIARAExampleProcess");
+
 			// Load Servant template
 			tmanager.addGroup("KIARAClient");
-			
+
 			// Load Servant template
 			tmanager.addGroup("KIARAProxy");
 			
@@ -503,12 +506,14 @@ public class kiaragen {
 						System.out.print("Generating application main entry files for service " + ifz.getName() +"... ");
 						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
 							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
-								if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
-									System.out.println("OK");
-								}
+                                                                if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Process.java", maintemplates.getTemplate("KIARAExampleProcess"), m_replace)) {
+                                                                        if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
+                                                                                System.out.println("OK");
+                                                                        }
+                                                                }
 							}
 						}
-						
+
 						System.out.print("Generating specific server side files for service " + ifz.getName() +"... ");
 						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
 							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {

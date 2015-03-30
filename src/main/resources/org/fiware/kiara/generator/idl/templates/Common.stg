@@ -208,6 +208,23 @@ $endif$
 $endif$
 >>
 
+enveloped_operation_rettype(operation) ::= <<
+$if(operation.rettype)$
+	$if(operation.rettype.isType_c)$
+$operation.rettype.name$
+	$else$
+	$if(operation.rettype.primitive)$$envelopeJava.(operation.rettype.stType)$
+	$else$
+		$if(!operation.rettype.isType_f)$
+$operation.rettype.cppTypename$
+		$endif$
+	$endif$
+	$endif$
+$else$
+Void
+$endif$
+>>
+
 // -------------------------------- Membered switches -------------------------------------------------
 
 membered_tags_open(type) ::= <<

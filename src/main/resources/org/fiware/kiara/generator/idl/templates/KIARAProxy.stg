@@ -77,7 +77,7 @@ $endif$
 		try {
             m_ser.serializeMessageId(bos, messageId);
           
-            m_ser.serializeService(bos, "$first(ctx.scopedInterfaces).name$");
+            m_ser.serializeService(bos, "$ctx.currentIfz.name$");
             m_ser.serializeOperation(bos, "$operation.name$");
             $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
 		} catch (IOException ex) {
@@ -170,7 +170,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
         final Object messageId = m_ser.getNewMessageId();
         try {
             m_ser.serializeMessageId(bos, messageId);   
-            m_ser.serializeService(bos, "$first(ctx.scopedInterfaces).name$");
+            m_ser.serializeService(bos, "$ctx.currentIfz.name$");
             m_ser.serializeOperation(bos, "$operation.name$");
             $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
         } catch (IOException ex) {

@@ -24,7 +24,9 @@ import org.fiware.kiara.client.AsyncCallback;
  *
  */
 class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
-	
+
+    public static final String serviceName = "$ctx.currentIfz.name$";
+
 	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
 		m_ser = (org.fiware.kiara.serialization.impl.SerializerImpl) ser;
 		m_transport = (org.fiware.kiara.transport.impl.TransportImpl) transport;

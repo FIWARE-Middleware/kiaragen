@@ -25,7 +25,7 @@ import org.fiware.kiara.client.AsyncCallback;
  */
 class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
 
-    public static final String serviceName = "$ctx.currentIfz.name$";
+    public static final String serviceName = "$ctx.currentIfz.scopedname$";
 
 	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
 		m_ser = (org.fiware.kiara.serialization.impl.SerializerImpl) ser;
@@ -79,7 +79,7 @@ $endif$
 		try {
             m_ser.serializeMessageId(bos, messageId);
           
-            m_ser.serializeService(bos, "$ctx.currentIfz.name$");
+            m_ser.serializeService(bos, "$ctx.currentIfz.scopedname$");
             m_ser.serializeOperation(bos, "$operation.name$");
             $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
 		} catch (IOException ex) {
@@ -172,7 +172,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
         final Object messageId = m_ser.getNewMessageId();
         try {
             m_ser.serializeMessageId(bos, messageId);   
-            m_ser.serializeService(bos, "$ctx.currentIfz.name$");
+            m_ser.serializeService(bos, "$ctx.currentIfz.scopedname$");
             m_ser.serializeOperation(bos, "$operation.name$");
             $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
         } catch (IOException ex) {

@@ -25,7 +25,7 @@ public abstract class $ctx.currentIfz.name$Servant implements Servant, $ctx.curr
 
 	@Override
 	public String getServiceName() {
-		return "$ctx.currentIfz.name$";
+		return "$ctx.currentIfz.scopedname$";
 	}
 	
     @Override

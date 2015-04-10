@@ -15,8 +15,7 @@ mainClassName = hasProperty("mainClass") ? property("mainClass") : 'org.fiware.k
 
 //general properties
 version = '0.2.0'
-
-description = """"""
+description = "KIARA Advanced Middleware IDL Code Generator"
 
 // java plugin properties (until antlr 4.4 we have to set this to 1.6)
 // (https://github.com/antlr/antlr4/issues/487)

@@ -1,0 +1,57 @@
+group KIARAIDLText;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=["IDLText.java"], description=["This file contains IDL text."])$
+package $ctx.javaPackage$;
+
+/**
+ * Class containing the IDL text for all the services.
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public final class IDLText {
+
+    public static final String contents = $ctx.quotedIdlText$;
+
+    private IDLText() {
+        throw new UnsupportedOperationException();
+    }
+}
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>

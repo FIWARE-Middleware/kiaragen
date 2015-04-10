@@ -28,6 +28,7 @@ import com.eprosima.idl.parser.typecode.StructTypeCode;
 import com.eprosima.idl.parser.typecode.TypeCode;
 import com.eprosima.idl.parser.typecode.UnionMember;
 import com.eprosima.idl.parser.typecode.UnionTypeCode;
+import org.fiware.kiara.generator.util.Utils;
 
 /**
 *
@@ -36,12 +37,12 @@ import com.eprosima.idl.parser.typecode.UnionTypeCode;
 public class Context extends com.eprosima.idl.context.Context
 {
     // TODO Remove middleware parameter. It is temporal while cdr and rest don't have async functions.
-    public Context(String filename, String file, ArrayList includePaths, boolean subscribercode, boolean publishercode,
+    public Context(String filename, String file, String idlText, ArrayList includePaths, boolean subscribercode, boolean publishercode,
             String appProduct, String pck)
     {
         super(filename, file, includePaths);
-        
-        
+
+        m_idlText = idlText;
         m_subscribercode = subscribercode;
         m_publishercode = publishercode;
         m_randomGenNames = new Stack<String>();
@@ -184,8 +185,10 @@ public class Context extends com.eprosima.idl.context.Context
     private EnumTypeCode m_current_enum = null;
     private com.eprosima.idl.parser.tree.Exception m_currentException = null;
     
-    
+
     private String m_package;
+
+    private String m_idlText;
 
 	public String getM_firstStructure() {
 		return m_firstStructure;
@@ -250,5 +253,12 @@ public class Context extends com.eprosima.idl.context.Context
 	public String getJavaPackage() {
 		return this.m_package;
 	}
-	
+
+        public String getIdlText() {
+            return this.m_idlText;
+        }
+
+        public String getQuotedIdlText() {
+            return Utils.escapeString(m_idlText, true);
+        }
 }

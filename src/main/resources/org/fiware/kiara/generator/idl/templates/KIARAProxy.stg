@@ -10,12 +10,12 @@ import java.io.IOException;
 
 import org.fiware.kiara.netty.TransportMessageDispatcher;
 import org.fiware.kiara.serialization.Serializer;
-import org.fiware.kiara.serialization.impl.CDRSerializer;
 import org.fiware.kiara.transport.Transport;
 import org.fiware.kiara.transport.impl.TransportMessage;
 
 import org.fiware.kiara.serialization.impl.BinaryInputStream;
 import org.fiware.kiara.serialization.impl.BinaryOutputStream;
+import org.fiware.kiara.client.AsyncCallback;
 
 /**
  * Class containing the proxy implementation for all the services. 
@@ -24,7 +24,9 @@ import org.fiware.kiara.serialization.impl.BinaryOutputStream;
  *
  */
 class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
-	
+
+    public static final String serviceName = "$ctx.currentIfz.scopedname$";
+
 	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
 		m_ser = (org.fiware.kiara.serialization.impl.SerializerImpl) ser;
 		m_transport = (org.fiware.kiara.transport.impl.TransportImpl) transport;
@@ -77,7 +79,7 @@ $endif$
 		try {
             m_ser.serializeMessageId(bos, messageId);
           
-            m_ser.serializeService(bos, "$first(ctx.scopedInterfaces).name$");
+            m_ser.serializeService(bos, "$ctx.currentIfz.scopedname$");
             m_ser.serializeOperation(bos, "$operation.name$");
             $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
 		} catch (IOException ex) {
@@ -161,7 +163,7 @@ proxy_operation_async(operation) ::= <<
 $if(!operation.oneway)$
 $if(operation.isOperation)$
 @Override
-public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final $operation.name$_AsyncCallback callback) {
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final AsyncCallback<$enveloped_operation_rettype(operation)$> callback) {
 	
 	if (m_ser != null && m_transport != null) {
 		final BinaryOutputStream bos = new BinaryOutputStream();
@@ -170,7 +172,7 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
         final Object messageId = m_ser.getNewMessageId();
         try {
             m_ser.serializeMessageId(bos, messageId);   
-            m_ser.serializeService(bos, "$first(ctx.scopedInterfaces).name$");
+            m_ser.serializeService(bos, "$ctx.currentIfz.scopedname$");
             m_ser.serializeOperation(bos, "$operation.name$");
             $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
         } catch (IOException ex) {
@@ -183,16 +185,16 @@ public void $operation.name$($javaParams(params=operation.parameters)$$if(!opera
 		
 		Futures.addCallback(dispatcher, new FutureCallback<TransportMessage> () {
 
-			@Override
-			public void onSuccess(TransportMessage result) {
-				callback.process(result, m_ser);
-			}
+                @Override
+                public void onSuccess(TransportMessage result) {
+                    $ctx.currentIfz.name$Process.$operation.name$_processAsync(result, m_ser, callback);
+                }
 
-			@Override
-			public void onFailure(Throwable t) {
-				callback.onFailure(t);
-			}
-			
+                @Override
+                public void onFailure(Throwable t) {
+                    callback.onFailure(t);
+                }
+
 		}); 
 			
 		m_transport.send(trequest);

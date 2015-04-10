@@ -23,12 +23,8 @@ public interface $ctx.currentIfz.name$Async {
 
 >>
 
-construct_operation_async(operation) ::= <<
-$if(operation.isOperation)$
-$if(!operation.oneway)$
-public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$$operation.name$_AsyncCallback callback);
-
-public static abstract class $operation.name$_AsyncCallback implements AsyncCallback<$if(operation.rettype)$
+enveloped_operation_rettype(operation) ::= <<
+$if(operation.rettype)$
 	$if(operation.rettype.isType_c)$
 $operation.rettype.name$
 	$else$
@@ -42,39 +38,12 @@ $operation.rettype.cppTypename$
 $else$
 Void
 $endif$
-> {
-	@Override
-	public void process(TransportMessage message, SerializerImpl ser) {
-		try {
-			final BinaryInputStream bis = BinaryInputStream.fromByteBuffer(message.getPayload());
-			// Deserialize message ID
-			final Object messageId = ser.deserializeMessageId(bis);
-			// Deserialize return code (0 = OK, anything else = WRONG)
-    		int retCode = ser.deserializeUI32(bis, "");
-    		if (retCode == 0) { // Function execution was OK.
-			$if(operation.rettype)$
-				$operation.rettype.cppTypename$ result = ser.$deserializeJava.(operation.rettype.stType)$(bis, ""$if(!operation.rettype.primitive)$
-					$if(!operation.rettype.isType_d)$
-						$if(!operation.rettype.isType_e)$
-							$if(!operation.rettype.isType_f)$
-	, $operation.rettype.cppTypename$.class
-							$endif$
-						$endif$
-					$endif$
-				$else$
-				$endif$$if(operation.rettype.isType_c)$, $operation.rettype.cppTypename$.class$endif$);
-				onSuccess(result);
-				$else$
-				onSuccess(null);
-			$endif$
-			} 
-			$if(operation.exceptions)$$error_code(operation)$$endif$
-		} catch (Exception ex) {
-			onFailure(ex);
-		}
-	}
-}
+>>
 
+construct_operation_async(operation) ::= <<
+$if(operation.isOperation)$
+$if(!operation.oneway)$
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$AsyncCallback<$enveloped_operation_rettype(operation)$> callback);
 $endif$
 $endif$
 >>

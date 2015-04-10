@@ -1,6 +1,7 @@
 // internal plugins
 plugins {
     id "me.champeau.gradle.antlr4" version "0.1" // antlr4 community plugin.
+    id "com.bmuschko.nexus" version "2.1.1"
 }
 
 apply plugin: 'eclipse' // Eclipse integration
@@ -13,7 +14,7 @@ apply plugin: 'maven'
 mainClassName = hasProperty("mainClass") ? property("mainClass") : 'org.fiware.kiara.generator.kiaragen';
 
 //general properties
-version = '0.1.0'
+version = '0.2.0'
 
 description = """"""
 
@@ -36,17 +37,18 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.antlr', name: 'antlr4', version:'4.2.2'
-	compile group: 'antlr', name: 'antlr', version:'2.7.7'
+    compile group: 'org.antlr', name: 'antlr4', version:'4.2.2'
+    compile group: 'antlr', name: 'antlr', version:'2.7.7'
     compile group: 'org.antlr', name: 'stringtemplate', version:'3.2'
     testCompile group: 'junit', name: 'junit', version:'4.10'
-	compile files('lib/kiaraparser-0.1.0.jar')
+    compile group: 'org.fiware.kiara', name: 'kiaraparser', version: '0.2.0'
+    //compile files('lib/kiaraparser-0.1.0.jar')
 }
 
 test {
-  testLogging {
-	events 'started', 'passed'
-  }
+    testLogging {
+        events 'started', 'passed'
+    }
 }
 
 //task copyFiles(type: Copy) {
@@ -56,12 +58,71 @@ test {
 //	}
 //}
 
-jar (){
-	manifest {
+jar() {
+    manifest {
         attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
-		attributes 'Class-Path': 'kiaraparser-0.1.0.jar antlr-4.4-complete.jar antlr-2.7.7.jar stringtemplate-3.2.1.jar'
+        attributes 'Class-Path': 'kiaraparser-0.2.0.jar antlr-4.4-complete.jar antlr-2.7.7.jar stringtemplate-3.2.1.jar'
     }
-	baseName = 'kiaragen'
-    version =  '0.1.0'
+    baseName = 'kiaragen'
+    version =  '0.2.0'
 }
 
+
+modifyPom {
+    project {
+        name 'KIARA Advanced Middleware'
+        artifactId 'kiaragen'
+        description project.description
+        url 'https://github.com/FIWARE-Middleware'
+        inceptionYear '2014'
+
+        scm {
+          connection 'scm:git:https://github.com/FIWARE-Middleware/kiaragen.git'
+          developerConnection 'scm:git:https://github.com/FIWARE-Middleware/kiaragen.git'
+          url 'https://github.com/FIWARE-Middleware/kiaragen.git'
+        }
+
+        licenses {
+          license {
+            name 'GNU Lesser General Public License, Version 3.0'
+            url 'https://www.gnu.org/licenses/lgpl.html'
+          }
+        }
+
+        developers {
+          developer {
+            id 'richiprosima'
+            name 'Riccardo Gonzalez'
+            email 'RicardoGonzalez@eprosima.com'
+          }
+          developer {
+            id 'RafaelLaraAlvarez'
+            name 'Rafael Lara Alvarez'
+            email 'RafaelLara@eprosima.com'
+          }
+          developer {
+            id 'dmrub'
+            name 'Dmitri Rubinstein'
+            email 'Dmitri.Rubinstein@dfki.de'
+          }
+          developer {
+            id 'mach'
+            name 'Christof Marti'
+            email 'mach@zhaw.ch'
+          }
+        }
+    }
+}
+
+extraArchive {
+    sources = true
+    javadoc = true
+    tests = false
+}
+
+nexus {
+    sign = true
+    // To upload to OSSRH comment/remove the following urls
+    //repositoryUrl = "file:$buildDir/repos/"
+    //snapshotRepositoryUrl = "file:$buildDir/repos/"
+}

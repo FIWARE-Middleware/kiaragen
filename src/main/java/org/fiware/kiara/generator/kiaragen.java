@@ -366,11 +366,11 @@ public class kiaragen {
 
 			tmanager.changeCppTypesTemplateGroup("JavaTypes");
 			
+			// Load Gradle file template
+			tmanager.addGroup("KIARAExampleGradle");
+			
 			// Load ServerExample template
 			tmanager.addGroup("KIARAServerExample");
-			
-			// Load Servant template
-			tmanager.addGroup("KIARAServerExampleGradle");
 			
 			// Load ServantExample template
 			tmanager.addGroup("KIARAServantExample");
@@ -396,9 +396,6 @@ public class kiaragen {
 			// Load Servant template
 			tmanager.addGroup("KIARAClientExample");
 			
-			// Load Servant template
-			tmanager.addGroup("KIARAClientExampleGradle");
-			
 			// Load Support class template
 			tmanager.addGroup("KIARAStructSupportType");
 			
@@ -411,8 +408,8 @@ public class kiaragen {
 			// Load Support class template
 			tmanager.addGroup("KIARAExceptionSupportType");
 
-                        // Load IDL text template
-                        tmanager.addGroup("KIARAIDLText");
+            // Load IDL text template
+            tmanager.addGroup("KIARAIDLText");
 
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
@@ -544,18 +541,24 @@ public class kiaragen {
 					if (ctx.getInterfaces().size() != 0) {
 						System.out.print("Generating common server side files... ");
 						if (returnedValue = Utils.writeFile(this.m_package + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
+							//if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
 								System.out.println("OK");
 								
-							}
+							//}
 							
 						}
 						
 						System.out.print("Generating common client side files... ");
 						if (returnedValue = Utils.writeFile(this.m_package + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
-							if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
+							//if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
 								System.out.println("OK");
-							}
+							//}
+						}
+						
+						System.out.print("Generating GRADLE compilation script... ");
+						if (returnedValue = Utils.writeFile(m_outputDir + "build.gradle", maintemplates.getTemplate("KIARAExampleGradle"), m_replace)) {
+							System.out.println("OK");
+							
 						}
 					}
 

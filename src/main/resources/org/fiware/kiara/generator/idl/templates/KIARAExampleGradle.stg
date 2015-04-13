@@ -1,0 +1,104 @@
+group KIARAServerExampleGradle;
+
+main(ctx, definitions) ::= <<
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'maven'
+
+mainClassName = hasProperty("mainClass") ? property("mainClass") : '$ctx.javaPackage$.ClientExample';
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'com.google.guava', name: 'guava', version:'17.0'
+    compile group: 'org.slf4j', name: 'slf4j-jdk14', version:'1.7.7'
+    compile group: 'io.netty', name: 'netty-all', version:'4.0.21.Final'
+    compile group: 'org.fiware.kiara', name: 'KIARA', version: '0.2.0'
+}
+
+task serverJar(type: Jar) {
+    dependsOn configurations.runtime
+    baseName = 'ServerExample'
+    from (sourceSets.main.output) {
+        include "**"
+    }
+    from {
+        configurations.runtime.collect {
+          it.isDirectory() ? it : zipTree(it)
+        }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    manifest {
+      attributes("Main-Class": "$ctx.javaPackage$.ServerExample")
+    }
+}
+
+task clientJar(type: Jar) {
+    dependsOn configurations.runtime
+    baseName = 'ClientExample'
+    from (sourceSets.main.output) {
+        include "**"
+    }
+    from {
+        configurations.runtime.collect {
+          it.isDirectory() ? it : zipTree(it)
+        }
+
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    manifest {
+      attributes("Main-Class": "$ctx.javaPackage$.ClientExample")
+    }
+}
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<
+public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$); 
+>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

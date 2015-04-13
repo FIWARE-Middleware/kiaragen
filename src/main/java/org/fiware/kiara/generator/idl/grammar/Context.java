@@ -32,7 +32,7 @@ import org.fiware.kiara.generator.util.Utils;
 
 /**
 *
-* @author Rafael Lara <rafaellara@eprosima.com>
+* @author Rafael Lara {@literal <rafaellara@eprosima.com>}
 */
 public class Context extends com.eprosima.idl.context.Context
 {

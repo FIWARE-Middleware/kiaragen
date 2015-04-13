@@ -24,7 +24,7 @@ import com.eprosima.idl.parser.typecode.TypeCode;
 
 /**
 *
-* @author Rafael Lara <rafaellara@eprosima.com>
+* @author Rafael Lara {@literal <rafaellara@eprosima.com>}
 */
 public class Exception extends com.eprosima.idl.parser.tree.Exception {
 	

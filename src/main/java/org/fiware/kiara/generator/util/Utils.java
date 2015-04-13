@@ -26,7 +26,7 @@ import java.text.CharacterIterator;
 
 /**
 *
-* @author Rafael Lara <rafaellara@eprosima.com>
+* @author Rafael Lara {@literal <rafaellara@eprosima.com>}
 */
 public class Utils
 {

@@ -41,7 +41,6 @@ dependencies {
     compile group: 'org.antlr', name: 'stringtemplate', version:'3.2'
     testCompile group: 'junit', name: 'junit', version:'4.10'
     compile group: 'org.fiware.kiara', name: 'kiaraparser', version: '0.2.0'
-    //compile files('lib/kiaraparser-0.1.0.jar')
 }
 
 test {
@@ -58,14 +57,36 @@ test {
 //}
 
 jar() {
+    dependsOn configurations.runtime
+    baseName = 'kiaragen'
+    version = project.version
     manifest {
         attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
-        attributes 'Class-Path': 'kiaraparser-0.2.0.jar antlr-4.4-complete.jar antlr-2.7.7.jar stringtemplate-3.2.1.jar'
     }
-    baseName = 'kiaragen'
-    version =  '0.2.0'
 }
 
+task cliJar(type: Jar) {
+    dependsOn configurations.runtime
+    baseName = 'kiaragen'
+    classifier = 'cli'
+    version = project.version
+    from (sourceSets.main.output) {
+        include "**"
+    }
+    from {
+        configurations.runtime.collect {
+          it.isDirectory() ? it : zipTree(it)
+        }
+
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    manifest {
+        attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
+    }
+}
 
 modifyPom {
     project {
@@ -111,6 +132,10 @@ modifyPom {
           }
         }
     }
+}
+
+artifacts {
+  archives cliJar
 }
 
 extraArchive {

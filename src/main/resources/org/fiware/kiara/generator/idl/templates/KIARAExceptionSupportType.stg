@@ -1,0 +1,120 @@
+group KIARASupportType;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the class representing a user defined structure."])$
+package $ctx.javaPackage$;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
+import org.fiware.kiara.serialization.impl.BasicSerializers;
+import org.fiware.kiara.serialization.impl.BinaryInputStream;
+import org.fiware.kiara.serialization.impl.BinaryOutputStream;
+
+import org.fiware.kiara.serialization.impl.Serializable;
+import org.fiware.kiara.serialization.impl.SerializerImpl;
+import org.fiware.kiara.serialization.impl.CDRSerializer;
+import org.fiware.kiara.serialization.impl.ListAsArraySerializer;
+import org.fiware.kiara.serialization.impl.ListAsSequenceSerializer;
+import org.fiware.kiara.serialization.impl.Serializer;
+import org.fiware.kiara.serialization.impl.MapAsMapSerializer;
+import org.fiware.kiara.serialization.impl.SetAsSetSerializer;
+import org.fiware.kiara.serialization.impl.ObjectSerializer;
+import org.fiware.kiara.serialization.impl.EnumSerializer;
+
+/**
+ * Class definition for the user defined type $ctx.currentException.name$. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+@SuppressWarnings({ "serial", "unused" })
+public class $ctx.currentException.name$ extends Exception implements Serializable {
+	
+	/*
+	 *	Attributes
+	 */
+	 $private_attributes(ctx.currentException)$
+
+        /*
+         *      Attribute Serializers
+         */
+        $private_attribute_serializers(ctx.currentSt)$
+
+	/*
+	 *	Default constructor
+	 */
+	$default_constructor(ctx.currentException)$
+	
+	$serialization_methods(ctx.currentException)$
+	
+	$comparison_function(ctx.currentException)$
+	
+	/*
+	 *This method calculates the maximum size in CDR for this class.
+	 * 
+	 * @param current_alignment Integer containing the current position in the buffer.
+	 */
+	public static int getMaxCdrSerializedSize(int current_alignment)
+	{
+	    int current_align = current_alignment;
+	    
+	    $max_serialized_size(ctx=ctx, typecode=ctx.currentException.typecode, var="current_align", name=ctx.currentException.name)$
+	            
+	    $ctx.currentException.members : { member |$max_serialized_size(ctx=ctx, typecode=member.typecode, var="current_align", name=member.name, index=ctx.newLoopVarName)$}; separator="\n\n"$
+	 
+	    return current_align;
+	}
+	
+	$accessor_methods(ctx.currentException)$
+
+	
+}
+
+>>
+
+
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

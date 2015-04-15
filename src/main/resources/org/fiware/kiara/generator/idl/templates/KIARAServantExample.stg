@@ -1,0 +1,77 @@
+group KIARAServantExample;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ServantExample.java"], description=["This file contains the servant implementation."])$
+package $ctx.javaPackage$;
+
+/**
+ * Class where the actual implementation of the procedures is located. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+class $ctx.currentIfz.name$ServantExample extends $ctx.currentIfz.name$Servant {
+
+$ctx.currentIfz.operations : {operation |$operation_impl(operation)$}; separator="\n\n"$
+$definitions$	
+}
+
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+operation_impl(operation) ::= <<
+	/*!
+	 * @brief This method implements the behavious of the $operation.name$ remote procedure.
+	 *        It has to be implemented by the user.
+	 */
+
+	public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$) $if(operation.exceptions)$throws $operation.exceptions :{ex |$ex.name$}; separator=", "$$endif$ {
+	
+		// Your implementation code goes here
+		$if(operation.rettype)$
+		$if(operation.rettype.isType_b)$
+		
+		return new $operation.rettype.cppTypename$();
+		$else$
+		
+		return $initJava.(operation.rettype.stType)$;
+		$endif$
+		$endif$
+	}
+>>

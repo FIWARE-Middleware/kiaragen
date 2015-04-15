@@ -1,0 +1,99 @@
+group KIARAExampleAsync;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "ExampleAsync.java"], description=["This file contains the main asynchronous interface for the defined operations."])$
+package $ctx.javaPackage$;
+
+import org.fiware.kiara.transport.impl.TransportMessage;
+import org.fiware.kiara.client.AsyncCallback;
+import org.fiware.kiara.serialization.impl.BinaryInputStream;
+import org.fiware.kiara.serialization.impl.SerializerImpl;
+
+/**
+ * Interface containing the asynchronous method definition. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public interface $ctx.currentIfz.name$Async {
+
+	$ctx.currentIfz.operations : {operation |$construct_operation_async(operation)$}; separator="\n"$
+	
+}
+
+>>
+
+enveloped_operation_rettype(operation) ::= <<
+$if(operation.rettype)$
+	$if(operation.rettype.isType_c)$
+$operation.rettype.name$
+	$else$
+	$if(operation.rettype.primitive)$$envelopeJava.(operation.rettype.stType)$
+	$else$
+		$if(!operation.rettype.isType_f)$
+$operation.rettype.cppTypename$
+		$endif$
+	$endif$
+	$endif$
+$else$
+Void
+$endif$
+>>
+
+construct_operation_async(operation) ::= <<
+$if(operation.isOperation)$
+$if(!operation.oneway)$
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$AsyncCallback<$enveloped_operation_rettype(operation)$> callback);
+$endif$
+$endif$
+>>
+
+error_code(operation) ::= <<
+else {
+	String name = ser.deserializeString(bis, "");
+	$operation.exceptions : {ex |$error_code_else_blocks(ex)$}; separator="\n"$
+}
+>>
+
+error_code_else_blocks(ex) ::= <<
+if (name.equals("$ex.name$")) {
+	$ex.name$ exception = new $ex.name$();
+	exception.deserialize(ser, bis, "");
+	throw exception;
+}
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>

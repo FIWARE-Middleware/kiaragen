@@ -1,0 +1,152 @@
+// internal plugins
+plugins {
+    id "me.champeau.gradle.antlr4" version "0.1" // antlr4 community plugin.
+    id "com.bmuschko.nexus" version "2.1.1"
+}
+
+apply plugin: 'eclipse' // Eclipse integration
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'maven'
+
+
+
+mainClassName = hasProperty("mainClass") ? property("mainClass") : 'org.fiware.kiara.generator.kiaragen';
+
+//general properties
+version = '0.2.0'
+description = "KIARA Advanced Middleware IDL Code Generator"
+
+// java plugin properties (until antlr 4.4 we have to set this to 1.6)
+// (https://github.com/antlr/antlr4/issues/487)
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+// temporary fix until we can switch to sourceCompatibility=1.7+
+// (http://stackoverflow.com/a/20779740)
+tasks.withType(JavaCompile) {
+	options.bootClasspath = "$System.env.JAVA_HOME/jre/lib/rt.jar"
+}
+
+// maven-plugin properties
+group = 'org.fiware.kiara'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.antlr', name: 'antlr4', version:'4.2.2'
+    compile group: 'antlr', name: 'antlr', version:'2.7.7'
+    compile group: 'org.antlr', name: 'stringtemplate', version:'3.2'
+    testCompile group: 'junit', name: 'junit', version:'4.10'
+    compile group: 'org.fiware.kiara', name: 'kiaraparser', version: '0.2.0'
+}
+
+test {
+    testLogging {
+        events 'started', 'passed'
+    }
+}
+
+//task copyFiles(type: Copy) {
+//	into "build/classes/main/org/fiware/kiara/generator/idl/templates"
+//	from("src/main/java/org/fiware/kiara/generator/idl/templates") {
+//		include '*.stg'
+//	}
+//}
+
+jar() {
+    dependsOn configurations.runtime
+    baseName = 'kiaragen'
+    version = project.version
+    manifest {
+        attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
+    }
+}
+
+task cliJar(type: Jar) {
+    dependsOn configurations.runtime
+    baseName = 'kiaragen'
+    classifier = 'cli'
+    version = project.version
+    from (sourceSets.main.output) {
+        include "**"
+    }
+    from {
+        configurations.runtime.collect {
+          it.isDirectory() ? it : zipTree(it)
+        }
+
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    manifest {
+        attributes 'Main-Class': 'org.fiware.kiara.generator.kiaragen'
+    }
+}
+
+modifyPom {
+    project {
+        name 'KIARA Advanced Middleware'
+        artifactId 'kiaragen'
+        description project.description
+        url 'https://github.com/FIWARE-Middleware'
+        inceptionYear '2014'
+
+        scm {
+          connection 'scm:git:https://github.com/FIWARE-Middleware/kiaragen.git'
+          developerConnection 'scm:git:https://github.com/FIWARE-Middleware/kiaragen.git'
+          url 'https://github.com/FIWARE-Middleware/kiaragen.git'
+        }
+
+        licenses {
+          license {
+            name 'GNU Lesser General Public License, Version 3.0'
+            url 'https://www.gnu.org/licenses/lgpl.html'
+          }
+        }
+
+        developers {
+          developer {
+            id 'richiprosima'
+            name 'Riccardo Gonzalez'
+            email 'RicardoGonzalez@eprosima.com'
+          }
+          developer {
+            id 'RafaelLaraAlvarez'
+            name 'Rafael Lara Alvarez'
+            email 'RafaelLara@eprosima.com'
+          }
+          developer {
+            id 'dmrub'
+            name 'Dmitri Rubinstein'
+            email 'Dmitri.Rubinstein@dfki.de'
+          }
+          developer {
+            id 'mach'
+            name 'Christof Marti'
+            email 'mach@zhaw.ch'
+          }
+        }
+    }
+}
+
+artifacts {
+  archives cliJar
+}
+
+extraArchive {
+    sources = true
+    javadoc = true
+    tests = false
+}
+
+nexus {
+    sign = true
+    // To upload to OSSRH comment/remove the following urls
+    //repositoryUrl = "file:$buildDir/repos/"
+    //snapshotRepositoryUrl = "file:$buildDir/repos/"
+}

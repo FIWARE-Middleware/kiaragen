@@ -1,0 +1,113 @@
+group KIARAClientExample;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[, "ClientExample.java"], description=["This file contains the main client code example."])$
+package $ctx.javaPackage$;
+
+import org.fiware.kiara.client.Connection;
+import org.fiware.kiara.Context;
+import org.fiware.kiara.Kiara;
+import org.fiware.kiara.serialization.Serializer;
+import org.fiware.kiara.transport.Transport;
+
+/**
+ * Class that acts as the main client entry point. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public class ClientExample {
+	public static void main (String [] args) throws Exception {
+		System.out.println("$ctx.currentIfz.name$ClientExample");
+		
+			// Initialize your data here
+		
+		$first(first(ctx.scopedInterfaces).operations).inputparam : {param |$if(param.typecode.isType_a)$$param.typecode.cppTypename$ $param.name$ = new $param.typecode.cppTypename$();
+		
+		$else$$if(param.typecode.isType_b)$$param.typecode.cppTypename$ $param.name$ = new $param.typecode.cppTypename$();
+		$else$$param.typecode.cppTypename$ $param.name$ = $initJava.(param.typecode.stType)$;
+		$endif$
+		$endif$
+		}; separator="\n"$
+		$if(first(first(ctx.scopedInterfaces).operations).rettype)$
+		$if(first(first(ctx.scopedInterfaces).operations).rettype.isType_b)$
+		$first(first(ctx.scopedInterfaces).operations).rettype.cppTypename$ ret = new $first(first(ctx.scopedInterfaces).operations).rettype.cppTypename$();
+		$else$
+		$first(first(ctx.scopedInterfaces).operations).rettype.cppTypename$ ret = $initJava.(first(first(ctx.scopedInterfaces).operations).rettype.stType)$;
+		$endif$
+		$endif$
+		
+		Context context = Kiara.createContext();
+		
+		Connection connection = context.connect("tcp://127.0.0.1:9090?serialization=cdr");
+		$first(ctx.scopedInterfaces).name$ client = connection.getServiceProxy($first(ctx.scopedInterfaces).name$Client.class);
+		
+		try {
+			$if(first(first(ctx.scopedInterfaces).operations).rettype)$
+			ret = client.$first(first(ctx.scopedInterfaces).operations).name$($first(first(ctx.scopedInterfaces).operations).inputparam : {param |$param.name$}; separator=", "$);
+				
+			// Print or check the operation result here
+				
+			$else$
+			client.$first(first(ctx.scopedInterfaces).operations).name$($first(first(ctx.scopedInterfaces).operations).inputparam : {param |$param.name$}; separator=", "$);
+			$endif$
+		}
+		$if(first(first(ctx.scopedInterfaces).operations).exceptions)$
+		$first(first(ctx.scopedInterfaces).operations).exceptions : {exception |$print_exception(exception)$}; separator="\n"$
+		$endif$
+		catch (Exception ex) {
+			System.out.println("Exception: " + ex.getMessage());
+			return;
+		}
+		
+		Kiara.shutdown();
+		
+	}
+}
+
+>>
+
+print_exception(exception) ::= <<
+catch ($exception.name$ ex) {
+	System.out.println("Exception: " + ex.getMessage());
+	return;
+}
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<
+public $paramRetType(operation.rettype)$ $operation.name$ ($javaParams(params=operation.parameters)$); 
+>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

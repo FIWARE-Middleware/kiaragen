@@ -1,0 +1,227 @@
+group KIARASerialization;
+
+decl(type, name, value) ::= <<
+$type$ $name$ = $value$
+>>
+
+normalizedIdlTypeMap ::= [
+        "float" : "float32",
+        "float32" : "float32",
+        "double" : "float64",
+        "float64" : "float64",
+        "long double" : "float128",
+        "float128" : "float128",
+        "wchar" : "wchar",
+        "char" : "char",
+        "octet" : "byte",
+        "byte" : "byte",
+        "short" : "i16",
+        "i16"  : "i16",
+        "unsigned short" : "ui16",
+        "ui16" : "ui16",
+        "long" : "i32",
+        "i32" : "i32",
+        "unsigned long" : "ui32",
+        "ui32" : "ui32",
+        "long long" : "i64",
+        "i64" : "i64",
+        "unsigned long long" : "ui64",
+        "ui64" : "ui64",
+        "string" : "string",
+        "boolean" : "boolean",
+        default: // not an IDL type
+]
+
+idlToJavaTypeMap ::= [
+        "float32" : "float",
+        "float64" : "double",
+        "wchar" : "char",
+        "char" : "char",
+        "byte" : "byte",
+        "i16"  : "short",
+        "ui16" : "short",
+        "i32" : "int",
+        "ui32" : "int",
+        "i64" : "long",
+        "ui64" : "long",
+        "string" : "java.lang.String",
+        "boolean" : "boolean",
+        default: // not an IDL type
+]
+
+idlTypeSerializerMap ::= [
+        "float32" : "serializeFloat32",
+        "float64" : "serializeFloat64",
+        "char" : "serializeChar",
+        "wchar" : "serializeChar",
+        "byte" : "serializeByte",
+        "i16"  : "serializeI16",
+        "ui16" : "serializeUI16",
+        "i32" : "serializeI32",
+        "ui32" : "serializeUI32",
+        "i64" : "serializeI64",
+        "ui64" : "serializeUI64",
+        "boolean" : "serializeBoolean",
+        "string" : "serializeString",
+        default: "Invalid IDL Type" // not an IDL type
+]
+
+idlTypeDeserializerMap ::= [
+        "float32" : "deserializeFloat32",
+        "float64" : "deserializeFloat64",
+        "char" : "deserializeChar",
+        "wchar" : "deserializeChar",
+        "byte" : "deserializeByte",
+        "i16"  : "deserializeI16",
+        "ui16" : "deserializeUI16",
+        "i32" : "deserializeI32",
+        "ui32" : "deserializeUI32",
+        "i64" : "deserializeI64",
+        "ui64" : "deserializeUI64",
+        "boolean" : "deserializeBoolean",
+        "string" : "deserializeString",
+        default: "Invalid IDL Type" // not an IDL type
+]
+
+boxedJavaTypeMap ::= [
+    "char" : "Character",
+    "byte" : "Byte",
+    "short" : "Short",
+    "int" : "Integer",
+    "long" : "Long",
+    "float" : "Float",
+    "double" : "Double",
+    "boolean" : "Boolean",
+    "java.lang.String" : "java.lang.String",
+    "void" : "Void",
+    default: "Void"
+]
+
+idlTypeToSuffixMap ::= [
+        "float32" : "Float32",
+        "float64" : "Float64",
+        "char" : "Char",
+        "wchar" : "WChar",
+        "byte" : "Byte",
+        "i16"  : "I16",
+        "ui16" : "UI16",
+        "i32" : "I32",
+        "ui32" : "UI32",
+        "i64" : "I64",
+        "ui64" : "UI64",
+        "boolean" : "Boolean",
+        "string" : "String",
+        default : "Invalid IDL Type" // not an IDL type
+]
+
+javaTypeToSuffixMap ::= [
+    "char" : "Char",
+    "byte" : "Byte",
+    "short" : "Short",
+    "int" : "Int",
+    "long" : "Long",
+    "float" : "Float",
+    "double" : "Double",
+    "boolean" : "Boolean",
+    "java.lang.String" : "String",
+    "String" : "String",
+    "void" : "Void",
+    default: ""
+]
+
+idlToJavaType(idlTypeName) ::= <<$idlToJavaTypeMap.(normalizedIdlTypeMap.(idlTypeName))$>>
+idlToBoxedJavaType(idlTypeName) ::= <<$boxedJavaTypeMap.(idlToJavaType(idlTypeName))$>>
+idlTypeToSuffix(idlTypeName) ::= <<$idlTypeToSuffixMap.(normalizedIdlTypeMap.(idlTypeName))$>>
+idlTypeSerializer(idlTypeName) ::= <<$idlTypeSerializerMap.(normalizedIdlTypeMap.(idlTypeName))$>>
+idlTypeDeserializer(idlTypeName) ::= <<$idlTypeDeserializerMap.(normalizedIdlTypeMap.(idlTypeName))$>>
+idlTypeToJavaTypeSuffix(idlTypeName) ::= <<$javaTypeToSuffixMap.(idlToJavaType(idlTypeName))$>>
+
+main(idlTypes) ::= <<
+package org.fiware.kiara.serialization.impl;
+
+import java.io.IOException;
+
+public class BasicSerializers {
+    $idlTypes: {idlType | $primitiveSerializerClass(idlType)$}; separator="\n"$
+    $idlTypes: {idlType | $arrayAsSequenceSerializerClass(idlType)$}; separator="\n"$
+    $idlTypes: {idlType | $arrayAsArraySerializerClass(idlType)$}; separator="\n"$
+}
+
+>>
+
+primitiveSerializerClass(idlTypeName) ::= <<
+
+public static class $idlTypeToSuffix(idlTypeName)$Serializer implements org.fiware.kiara.serialization.impl.Serializer<$idlToBoxedJavaType(idlTypeName)$> {
+
+    @Override
+    public void write(SerializerImpl impl, BinaryOutputStream message, String name, $idlToBoxedJavaType(idlTypeName)$ value) throws IOException {
+        impl.$idlTypeSerializer(idlTypeName)$(message, name, value);
+    }
+
+    @Override
+    public $idlToBoxedJavaType(idlTypeName)$ read(SerializerImpl impl, BinaryInputStream message, String name) throws IOException {
+        return impl.$idlTypeDeserializer(idlTypeName)$(message, name);
+    }
+}
+>>
+
+arrayAsSequenceSerializerClass(idlTypeName) ::= <<
+
+public static class ArrayAs$idlTypeToSuffix(idlTypeName)$SequenceSerializer implements Serializer<$idlToJavaType(idlTypeName)$[]> {
+
+    @Override
+    public void write(SerializerImpl impl, BinaryOutputStream message, String name, $idlToJavaType(idlTypeName)$[] array) throws IOException {
+        impl.serializeSequenceBegin(message, name);
+        impl.serializeI32(message, "", array.length);
+        for (int i = 0; i < array.length; ++i) {
+            impl.$idlTypeSerializer(idlTypeName)$(message, name, array[i]);
+        }
+        impl.serializeSequenceEnd(message, name);
+    }
+
+    @Override
+    public $idlToJavaType(idlTypeName)$[] read(SerializerImpl impl, BinaryInputStream message, String name) throws IOException {
+        impl.deserializeSequenceBegin(message, name);
+        int length = impl.deserializeI32(message, "");
+        $idlToJavaType(idlTypeName)$[] array = new $idlToJavaType(idlTypeName)$[length];
+        for (int i = 0; i < length; ++i) {
+            array[i] = impl.$idlTypeDeserializer(idlTypeName)$(message, name);
+        }
+        impl.deserializeSequenceEnd(message, name);
+        return array;
+    }
+}
+>>
+
+arrayAsArraySerializerClass(idlTypeName) ::= <<
+
+public static class ArrayAs$idlTypeToSuffix(idlTypeName)$ArraySerializer implements Serializer<$idlToJavaType(idlTypeName)$[]> {
+
+    private final int arrayDim;
+
+    public ArrayAs$idlTypeToSuffix(idlTypeName)$ArraySerializer(int arrayDim) {
+        this.arrayDim = arrayDim;
+    }
+
+    @Override
+    public void write(SerializerImpl impl, BinaryOutputStream message, String name, $idlToJavaType(idlTypeName)$[] array) throws IOException {
+        impl.serializeArrayBegin(message, name, arrayDim);
+        impl.serializeI32(message, "", array.length);
+        for (int i = 0; i < array.length; ++i) {
+            impl.$idlTypeSerializer(idlTypeName)$(message, name, array[i]);
+        }
+        impl.serializeArrayEnd(message, name);
+    }
+
+    @Override
+    public $idlToJavaType(idlTypeName)$[] read(SerializerImpl impl, BinaryInputStream message, String name) throws IOException {
+        impl.deserializeArrayBegin(message, name);
+        final $idlToJavaType(idlTypeName)$[] array = new $idlToJavaType(idlTypeName)$[arrayDim];
+        for (int i = 0; i < arrayDim; ++i) {
+            array[i] = impl.$idlTypeDeserializer(idlTypeName)$(message, name);
+        }
+        impl.deserializeArrayEnd(message, name);
+        return array;
+    }
+}
+>>

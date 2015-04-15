@@ -1,0 +1,245 @@
+group KIARAProxy;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, "Proxy.java"], description=["This file contains the proxy implementation."])$
+package $ctx.javaPackage$;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import java.io.IOException;
+
+import org.fiware.kiara.netty.TransportMessageDispatcher;
+import org.fiware.kiara.serialization.Serializer;
+import org.fiware.kiara.transport.Transport;
+import org.fiware.kiara.transport.impl.TransportMessage;
+
+import org.fiware.kiara.serialization.impl.BinaryInputStream;
+import org.fiware.kiara.serialization.impl.BinaryOutputStream;
+import org.fiware.kiara.client.AsyncCallback;
+
+/**
+ * Class containing the proxy implementation for all the services. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+class $ctx.currentIfz.name$Proxy implements $ctx.currentIfz.name$Client {
+
+    public static final String serviceName = "$ctx.currentIfz.scopedname$";
+
+	public $ctx.currentIfz.name$Proxy(Serializer ser, Transport transport) {
+		m_ser = (org.fiware.kiara.serialization.impl.SerializerImpl) ser;
+		m_transport = (org.fiware.kiara.transport.impl.TransportImpl) transport;
+	}
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation(operation)$}; separator="\n"$
+	
+	$ctx.currentIfz.operations : {operation |$proxy_operation_async(operation)$}; separator="\n"$
+	
+	private org.fiware.kiara.serialization.impl.SerializerImpl m_ser = null;
+    private org.fiware.kiara.transport.impl.TransportImpl m_transport = null;
+    
+    
+}
+
+>>
+
+proxy_operation_required_size(ctx, operation) ::= <<
+
+$if(operation.isOperation)$
+private int $operation.name$_required_size() {
+	int op_size = 0;
+	
+	op_size += 4 + CDRSerializer.alignment(op_size, Integer.SIZE); // MessageID
+	op_size += 4 + CDRSerializer.alignment(op_size, 4) + "$ctx.currentIfz.name$".length() + 1; // Interface name
+	op_size += 4 + CDRSerializer.alignment(op_size, 4) + "$operation.name$".length() + 1; // Operation name
+	$operation.inputparam : {param | $max_serialized_size(ctx=ctx, typecode=param.typecode, var="op_size", name=param.name)$}; separator="\n"$
+	
+	return op_size;
+}
+$endif$
+
+>>
+
+proxy_operation(operation) ::= <<
+$if(operation.isOperation)$
+$if(operation.rettype)$
+@Override
+public $operation.rettype.cppTypename$ $operation.name$($javaParams(params=operation.parameters)$)$if(operation.exceptions)$ throws $operation.exceptions :{ex |$ex.name$}; separator=", "$ $endif$ {
+$else$
+@Override
+public void $operation.name$($javaParams(params=operation.parameters)$)$if(operation.exceptions)$ throws $operation.exceptions :{ex |$ex.name$}; separator=", "$ $endif$ {
+$endif$
+	
+	if (m_ser != null && m_transport != null) {
+		final BinaryOutputStream bos = new BinaryOutputStream();
+		final TransportMessage trequest = m_transport.createTransportMessage(null);
+        
+        final Object messageId = m_ser.getNewMessageId();
+		try {
+            m_ser.serializeMessageId(bos, messageId);
+          
+            m_ser.serializeService(bos, "$ctx.currentIfz.scopedname$");
+            m_ser.serializeOperation(bos, "$operation.name$");
+            $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+		trequest.setPayload(bos.getByteBuffer());
+		
+		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
+        m_transport.send(trequest);
+        
+        try {
+        	TransportMessage tresponse = dispatcher.get();
+        	if (tresponse != null && tresponse.getPayload() != null) {
+                final BinaryInputStream bis = BinaryInputStream.fromByteBuffer(tresponse.getPayload());
+        		
+        		// Deserialize response message ID
+        		final Object responseMessageId = m_ser.deserializeMessageId(bis);
+        		
+        		// Deserialize return code (0 = OK, anything else = WRONG)
+        		int retCode = m_ser.deserializeUI32(bis, "");
+        		if (retCode == 0) { // Function execution was OK.
+        			$if(operation.rettype)$
+					$operation.rettype.cppTypename$ ret = m_ser.$deserializeJava.(operation.rettype.stType)$(bis, ""$if(!operation.rettype.primitive)$
+					$if(!operation.rettype.isType_d)$
+						$if(!operation.rettype.isType_e)$
+							$if(!operation.rettype.isType_f)$
+	, $operation.rettype.cppTypename$.class
+							$endif$
+						$endif$
+					$endif$
+				$else$
+				$if(operation.rettype.isType_c)$
+	, $operation.rettype.cppTypename$.class
+				$endif$
+				$endif$);
+					return ret;
+					$else$
+					return;
+					$endif$
+	            }$if(operation.exceptions)$ else {$\n$
+	    			String name = m_ser.deserializeString(bis, "");
+	        $operation.exceptions : {ex |
+	        if (name.equals("$ex.name$")) {
+	        	$ex.name$ exception = new $ex.name$();
+	        	exception.deserialize(m_ser, bis, "");
+	        	throw exception;
+	        }}; separator="\n"$
+	        	}$endif$
+				
+			}
+        } 
+        $operation.exceptions : {exception |$catch_blocks(exception)$}; separator="\n"$
+        catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+		
+	}
+	
+	$if(operation.rettype)$
+	$if(operation.rettype.isType_b)$
+	return null;
+	$else$
+	return $initJava.(operation.rettype.stType)$;
+	$endif$
+	$else$
+	return;
+	$endif$
+}
+
+$endif$
+
+>>
+
+catch_blocks(exception) ::= <<
+catch ($exception.name$ ex) {
+	throw ex;
+}
+>>
+
+proxy_operation_async(operation) ::= <<
+$if(!operation.oneway)$
+$if(operation.isOperation)$
+@Override
+public void $operation.name$($javaParams(params=operation.parameters)$$if(!operation.parameters.empty)$, $endif$final AsyncCallback<$enveloped_operation_rettype(operation)$> callback) {
+	
+	if (m_ser != null && m_transport != null) {
+		final BinaryOutputStream bos = new BinaryOutputStream();
+		final TransportMessage trequest = m_transport.createTransportMessage(null);
+        
+        final Object messageId = m_ser.getNewMessageId();
+        try {
+            m_ser.serializeMessageId(bos, messageId);   
+            m_ser.serializeService(bos, "$ctx.currentIfz.scopedname$");
+            m_ser.serializeOperation(bos, "$operation.name$");
+            $operation.inputparam : {param |m_ser.$serializeJava.(param.typecode.stType)$(bos, "", $param.name$);}; separator="\n"$
+        } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+        }
+		trequest.setPayload(bos.getByteBuffer());
+		
+		final TransportMessageDispatcher dispatcher = new TransportMessageDispatcher(messageId, m_ser, m_transport);
+				
+		
+		Futures.addCallback(dispatcher, new FutureCallback<TransportMessage> () {
+
+                @Override
+                public void onSuccess(TransportMessage result) {
+                    $ctx.currentIfz.name$Process.$operation.name$_processAsync(result, m_ser, callback);
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    callback.onFailure(t);
+                }
+
+		}); 
+			
+		m_transport.send(trequest);
+        
+	}
+	
+	return;
+}
+
+$endif$
+$endif$
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+

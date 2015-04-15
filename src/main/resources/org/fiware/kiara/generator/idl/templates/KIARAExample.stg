@@ -1,0 +1,57 @@
+group KIARAExample;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the main synchronous interface for the defined operations."])$
+package $ctx.javaPackage$;
+
+/**
+ * Interface containing the synchronous method definition. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public interface $ctx.currentIfz.name$ {
+
+	$ctx.currentIfz.operations : {op |public $paramRetType(op.rettype)$ $op.name$ ($javaParams(params=op.parameters)$)$if(op.exceptions)$ throws $op.exceptions :{ex |$ex.name$}; separator=", "$ $endif$;}; separator="\n\n"$
+	
+}
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

@@ -1,0 +1,91 @@
+/*************************************************************************
+ * Copyright (c) 2013 eProsima. All rights reserved.
+ *
+ * This copy of FastBuffers is licensed to you under the terms described in the
+ * FAST_BUFFERS_LICENSE file included in this distribution.
+ *
+ *************************************************************************/
+
+group Types;
+
+type_5() ::= <<float>>
+
+type_6() ::= <<double>>
+
+type_13() ::= <<double>>
+
+type_1() ::= <<short>>
+
+type_2() ::= <<int>>
+
+type_11() ::= <<long>>
+
+type_3() ::= <<short>>
+
+type_4() ::= <<int>>
+
+type_12() ::= <<long>>
+
+type_8() ::= <<char>>
+
+type_14() ::= <<chat>>
+
+type_7() ::= <<boolean>>
+
+type_9() ::= <<byte>>
+
+type_d() ::= <<java.lang.String>>
+
+type_15() ::= <<java.lang.String>>
+
+type_18(type, maxsize) ::= <<Set<$envelopeJava.(type)$\>>>
+
+type_19(key, value, maxsize) ::= <<Map<$envelopeJava.(key)$, $envelopeJava.(value)$\>>>
+
+type_f_first(prev) ::= <<$prev$List<>>
+type_f_second(prev, size) ::= <<$prev$\>>>
+type_f(firs, secon, type) ::= <<$firs$$envelopeJava.(type)$$secon$>>
+
+type_a(name) ::= <<$name$>>
+
+type_b(name) ::= <<$name$>>
+
+type_c(name) ::= <<$name$>>
+
+type_10(name) ::= <<$name$>>
+
+// TODO Para que sirve empty en FastBuffers?
+type_e(type, maxsize, empty) ::= <<List<$envelopeJava.(type)$\>>>
+
+initialValues ::= [
+        "type_d":"\"\"",
+        "type_15":"\"\"",
+        default: // not basic type.
+]
+
+envelopeJava ::= [
+		"short":"Short",
+		"int":"Integer",
+		"short":"Short",
+		"int":"Integer",
+		"float":"Float",
+		"double":"Double",
+		"boolean":"Boolean",
+		"char":"Character",
+		"byte":"Byte",
+		"type_10":"undefined",
+		"long":"Long",
+		"long":"Long",
+		"long":"Long",
+		"char":"Character",
+		"java.lang.String":"java.lang.String",
+		"type_a":"undefined",
+		"type_b":"undefined",
+		"type_c":"undefined",
+		"java.lang.String":"java.lang.String",
+        "type_e":"undefined",
+        "type_f_first":"undefined",
+        "type_f_second":"undefined",
+        "type_f":"undefined",
+        default: "Void"
+]

@@ -26,6 +26,6 @@ if not %ERRORLEVEL%==0 (
    )
 )
 
-%java_exec% -jar "%dir%\..\kiaragen\kiaragen-0.1.0.jar" %args%
+%java_exec% -jar "%dir%\..\kiaragen\kiaragen-0.2.0-cli.jar" %args%
 
 

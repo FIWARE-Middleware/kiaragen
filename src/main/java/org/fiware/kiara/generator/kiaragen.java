@@ -603,9 +603,9 @@ public class kiaragen {
 						}
 						
 						System.out.print("Generating GRADLE compilation script... ");
-						/*if (returnedValue = Utils.writeFile(m_outputDir + "build.gradle", maintemplates.getTemplate("KIARAExampleGradle"), m_replace)) {
+						if (returnedValue = Utils.writeFile(m_outputDir + "build.gradle", maintemplates.getTemplate("KIARAExampleGradle"), m_replace)) {
 							System.out.println("OK");
-						}*/
+						}
 					}
 				}
 			}

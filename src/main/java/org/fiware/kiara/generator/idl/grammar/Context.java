@@ -152,6 +152,25 @@ public class Context extends com.eprosima.idl.context.Context
     {
         return m_randomGenNames.pop();
     }
+    
+    private boolean m_RPC = false;
+    private boolean m_PS = false;
+    
+    public boolean isRPC() {
+    	return this.m_RPC;
+    }
+    
+    public void setRPC(boolean rpc) {
+    	this.m_RPC = rpc;
+    }
+    
+    public boolean isPS() {
+    	return this.m_PS;
+    }
+    
+    public void setPS(boolean ps) {
+    	this.m_PS = ps;
+    }
 
     private String m_typelimitation = null;
     

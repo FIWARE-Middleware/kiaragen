@@ -63,64 +63,67 @@ import org.fiware.kiara.generator.idl.grammar.Context;
 import org.fiware.kiara.generator.util.Utils;
 
 /**
-*
-* @author Rafael Lara {@literal <rafaellara@eprosima.com>}
-*/
+ *
+ * @author Rafael Lara {@literal <rafaellara@eprosima.com>}
+ */
 public class kiaragen {
-	
+
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Attributes
 	 */
-	
+
 	private static ArrayList<String> m_platforms = null;
-	
+
 	private Vector<String> m_idlFiles;
 	protected static String m_appEnv = "EPROSIMARTPSHOME";
 	private String m_exampleOption = null;
 	private String m_languageOption = "Java";
-    private boolean m_ppDisable = false; 
-    private boolean m_replace = false;
-    private String m_ppPath = null;
-    private final String m_defaultOutputDir = "." + File.separator;
-    private String m_outputDir = m_defaultOutputDir;
-    private String m_tempDir = null;
-    protected static String m_appName = "kiaragen";
-    
-    private boolean m_publishercode = true;
-    private boolean m_subscribercode = true;
-    protected static String m_localAppProduct = "Kiara";
+	private boolean m_ppDisable = false; 
+	private boolean m_replace = false;
+	private String m_ppPath = null;
+	private final String m_defaultOutputDir = "." + File.separator;
+	private String m_outputDir = m_defaultOutputDir;
+	private String m_tempDir = null;
+	protected static String m_appName = "kiaragen";
 
-    private ArrayList<String> m_includePaths = new ArrayList<String>();
+	private boolean rpcExample = false;
+	private boolean psExample = false;
 
-    private String m_os = null;
-    private String m_package = "main.java";
-    private String m_javaPackage = "";
-    
-    private boolean packageParsed = false;
-	
+	private boolean m_publishercode = true;
+	private boolean m_subscribercode = true;
+	protected static String m_localAppProduct = "Kiara";
+
+	private ArrayList<String> m_includePaths = new ArrayList<String>();
+
+	private String m_os = null;
+	private String m_package = "main.java";
+	private String m_javaPackage = "";
+
+	private boolean packageParsed = false;
+
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Constructor
 	 */
-	
+
 	public kiaragen(String [] args) throws BadArgumentException {
-		
+
 		int count = 0;
 		String arg;
-		
+
 		// Detect OS
 		m_os = System.getProperty("os.name");
-		
+
 		m_idlFiles = new Vector<String>();
-		
+
 		// Check arguments
 		while (count < args.length) {
-			
+
 			arg = args[count++];
-			
+
 			if (!arg.startsWith("-")) {
 				m_idlFiles.add(arg);
 			} else if (arg.equals("-example")) {
@@ -165,88 +168,88 @@ public class kiaragen {
 			} else { 
 				throw new BadArgumentException("Unknown argument " + arg);
 			}
-			
+
 		}
-		
+
 		if (m_idlFiles.isEmpty()) {
 			throw new BadArgumentException("No input files given");
 		}
-		
+
 	}
-	
+
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Listener classes
 	 */
-	
-	class TemplateErrorListener implements StringTemplateErrorListener
-    {  
-        public void error(String arg0, Throwable arg1)
-        {
-            System.out.println(ColorMessage.error() + arg0);
-            arg1.printStackTrace();
-        }
 
-        public void warning(String arg0)
-        {
-            System.out.println(ColorMessage.warning() + arg0);   
-        }   
-    }
-	
+	class TemplateErrorListener implements StringTemplateErrorListener
+	{  
+		public void error(String arg0, Throwable arg1)
+		{
+			System.out.println(ColorMessage.error() + arg0);
+			arg1.printStackTrace();
+		}
+
+		public void warning(String arg0)
+		{
+			System.out.println(ColorMessage.warning() + arg0);   
+		}   
+	}
+
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Main methods
 	 */
-	
+
 	public boolean execute() {
-		
-	
+
+
 		if (!m_outputDir.equals(m_defaultOutputDir)) {
 			File dir = new File(m_outputDir);
-			
+
 			if (!dir.exists()) {
 				System.out.println(ColorMessage.error() + "The specified output directory does not exist");
 				return false;
 			}
 		}
-		
+
 		boolean returnedValue = globalInit();
-		
+
 		if (returnedValue) {
-			
+
 			// Load string templates
 			System.out.println("Loading templates...");
 			TemplateManager.setGroupLoaderDirectories("org/fiware/kiara/generator/idl/templates");
-			
+
 			//System.out.println(this.getClass().getCanonicalName());
 			//System.out.println(Context.class.getCanonicalName());
-			
+
 			for (int count = 0; returnedValue && (count < m_idlFiles.size()); ++count) {
 				boolean result = process(m_idlFiles.get(count));
-				
+
 				if (result) {
 					returnedValue = result;
 				} else {
 					returnedValue = false;
 				}
 			}
-			
+
 		}
-		
+
 		return returnedValue;
-		
+
 	}
-	
+
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Auxiliary methods
 	 */
-	
+
 	private void parsePackage() {
-		
+
 		if (!packageParsed) {
 			StringBuffer sbjava = new StringBuffer("");
 			String path[] = this.m_package.split("\\.");
@@ -264,41 +267,41 @@ public class kiaragen {
 				sbjava.append(s);
 			}
 			sb.append(File.separator);
-			
+
 			this.m_package = sb.toString();
 			this.m_javaPackage = sbjava.toString();
 			this.packageParsed = true;
 		}
 	}
-	
+
 	public static void printHelp()
-    {
-        System.out.println(m_appName + " usage:");
-        System.out.println("\t" + m_appName + " [options] <file> [<file> ...]");
-        System.out.println("\twhere the options are:");
-        System.out.println("\t\t-help: shows this help");
-        System.out.println("\t\t-version: shows the current version of KIARAGEN");
+	{
+		System.out.println(m_appName + " usage:");
+		System.out.println("\t" + m_appName + " [options] <file> [<file> ...]");
+		System.out.println("\twhere the options are:");
+		System.out.println("\t\t-help: shows this help");
+		System.out.println("\t\t-version: shows the current version of KIARAGEN");
 		System.out.println("\t\t-example <platform>: Generates a solution for a specific platform.");
-        System.out.println("\t\t\tSupported platforms:");
-        for(int count = 0; count < m_platforms.size(); ++count)
-            System.out.println("\t\t\t * " + m_platforms.get(count));
-        System.out.println("\t\t-replace: replaces existing generated files.");
-        System.out.println("\t\t-package: modifies the output Java files package (by default is set to main.java).");
-        System.out.println("\t\t-ppDisable: disables the preprocessor.");
-        System.out.println("\t\t-ppPath: specifies the preprocessor path.");
-        System.out.println("\t\t-d <path>: sets an output directory for generated files.");
+		System.out.println("\t\t\tSupported platforms:");
+		for(int count = 0; count < m_platforms.size(); ++count)
+			System.out.println("\t\t\t * " + m_platforms.get(count));
+		System.out.println("\t\t-replace: replaces existing generated files.");
+		System.out.println("\t\t-package: modifies the output Java files package (by default is set to main.java).");
+		System.out.println("\t\t-ppDisable: disables the preprocessor.");
+		System.out.println("\t\t-ppPath: specifies the preprocessor path.");
+		System.out.println("\t\t-d <path>: sets an output directory for generated files.");
 		System.out.println("\t\t-t <temp dir>: sets a specific directory as a temporary directory.");
-        System.out.println("\tand the supported input files are:");
-        System.out.println("\t* IDL files.");
-        
-    }
-	
+		System.out.println("\tand the supported input files are:");
+		System.out.println("\t* IDL files.");
+
+	}
+
 	public boolean globalInit() {
 		// Set the temporary folder
 		if (m_tempDir == null) {
 			if (m_os.contains("Windows")) {
 				String tempPath = System.getenv("TEMP");
-				
+
 				if (tempPath == null) {
 					tempPath = System.getenv("TMP");
 				}
@@ -308,18 +311,18 @@ public class kiaragen {
 				m_tempDir = "/tmp/";
 			}
 		}
-		
+
 		if (m_tempDir.charAt(m_tempDir.length() - 1) != File.separatorChar) {
 			m_tempDir += File.separator;
 		}
-		
+
 		return true;
 	}
-	
+
 	private boolean process(String idlFilename) {
-		
+
 		System.out.println("Processing the file " + idlFilename + "...");
-		
+
 		try {
 			// Protocol CDR
 			parseIDLtoCDR(idlFilename); 
@@ -330,34 +333,34 @@ public class kiaragen {
 				System.out.println(ioe.getMessage());
 			}
 		} 
-		
+
 		return false;
-		
+
 	}
-	
+
 	private void parseIDLtoCDR(String idlFilename) {
 		boolean returnedValue = false;
 		String idlParseFileName = idlFilename;
 		String onlyFileName = Util.getIDLFileNameOnly(idlFilename);
-		
+
 		if (idlFilename.startsWith("."+File.separator) || idlFilename.startsWith("./") || idlFilename.startsWith("./")) {
 			idlFilename = idlFilename.substring(2, idlFilename.length());
 		}
-		
+
 		if (!m_ppDisable) {
 			idlParseFileName = callPreprocessor(idlFilename);
 		}
-		
+
 		if (idlParseFileName != null) {
-			
+
 			this.parsePackage();
 
-                        String idlText = "";
-                        try {
-                            idlText = Utils.readFile(idlParseFileName);
-                        } catch (IOException ex) {
-                            System.out.println(ColorMessage.error("IOException") + "Could not read file " + idlParseFileName + ".");
-                        }
+			String idlText = "";
+			try {
+				idlText = Utils.readFile(idlParseFileName);
+			} catch (IOException ex) {
+				System.out.println(ColorMessage.error("IOException") + "Could not read file " + idlParseFileName + ".");
+			}
 
 			Context ctx = new Context(onlyFileName, idlFilename, idlText, m_includePaths, m_subscribercode, m_publishercode, m_localAppProduct, m_javaPackage);
 
@@ -365,22 +368,22 @@ public class kiaragen {
 			TemplateManager tmanager = new TemplateManager("eprosima:Common:KIARAClassCommon");
 
 			tmanager.changeCppTypesTemplateGroup("JavaTypes");
-			
+
 			// Load Gradle file template
 			tmanager.addGroup("KIARAExampleGradle");
-			
+
 			// Load ServerExample template
 			tmanager.addGroup("KIARAServerExample");
-			
+
 			// Load ServantExample template
 			tmanager.addGroup("KIARAServantExample");
-			
+
 			// Load Servant template
 			tmanager.addGroup("KIARAServant");
-			
+
 			// Load Servant template
 			tmanager.addGroup("KIARAExample");
-			
+
 			// Load Servant template
 			tmanager.addGroup("KIARAExampleAsync");
 
@@ -392,24 +395,33 @@ public class kiaragen {
 
 			// Load Servant template
 			tmanager.addGroup("KIARAProxy");
-			
+
 			// Load Servant template
 			tmanager.addGroup("KIARAClientExample");
-			
+
 			// Load Support class template
 			tmanager.addGroup("KIARAStructSupportType");
-			
+
 			// Load Support class template
 			tmanager.addGroup("KIARAUnionSupportType");
-			
+
 			// Load Support class template
 			tmanager.addGroup("KIARAEnumSupportType");
-			
+
 			// Load Support class template
 			tmanager.addGroup("KIARAExceptionSupportType");
 
-            // Load IDL text template
-            tmanager.addGroup("KIARAIDLText");
+			// Load IDL text template
+			tmanager.addGroup("KIARAIDLText");
+			
+			// Load Topic type template
+			tmanager.addGroup("KIARAStructSupportTopic");
+			
+			// Load Publisher example template
+			tmanager.addGroup("KIARAPublisherExample");
+			
+			// Load Subscriber example template
+			tmanager.addGroup("KIARASubscriberExample");
 
 			// Create main template
 			TemplateGroup maintemplates = tmanager.createTemplateGroup("main");
@@ -426,7 +438,7 @@ public class kiaragen {
 				// Pass the finelame without the extension
 				Specification specification = parser.specification(ctx, tmanager, maintemplates).spec;
 				returnedValue = specification != null;
-				
+
 			} catch (FileNotFoundException ex) {
 				System.out.println(ColorMessage.error("FileNotFoundException") + "The File " + idlParseFileName + " was not found.");
 			} catch(ParseCancellationException ex) {
@@ -436,14 +448,14 @@ public class kiaragen {
 				System.out.println("");
 			} catch (ParseException ex) { 
 				System.out.println(ColorMessage.error("ParseException") + ex.getMessage());
-		    } catch (RecognitionException ex) { 
+			} catch (RecognitionException ex) { 
 				System.out.println(ColorMessage.error("RecognitionException") + ex.getMessage());
-		    } catch (Exception ex) {
+			} catch (Exception ex) {
 				System.out.println(ColorMessage.error("Exception") + ex.getMessage());
 			}
-			
+
 			if (returnedValue) {
-				
+
 				System.out.print("Creating destination source directory... ");
 				if (Utils.createSrcDir(m_package)) {
 					System.out.println("OK");
@@ -452,8 +464,16 @@ public class kiaragen {
 					System.exit(0);
 				}
 				
+				if (m_exampleOption != null) {
+					if (m_exampleOption.equals("rpc")) {
+						ctx.setRPC(true);
+					} else if (m_exampleOption.equals("ps")) {
+						ctx.setPS(true);
+					}
+				}
+
 				System.out.println("Generating Type support classes... ");
-				
+
 				for (Definition definition: ctx.getDefinitions()) {
 					// Check if it is a structure
 					if (definition.isIsTypeDeclaration()) {
@@ -464,6 +484,11 @@ public class kiaragen {
 							ctx.setCurrentSt(st);
 							System.out.print("Generating Type support class for structure " + st.getName() +"... ");
 							if (returnedValue = Utils.writeFile(this.m_package + st.getName() + ".java", maintemplates.getTemplate("KIARAStructSupportType"), m_replace)) {
+								System.out.println("OK");
+							}
+							
+							System.out.print("Generating Topic class for structure " + st.getName() +"... ");
+							if (returnedValue = Utils.writeFile(this.m_package + st.getName() + "Type.java", maintemplates.getTemplate("KIARAStructSupportTopic"), m_replace)) {
 								System.out.println("OK");
 							}
 						} else if (tc.getKind() == 0x0000000b) { // Union typecode
@@ -481,7 +506,7 @@ public class kiaragen {
 								System.out.println("OK");
 							}
 						}
-						
+
 					} else if (definition.isIsException()) {
 						if (definition instanceof org.fiware.kiara.generator.idl.tree.Exception) {
 							org.fiware.kiara.generator.idl.tree.Exception ex = (org.fiware.kiara.generator.idl.tree.Exception) definition;
@@ -491,81 +516,97 @@ public class kiaragen {
 								System.out.println("OK");
 							}
 						}
-						
+
 					}
 				}
-				
+
 				if (m_exampleOption != null) {
-					
-					for (Interface ifz: ctx.getInterfaces()) {
-						ctx.setCurrentIfz(ifz);
-						
-						System.out.print("Generating application main entry files for service " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
-							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
-                                                                if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Process.java", maintemplates.getTemplate("KIARAExampleProcess"), m_replace)) {
-                                                                        if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
-                                                                                System.out.println("OK");
-                                                                        }
-                                                                }
+					if (m_exampleOption.equals("rpc")) {
+						for (Interface ifz: ctx.getInterfaces()) {
+							ctx.setCurrentIfz(ifz);
+
+							System.out.print("Generating application main entry files for service " + ifz.getName() +"... ");
+							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + ".java", maintemplates.getTemplate("KIARAExample"), m_replace)) {
+								if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Async.java", maintemplates.getTemplate("KIARAExampleAsync"), m_replace)) {
+									if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Process.java", maintemplates.getTemplate("KIARAExampleProcess"), m_replace)) {
+										if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Client.java", maintemplates.getTemplate("KIARAClient"), m_replace)) {
+											System.out.println("OK");
+										}
+									}
+								}
+							}
+
+							System.out.print("Generating specific server side files for service " + ifz.getName() +"... ");
+							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
+								if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
+									System.out.println("OK");
+								}
+							}
+
+
+							System.out.print("Generating specific client side files for service " + ifz.getName() +"... ");
+							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
+								System.out.println("OK");
+							}
+
+						}
+
+						Interface ifz_handler = null;
+
+						if(ctx.getScopedInterfaces().size() > 0) {
+							ifz_handler = ctx.getScopedInterfaces().get(0);
+						} else {
+							if (ctx.getInterfaces().size() > 0) {
+								ifz_handler = ctx.getInterfaces().get(0);
 							}
 						}
 
-						System.out.print("Generating specific server side files for service " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Servant.java", maintemplates.getTemplate("KIARAServant"), m_replace)) {
-							if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "ServantExample.java", maintemplates.getTemplate("KIARAServantExample"), m_replace)) {
+						ctx.setCurrentIfz(ifz_handler);
+
+						if (ctx.getInterfaces().size() != 0) {
+							System.out.print("Generating common server side files... ");
+							if (returnedValue = Utils.writeFile(this.m_package + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
+								//if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
 								System.out.println("OK");
+
+								//}
+
+							}
+
+							System.out.print("Generating common client side files... ");
+							if (returnedValue = Utils.writeFile(this.m_package + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
+								//if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
+								System.out.println("OK");
+								//}
+							}
+
+							System.out.print("Generating GRADLE compilation script... ");
+							if (returnedValue = Utils.writeFile(m_outputDir + "build.gradle", maintemplates.getTemplate("KIARAExampleGradle"), m_replace)) {
+								System.out.println("OK");
+
 							}
 						}
-						
-						
-						System.out.print("Generating specific client side files for service " + ifz.getName() +"... ");
-						if (returnedValue = Utils.writeFile(this.m_package + ifz.getName() + "Proxy.java", maintemplates.getTemplate("KIARAProxy"), m_replace)) {
+
+						System.out.print("Generating IDL text file... ");
+						if (returnedValue = Utils.writeFile(this.m_package + "IDLText.java", maintemplates.getTemplate("KIARAIDLText"), m_replace)) {
+							System.out.println("OK");
+						}
+					} else if (m_exampleOption.equals("ps")) {
+						System.out.print("Generating Publisher example main code for Topic " + ctx.getCurrentSt().getName() +"... ");
+						if (returnedValue = Utils.writeFile(this.m_package + ctx.getCurrentSt().getName() + "PublisherExample.java", maintemplates.getTemplate("KIARAPublisherExample"), m_replace)) {
 							System.out.println("OK");
 						}
 						
-					}
-					
-					Interface ifz_handler = null;
-
-					if(ctx.getScopedInterfaces().size() > 0) {
-                        ifz_handler = ctx.getScopedInterfaces().get(0);
-                    } else {
-                    	if (ctx.getInterfaces().size() > 0) {
-                    		ifz_handler = ctx.getInterfaces().get(0);
-                    	}
-                    }
-
-					ctx.setCurrentIfz(ifz_handler);
-					
-					if (ctx.getInterfaces().size() != 0) {
-						System.out.print("Generating common server side files... ");
-						if (returnedValue = Utils.writeFile(this.m_package + "ServerExample.java", maintemplates.getTemplate("KIARAServerExample"), m_replace)) {
-							//if (returnedValue = Utils.writeFile(m_outputDir + "build_server.gradle", maintemplates.getTemplate("KIARAServerExampleGradle"), m_replace)) {
-								System.out.println("OK");
-								
-							//}
-							
-						}
-						
-						System.out.print("Generating common client side files... ");
-						if (returnedValue = Utils.writeFile(this.m_package + "ClientExample.java", maintemplates.getTemplate("KIARAClientExample"), m_replace)) {
-							//if (returnedValue = Utils.writeFile(m_outputDir + "build_client.gradle", maintemplates.getTemplate("KIARAClientExampleGradle"), m_replace)) {
-								System.out.println("OK");
-							//}
+						System.out.print("Generating Subscriber example main code for Topic " + ctx.getCurrentSt().getName() +"... ");
+						if (returnedValue = Utils.writeFile(this.m_package + ctx.getCurrentSt().getName() + "SubscriberExample.java", maintemplates.getTemplate("KIARASubscriberExample"), m_replace)) {
+							System.out.println("OK");
 						}
 						
 						System.out.print("Generating GRADLE compilation script... ");
-						if (returnedValue = Utils.writeFile(m_outputDir + "build.gradle", maintemplates.getTemplate("KIARAExampleGradle"), m_replace)) {
+						/*if (returnedValue = Utils.writeFile(m_outputDir + "build.gradle", maintemplates.getTemplate("KIARAExampleGradle"), m_replace)) {
 							System.out.println("OK");
-							
-						}
+						}*/
 					}
-
-                                        System.out.print("Generating IDL text file... ");
-                                        if (returnedValue = Utils.writeFile(this.m_package + "IDLText.java", maintemplates.getTemplate("KIARAIDLText"), m_replace)) {
-                                            System.out.println("OK");
-                                        }
 				}
 			}
 
@@ -575,19 +616,19 @@ public class kiaragen {
 
 	String callPreprocessor(String idlFilename) {
 		final String METHOD_NAME = "callPreprocessor";
-		
+
 		// Set line command.
 		ArrayList<String> lineCommand = new ArrayList<String>();
 		String [] lineCommandArray = null;
 		String outputfile = Util.getIDLFileOnly(idlFilename) + ".cc";
 		int exitVal = -1;
 		OutputStream of = null;
-		
+
 		// Use temp directory.
 		if (m_tempDir != null) {
 			outputfile = m_tempDir + outputfile;
 		}
-		
+
 		if (m_os.contains("Windows")) {
 			try {
 				of = new FileOutputStream(outputfile);
@@ -596,10 +637,10 @@ public class kiaragen {
 				return null;
 			}
 		}
-		
+
 		// Set the preprocessor path
 		String ppPath = m_ppPath;
-		
+
 		if (ppPath == null) {
 			if (m_os.contains("Windows")) {
 				ppPath = "cl.exe";
@@ -613,10 +654,10 @@ public class kiaragen {
 				ppPath = ppPath + File.separator + "cpp";
 			}
 		}
-		
+
 		// Add command
 		lineCommand.add(ppPath);
-		
+
 		// Add the include paths given as parameters.
 		for (int i=0; i < m_includePaths.size(); ++i) {
 			if (m_os.contains("Windows")) {
@@ -625,22 +666,22 @@ public class kiaragen {
 				lineCommand.add(m_includePaths.get(i));
 			}
 		}
-		
+
 		if (m_os.contains("Windows")) {
 			lineCommand.add("/E");
 			lineCommand.add("/C");
 		}
-		
+
 		// Add input file.
 		lineCommand.add(idlFilename);
-		
+
 		if(m_os.contains("Linux")) {
 			lineCommand.add(outputfile);
 		}
-		
+
 		lineCommandArray = new String[lineCommand.size()];
 		lineCommandArray = (String[])lineCommand.toArray(lineCommandArray);
-		
+
 		try {
 			Process preprocessor = Runtime.getRuntime().exec(lineCommandArray);
 			ProcessOutput errorOutput = new ProcessOutput(preprocessor.getErrorStream(), "ERROR", false, null);
@@ -654,117 +695,118 @@ public class kiaragen {
 			System.out.println(ColorMessage.error(METHOD_NAME) + "Cannot execute the preprocessor. Reason: " + e.getMessage());
 			return null;
 		}
-		
+
 		if (of != null) {
 			try {
 				of.close();
 			} catch (IOException e) {
 				System.out.println(ColorMessage.error(METHOD_NAME) + "Cannot close file " + outputfile);
 			}
-			
+
 		}
-		
+
 		if (exitVal != 0) {
 			System.out.println(ColorMessage.error(METHOD_NAME) + "Preprocessor return an error " + exitVal);
 			return null;
 		}
-		
+
 		return outputfile;
 	}
-	
+
 	/*
 	 * ----------------------------------------------------------------------------------------
 	 * 
 	 * Main entry point
 	 */
-	
+
 	public static void main(String[] args) {
 		ColorMessage.load();
-		
+
 		m_platforms = new ArrayList<String>();
-		m_platforms.add("gradle");
-		
+		m_platforms.add("rpc");
+		m_platforms.add("ps");
+
 		try {
-			
+
 			kiaragen main = new kiaragen(args);
 			if (main.execute()) {
 				System.exit(0);
 			}
-			
+
 		} catch (BadArgumentException e) {
-			
+
 			System.out.println(ColorMessage.error("BadArgumentException") + e.getMessage());
-            printHelp();
-			
+			printHelp();
+
 		}
-			
+
 		System.exit(-1);
 	}
-	
+
 }
 
 class ProcessOutput extends Thread
 {
-    InputStream is = null;
-    OutputStream of = null;
-    String type;
-    boolean m_check_failures;
-    boolean m_found_error = false;
-    final String clLine = "#line";
+	InputStream is = null;
+	OutputStream of = null;
+	String type;
+	boolean m_check_failures;
+	boolean m_found_error = false;
+	final String clLine = "#line";
 
-    ProcessOutput(InputStream is, String type, boolean check_failures, OutputStream of)
-    {
-        this.is = is;
-        this.type = type;
-        m_check_failures = check_failures;
-        this.of = of;
-    }
+	ProcessOutput(InputStream is, String type, boolean check_failures, OutputStream of)
+	{
+		this.is = is;
+		this.type = type;
+		m_check_failures = check_failures;
+		this.of = of;
+	}
 
-    public void run()
-    {
-        try
-        {
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line=null;
-            while ( (line = br.readLine()) != null)
-            {
-                if(of == null)
-                    System.out.println(line);
-                else
-                {
-                    // Sustituir los \\ que pone cl.exe por \
-                    if(line.startsWith(clLine))
-                    {
-                        line = "#" + line.substring(clLine.length());
-                        int count = 0;
-                        while((count = line.indexOf("\\\\")) != -1)
-                        {
-                            line = line.substring(0, count) + "\\" + line.substring(count + 2);
-                        }
-                    }
+	public void run()
+	{
+		try
+		{
+			InputStreamReader isr = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(isr);
+			String line=null;
+			while ( (line = br.readLine()) != null)
+			{
+				if(of == null)
+					System.out.println(line);
+				else
+				{
+					// Sustituir los \\ que pone cl.exe por \
+					if(line.startsWith(clLine))
+					{
+						line = "#" + line.substring(clLine.length());
+						int count = 0;
+						while((count = line.indexOf("\\\\")) != -1)
+						{
+							line = line.substring(0, count) + "\\" + line.substring(count + 2);
+						}
+					}
 
-                    of.write(line.getBytes());
-                    of.write('\n');
-                }
+					of.write(line.getBytes());
+					of.write('\n');
+				}
 
-                if(m_check_failures)
-                {
-                    if(line.startsWith("Done (failures)"))
-                    {
-                        m_found_error = true;
-                    }
-                }
-            }
-        }
-        catch (IOException ioe)
-        {
-            ioe.printStackTrace();  
-        }
-    }
+				if(m_check_failures)
+				{
+					if(line.startsWith("Done (failures)"))
+					{
+						m_found_error = true;
+					}
+				}
+			}
+		}
+		catch (IOException ioe)
+		{
+			ioe.printStackTrace();  
+		}
+	}
 
-    boolean getFoundError()
-    {
-        return m_found_error;
-    }
+	boolean getFoundError()
+	{
+		return m_found_error;
+	}
 }

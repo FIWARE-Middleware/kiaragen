@@ -1,0 +1,68 @@
+group KIARAStructSupportTopic;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentSt.name, "Type.java"], description=["This file contains the class representing a Topic for a user defined structure."])$
+package $ctx.javaPackage$;
+
+import org.fiware.kiara.ps.rtps.messages.elements.SerializedPayload;
+import org.fiware.kiara.ps.topic.SerializableDataType;
+
+/**
+ * Topic class definition for the user defined type $ctx.currentSt.name$. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public class $ctx.currentSt.name$Type extends SerializableDataType<$ctx.currentSt.name$> {
+
+    public $ctx.currentSt.name$Type() {
+        super($ctx.currentSt.name$.class, "$ctx.currentSt.name$", SerializedPayload.PAYLOAD_MAX_SIZE, false);
+    }
+
+    @Override
+    public $ctx.currentSt.name$ createData() {
+        return new $ctx.currentSt.name$();
+    }
+
+    
+}
+ 
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

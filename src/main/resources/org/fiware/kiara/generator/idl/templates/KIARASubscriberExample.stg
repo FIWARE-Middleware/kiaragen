@@ -1,0 +1,164 @@
+group KIARAStringSupportType;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentSt.name, "SubscriberExample.java"], description=["This file contains the class representing a user defined structure."])$
+package $ctx.javaPackage$;
+
+import java.util.concurrent.CountDownLatch;
+
+import org.fiware.kiara.Kiara;
+import org.fiware.kiara.ps.attributes.ParticipantAttributes;
+import org.fiware.kiara.ps.attributes.SubscriberAttributes;
+import org.fiware.kiara.ps.participant.Participant;
+import org.fiware.kiara.ps.qos.policies.ReliabilityQosPolicyKind;
+import org.fiware.kiara.ps.rtps.common.MatchingInfo;
+import org.fiware.kiara.ps.rtps.utils.IPFinder;
+import org.fiware.kiara.ps.subscriber.Subscriber;
+import org.fiware.kiara.ps.subscriber.SubscriberListener;
+import org.fiware.kiara.ps.Domain;
+
+/**
+ * Example $ctx.currentSt.name$ Subscriber class. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public class $ctx.currentSt.name$SubscriberExample {
+
+    private static final $ctx.currentSt.name$Type type = new $ctx.currentSt.name$Type();
+
+    public static void main (String [] args) throws InterruptedException {
+    
+    	int domainId = 0;
+    	if (args.length >= 1) {
+    		domainId = Integer.parseInt(args[0]);
+    	}
+    	
+    	int sampleCount = 0;
+    	if (args.length >= 2) {
+    		sampleCount = Integer.parseInt(args[1]);
+    	}
+
+        // Create participant
+        ParticipantAttributes pParam = new ParticipantAttributes();
+        pParam.rtps.builtinAtt.domainID = domainId;
+        pParam.rtps.builtinAtt.useSimplePDP = true;
+        pParam.rtps.builtinAtt.useStaticEDP = true;
+
+        final String ipAddr = IPFinder.getFirstIPv4Address().getHostAddress();
+        final String edpXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<staticdiscovery>"
+                + "    <participant>"
+                + "        <name>PublisherParticipant</name>"
+                + "        <writer>"
+                + "            <userId>1</userId>"
+                + "            <topicName>$ctx.currentSt.name$Topic</topicName>"
+                + "            <topicDataType>$ctx.currentSt.name$</topicDataType>"
+                + "            <topicKind>NO_KEY</topicKind>"
+                + "            <reliabilityQos>BEST_EFFORT_RELIABILITY_QOS</reliabilityQos>"
+                + "            <livelinessQos kind=\"AUTOMATIC_LIVELINESS_QOS\" leaseDuration_ms=\"100\"></livelinessQos>"
+                + "        </writer>"
+                + "     </participant>"
+                + "    </staticdiscovery>";
+
+        pParam.rtps.builtinAtt.setStaticEndpointXML(edpXml);
+
+        pParam.rtps.setName("SubscriberParticipant");
+
+        Participant participant = Domain.createParticipant(pParam, null /* LISTENER */);
+        if (participant == null) {
+            throw new RuntimeException("createParticipant");
+        }
+
+        // Type registration
+        Domain.registerType(participant, type);
+
+        SubscriberAttributes satt = new SubscriberAttributes();
+        satt.topic.topicDataTypeName = "$ctx.currentSt.name$";
+        satt.topic.topicName = "$ctx.currentSt.name$Topic";
+        satt.qos.reliability.kind = ReliabilityQosPolicyKind.BEST_EFFORT_RELIABILITY_QOS;
+
+        satt.setUserDefinedID((short) 1);
+        
+        final CountDownLatch doneSignal = new CountDownLatch(sampleCount);
+
+        org.fiware.kiara.ps.subscriber.Subscriber<$ctx.currentSt.name$> subscriber = Domain.createSubscriber(participant, satt, new SubscriberListener() {
+
+            @Override
+            public void onNewDataMessage(Subscriber<?> sub) {
+                $ctx.currentSt.name$ type = ($ctx.currentSt.name$) sub.takeNextData(null /* SampleInfo */);
+                while (type != null) {
+                    System.out.println("Message received");
+                	type = ($ctx.currentSt.name$) sub.takeNextData(null);
+                    doneSignal.countDown();
+                }
+            }
+
+            @Override
+			public void onSubscriptionMatched(Subscriber<?> sub, MatchingInfo info) {
+				// Write here you handling code
+			}
+
+        });
+        
+        if (subscriber == null) {
+        	Domain.removeParticipant(participant);
+            throw new RuntimeException("createSubscriber");
+        }
+        
+        int receivePeriod = 4000; // milliseconds
+        while ((sampleCount == 0) || (doneSignal.getCount() != 0)) {
+        	System.out.println("$ctx.currentSt.name$ Subscriber sleeping for " + receivePeriod/1000 + " seconds..");
+        	Thread.sleep(receivePeriod);
+        }
+
+        Domain.removeParticipant(participant);
+        
+        Kiara.shutdown();
+        
+        System.out.println("Subscriber finished");
+
+    }
+
+}
+
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

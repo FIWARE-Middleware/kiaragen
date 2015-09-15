@@ -1,0 +1,141 @@
+group KIARAStringSupportType;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.currentSt.name, "PublisherExample.java"], description=["This file contains the class representing a user defined structure."])$
+package $ctx.javaPackage$;
+
+import org.fiware.kiara.Kiara;
+import org.fiware.kiara.ps.attributes.ParticipantAttributes;
+import org.fiware.kiara.ps.attributes.PublisherAttributes;
+import org.fiware.kiara.ps.participant.Participant;
+import org.fiware.kiara.ps.qos.policies.ReliabilityQosPolicyKind;
+import org.fiware.kiara.ps.rtps.utils.IPFinder;
+import org.fiware.kiara.ps.Domain;
+
+/**
+ * Example $ctx.currentSt.name$ Publisher class. 
+ *
+ * @author Kiaragen tool.
+ *
+ */
+public class $ctx.currentSt.name$PublisherExample {
+
+    private static final $ctx.currentSt.name$Type type = new $ctx.currentSt.name$Type();
+
+    public static void main (String [] args) throws InterruptedException {
+    
+    	int domainId = 0;
+    	if (args.length >= 1) {
+    		domainId = Integer.parseInt(args[0]);
+    	}
+    	
+    	int sampleCount = 0;
+    	if (args.length >= 2) {
+    		sampleCount = Integer.parseInt(args[1]);
+    	}
+
+        $ctx.currentSt.name$ instance = type.createData();
+
+        // Initialize your data here
+
+        ParticipantAttributes pAtt = new ParticipantAttributes();
+        pAtt.rtps.builtinAtt.domainID = domainId;
+        pAtt.rtps.useIPv4ToSend = true;
+        pAtt.rtps.builtinAtt.useStaticEDP = true;
+
+        final String ipAddr = IPFinder.getFirstIPv4Address().getHostAddress();
+        final String edpXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<staticdiscovery>"
+                + "    <participant>"
+                + "        <name>SubscriberParticipant</name>"
+                + "        <reader>"
+                + "            <userId>1</userId>"
+                + "            <topic name=\"$ctx.currentSt.name$Topic\" dataType=\"$ctx.currentSt.name$\" kind=\"NO_KEY\"></topic>"
+                + "            <expectsInlineQos>false</expectsInlineQos>"
+                + "            <reliabilityQos>BEST_EFFORT_RELIABILITY_QOS</reliabilityQos>"
+                + "        </reader>"
+                + "    </participant>"
+                + "</staticdiscovery>";
+
+        pAtt.rtps.builtinAtt.setStaticEndpointXML(edpXml);
+
+        pAtt.rtps.setName("PublisherParticipant");
+
+        Participant participant = Domain.createParticipant(pAtt, null /* LISTENER */);
+        if (participant == null) {
+        	throw new RuntimeException("createParticipant");
+        }
+
+        Domain.registerType(participant, type);
+
+        // Create publisher
+        PublisherAttributes pubAtt = new PublisherAttributes();
+        pubAtt.setUserDefinedID((short) 1);
+        pubAtt.topic.topicDataTypeName = "$ctx.currentSt.name$";
+        pubAtt.topic.topicName = "$ctx.currentSt.name$Topic";
+        pubAtt.qos.reliability.kind = ReliabilityQosPolicyKind.BEST_EFFORT_RELIABILITY_QOS;
+        
+        org.fiware.kiara.ps.publisher.Publisher<$ctx.currentSt.name$> publisher = Domain.createPublisher(participant, pubAtt, null /* LISTENER */);
+
+        if (publisher == null) {
+            Domain.removeParticipant(participant);
+            throw new RuntimeException("createPublisher");
+        }
+        
+        int sendPeriod = 4000; // milliseconds
+        for (int count=0; (sampleCount == 0) || (count < sampleCount); ++count) {
+        	System.out.println("Writing $ctx.currentSt.name$, count: " + count);
+        	publisher.write(instance);
+        	Thread.sleep(sendPeriod);
+        }
+            
+        Domain.removeParticipant(participant);
+        
+        Kiara.shutdown();
+        
+        System.out.println("Publisher finished");
+
+    }
+
+}
+
+
+>>
+
+module(ctx, module, definition_list) ::= <<
+$definition_list$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+>>
+
+interface(ctx, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, exception) ::= <<>>
+
+operation(ctx, operation, param_list) ::= <<>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, const) ::= <<>>
+
+typedef_decl(ctx, typedefs) ::= <<>>
+
+struct_type(ctx, struct) ::= <<>>
+
+union_type(ctx, union) ::= <<>>
+
+enum_type(ctx, enum) ::= <<>>
+
+
+

@@ -1,7 +1,7 @@
 group KIARAStringSupportType;
 
 main(ctx, definitions) ::= <<
-$fileHeader(ctx=ctx,  file=[ctx.currentIfz.name, ".java"], description=["This file contains the class representing a user defined structure."])$
+$fileHeader(ctx=ctx,  file=[ctx.currentSt.name, ".java"], description=["This file contains the class representing a user defined structure."])$
 package $ctx.javaPackage$;
 
 import java.io.IOException;

@@ -43,7 +43,6 @@ public class $ctx.currentSt.name$PublisherExample {
         pAtt.rtps.useIPv4ToSend = true;
         pAtt.rtps.builtinAtt.useStaticEDP = true;
 
-        final String ipAddr = IPFinder.getFirstIPv4Address().getHostAddress();
         final String edpXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<staticdiscovery>"
                 + "    <participant>"

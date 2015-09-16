@@ -42,7 +42,6 @@ public class $ctx.currentSt.name$SubscriberExample {
         // Create participant
         ParticipantAttributes pParam = new ParticipantAttributes();
         pParam.rtps.builtinAtt.domainID = domainId;
-        pParam.rtps.builtinAtt.useSimplePDP = true;
         pParam.rtps.builtinAtt.useStaticEDP = true;
 
         final String edpXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

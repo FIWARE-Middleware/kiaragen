@@ -40,7 +40,6 @@ public class $ctx.currentSt.name$PublisherExample {
 
         ParticipantAttributes pAtt = new ParticipantAttributes();
         pAtt.rtps.builtinAtt.domainID = domainId;
-        pAtt.rtps.useIPv4ToSend = true;
         pAtt.rtps.builtinAtt.useStaticEDP = true;
 
         final String edpXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

@@ -12,7 +12,6 @@ import org.fiware.kiara.ps.attributes.SubscriberAttributes;
 import org.fiware.kiara.ps.participant.Participant;
 import org.fiware.kiara.ps.qos.policies.ReliabilityQosPolicyKind;
 import org.fiware.kiara.ps.rtps.common.MatchingInfo;
-import org.fiware.kiara.ps.rtps.utils.IPFinder;
 import org.fiware.kiara.ps.subscriber.Subscriber;
 import org.fiware.kiara.ps.subscriber.SubscriberListener;
 import org.fiware.kiara.ps.Domain;
@@ -29,11 +28,13 @@ public class $ctx.currentSt.name$SubscriberExample {
 
     public static void main (String [] args) throws InterruptedException {
     
+        // --- Get domain ID --- //
     	int domainId = 0;
     	if (args.length >= 1) {
     		domainId = Integer.parseInt(args[0]);
     	}
     	
+		// --- Get max loop count; 0 means infinite loop --- //
     	int sampleCount = 0;
     	if (args.length >= 2) {
     		sampleCount = Integer.parseInt(args[1]);
@@ -68,18 +69,21 @@ public class $ctx.currentSt.name$SubscriberExample {
             throw new RuntimeException("createParticipant");
         }
 
-        // Type registration
+        // --- Register types --- //
+
         Domain.registerType(participant, type);
 
+		// --- Create Subscriber --- //
+        
         SubscriberAttributes satt = new SubscriberAttributes();
+        satt.setUserDefinedID((short) 1);
         satt.topic.topicDataTypeName = "$ctx.currentSt.name$";
         satt.topic.topicName = "$ctx.currentSt.name$Topic";
         satt.qos.reliability.kind = ReliabilityQosPolicyKind.BEST_EFFORT_RELIABILITY_QOS;
 
-        satt.setUserDefinedID((short) 1);
+		/* CountDown object to store the number of received samples */
+		final CountDownLatch doneSignal = new CountDownLatch(sampleCount);
         
-        final CountDownLatch doneSignal = new CountDownLatch(sampleCount);
-
         org.fiware.kiara.ps.subscriber.Subscriber<$ctx.currentSt.name$> subscriber = Domain.createSubscriber(participant, satt, new SubscriberListener() {
 
             @Override
@@ -104,14 +108,20 @@ public class $ctx.currentSt.name$SubscriberExample {
             throw new RuntimeException("createSubscriber");
         }
         
+        // --- Main loop --- //
+        
         int receivePeriod = 4000; // milliseconds
         while ((sampleCount == 0) || (doneSignal.getCount() != 0)) {
         	System.out.println("$ctx.currentSt.name$ Subscriber sleeping for " + receivePeriod/1000 + " seconds..");
         	Thread.sleep(receivePeriod);
         }
 
+        // --- Shutdown application --- //
+        
+        /* Remove entities from Domain */
         Domain.removeParticipant(participant);
         
+        /* Shutdown all services */
         Kiara.shutdown();
         
         System.out.println("Subscriber finished");

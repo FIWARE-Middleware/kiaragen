@@ -9,7 +9,6 @@ import org.fiware.kiara.ps.attributes.ParticipantAttributes;
 import org.fiware.kiara.ps.attributes.PublisherAttributes;
 import org.fiware.kiara.ps.participant.Participant;
 import org.fiware.kiara.ps.qos.policies.ReliabilityQosPolicyKind;
-import org.fiware.kiara.ps.rtps.utils.IPFinder;
 import org.fiware.kiara.ps.Domain;
 
 /**
@@ -24,21 +23,25 @@ public class $ctx.currentSt.name$PublisherExample {
 
     public static void main (String [] args) throws InterruptedException {
     
+    	// --- Get domain ID --- //
     	int domainId = 0;
     	if (args.length >= 1) {
     		domainId = Integer.parseInt(args[0]);
     	}
     	
+    	// --- Get max loop count; 0 means infinite loop --- //
     	int sampleCount = 0;
     	if (args.length >= 2) {
     		sampleCount = Integer.parseInt(args[1]);
     	}
 
-        $ctx.currentSt.name$ instance = type.createData();
+        // --- User Data --- //
 
-        // Initialize your data here
+    	$ctx.currentSt.name$ instance = type.createData();
 
-        ParticipantAttributes pAtt = new ParticipantAttributes();
+        // --- Create Participant --- //
+
+    	ParticipantAttributes pAtt = new ParticipantAttributes();
         pAtt.rtps.builtinAtt.domainID = domainId;
         pAtt.rtps.builtinAtt.useStaticEDP = true;
 
@@ -64,9 +67,12 @@ public class $ctx.currentSt.name$PublisherExample {
         	throw new RuntimeException("createParticipant");
         }
 
+        // --- Register types --- //
+        
         Domain.registerType(participant, type);
 
-        // Create publisher
+        // --- Create Publisher --- //
+        
         PublisherAttributes pubAtt = new PublisherAttributes();
         pubAtt.setUserDefinedID((short) 1);
         pubAtt.topic.topicDataTypeName = "$ctx.currentSt.name$";
@@ -80,6 +86,8 @@ public class $ctx.currentSt.name$PublisherExample {
             throw new RuntimeException("createPublisher");
         }
         
+        // --- Main loop --- //
+        
         int sendPeriod = 4000; // milliseconds
         for (int count=0; (sampleCount == 0) || (count < sampleCount); ++count) {
         	System.out.println("Writing $ctx.currentSt.name$, count: " + count);
@@ -87,8 +95,12 @@ public class $ctx.currentSt.name$PublisherExample {
         	Thread.sleep(sendPeriod);
         }
             
+        // --- Shutdown application --- //
+        
+        /* Remove entities from Domain */
         Domain.removeParticipant(participant);
         
+        /* Shutdown all services */
         Kiara.shutdown();
         
         System.out.println("Publisher finished");

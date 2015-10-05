@@ -27,6 +27,7 @@ import org.fiware.kiara.serialization.impl.MapAsMapSerializer;
 import org.fiware.kiara.serialization.impl.SetAsSetSerializer;
 import org.fiware.kiara.serialization.impl.ObjectSerializer;
 import org.fiware.kiara.serialization.impl.EnumSerializer;
+$if(ctx.PS)$import org.fiware.kiara.ps.topic.KeyedType;$endif$
 
 /**
  * Class definition for the user defined type $ctx.currentSt.name$. 
@@ -34,7 +35,7 @@ import org.fiware.kiara.serialization.impl.EnumSerializer;
  * @author Kiaragen tool.
  *
  */
-public class $ctx.currentSt.name$ implements Serializable {
+public class $ctx.currentSt.name$ implements Serializable$if(ctx.PS)$, KeyedType $endif$ {
 	
 	/*
 	 *	Attributes
@@ -61,6 +62,10 @@ public class $ctx.currentSt.name$ implements Serializable {
 	$accessor_methods(ctx.currentSt)$
 	
 	$generate_hash_function(ctx.currentSt)$
+	
+	$if (ctx.PS)$
+	$key_serialization_method(ctx.currentSt)$
+	$endif$
 }
 
 >>

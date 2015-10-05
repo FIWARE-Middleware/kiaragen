@@ -93,6 +93,17 @@ $membered_try(member.typecode)$this.$member.name$ = $standardJavaDeserialization
 >>
 
 
+// ------------------------------KEYED Topics---------------------------------
+key_serialization_method(currentSt) ::= <<
+/**
+ * Function used to serialize the KEY for the type $ctx.currentSt.name$
+ */
+@Override
+public void serializeKey(SerializerImpl impl, BinaryOutputStream message, String name) throws IOException {
+	$currentSt.members : {member | $standardJavaSerialization(type=member.typecode, name=member.name, ser="impl", scope="this.")$;}; separator="\n"$
+}
+>>
+
 
 // ---------------------------
 

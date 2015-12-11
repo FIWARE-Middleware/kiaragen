@@ -14,7 +14,7 @@ apply plugin: 'maven'
 mainClassName = hasProperty("mainClass") ? property("mainClass") : 'org.fiware.kiara.generator.kiaragen';
 
 //general properties
-version = '0.3.5'
+version = '0.4.0'
 description = "KIARA Advanced Middleware IDL Code Generator"
 
 // java plugin properties (until antlr 4.4 we have to set this to 1.6)
